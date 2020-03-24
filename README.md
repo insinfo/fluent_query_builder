@@ -1,5 +1,8 @@
 A dart library that allows you to execute SQL queries in the PostgreSQL database in a fluent way, is very easy to execute.
 This library implements POOL of connections.
+This lib implements the vast majority of SQL statements and clauses
+
+Soon it will also support mysql and ORM without reflection and without code generation in a simple and consistent way.
 
 ## Usage
 

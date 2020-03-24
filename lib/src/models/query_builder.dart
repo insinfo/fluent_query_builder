@@ -14,7 +14,8 @@ abstract class QueryBuilder {
     List<Block> blocks, {
     Future<List<List>> Function() execFunc,
     Future<Map<String, Map<String, dynamic>>> Function() firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String, dynamic>>>> Function() getAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String, dynamic>>>> Function()
+        getAsMapFuncWithMeta,
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
@@ -36,7 +37,8 @@ abstract class QueryBuilder {
 
   Future<List<List>> Function() _execFunc;
   Future<Map<String, Map<String, dynamic>>> Function() _firstAsMapFuncWithMeta;
-  Future<List<Map<String, Map<String, dynamic>>>> Function() _getAsMapFuncWithMeta;
+  Future<List<Map<String, Map<String, dynamic>>>> Function()
+      _getAsMapFuncWithMeta;
   Future<Map<String, dynamic>> Function() _firstAsMapFunc;
   Future<List<Map<String, dynamic>>> Function() _getAsMapFunc;
   Future<List> Function() _firstFunc;
@@ -110,7 +112,8 @@ abstract class QueryBuilder {
   ///Return rows as maps containing table and column names
   Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta() async {
     if (_getAsMapFuncWithMeta == null) {
-      throw Exception('QueryBuilder@getAsMapWithMeta getAsMapFuncWithMeta not defined');
+      throw Exception(
+          'QueryBuilder@getAsMapWithMeta getAsMapFuncWithMeta not defined');
     }
     return _getAsMapFuncWithMeta();
   }
@@ -118,7 +121,8 @@ abstract class QueryBuilder {
   ///Return row as maps containing table and column names
   Future<Map<String, Map<String, dynamic>>> firstAsMapWithMeta() async {
     if (_firstAsMapFuncWithMeta == null) {
-      throw Exception('QueryBuilder@firstAsMapWithMeta firstAsMapFuncWithMeta not defined');
+      throw Exception(
+          'QueryBuilder@firstAsMapWithMeta firstAsMapFuncWithMeta not defined');
     }
     return _firstAsMapFuncWithMeta();
   }
@@ -163,7 +167,8 @@ abstract class QueryBuilder {
   }
 
   QueryBuilder fieldSubQuery(QueryBuilder field, {String alias}) {
-    throw UnsupportedOperationException('`fieldSubQueryWithAlias` not implemented');
+    throw UnsupportedOperationException(
+        '`fieldSubQueryWithAlias` not implemented');
   }
 
   QueryBuilder fields(Iterable<String> fields) {
@@ -196,27 +201,39 @@ abstract class QueryBuilder {
     throw UnsupportedOperationException('`joinRaw` not implemented');
   }
 
-  QueryBuilder join(String joinTableName, String condition, {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder join(String joinTableName, String condition,
+      {String alias, JoinType type = JoinType.INNER}) {
     throw UnsupportedOperationException('`join` not implemented');
   }
 
-  QueryBuilder innerJoin(String joinTableName, String field1, String operator, String field2, {String alias}) {
-    return join(joinTableName, field1 + operator + field2, type: JoinType.INNER, alias: alias);
+  QueryBuilder innerJoin(
+      String joinTableName, String field1, String operator, String field2,
+      {String alias}) {
+    return join(joinTableName, field1 + operator + field2,
+        type: JoinType.INNER, alias: alias);
   }
 
-  QueryBuilder leftJoin(String joinTableName, String field1, String operator, String field2, {String alias}) {
-    return join(joinTableName, field1 + operator + field2, type: JoinType.LEFT, alias: alias);
+  QueryBuilder leftJoin(
+      String joinTableName, String field1, String operator, String field2,
+      {String alias}) {
+    return join(joinTableName, field1 + operator + field2,
+        type: JoinType.LEFT, alias: alias);
   }
 
-  QueryBuilder rightJoin(String joinTableName, String field1, String operator, String field2, {String alias}) {
-    return join(joinTableName, field1 + operator + field2, type: JoinType.RIGHT, alias: alias);
+  QueryBuilder rightJoin(
+      String joinTableName, String field1, String operator, String field2,
+      {String alias}) {
+    return join(joinTableName, field1 + operator + field2,
+        type: JoinType.RIGHT, alias: alias);
   }
 
-  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition, {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition,
+      {String alias, JoinType type = JoinType.INNER}) {
     throw UnsupportedOperationException('`joinWithSubQuery` not implemented');
   }
 
-  QueryBuilder joinWithExpression(String table, Expression condition, {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithExpression(String table, Expression condition,
+      {String alias, JoinType type = JoinType.INNER}) {
     throw UnsupportedOperationException('`joinWithExpression` not implemented');
   }
 

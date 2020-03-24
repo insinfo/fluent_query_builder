@@ -137,7 +137,8 @@ class DBLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
-    final rows = await executor.mappedResultsQuery(currentQuery.toSql(), substitutionValues: {});
+    final rows = await executor
+        .mappedResultsQuery(currentQuery.toSql(), substitutionValues: {});
     return rows;
   }
 

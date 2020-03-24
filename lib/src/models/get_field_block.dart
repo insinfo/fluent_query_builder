@@ -42,15 +42,19 @@ class GetFieldBlock extends Block {
   void setField(String field, String alias) {
     var fieldValue = Validator.sanitizeField(field.trim(), mOptions);
 
-    final aliasValue = alias != null ? Validator.sanitizeFieldAlias(alias, mOptions) : null;
+    final aliasValue =
+        alias != null ? Validator.sanitizeFieldAlias(alias, mOptions) : null;
 
     /// quote table and field string with dot, example:
     /// db.select().fields(['tablename.fieldname']).from('tablename') result in
     ///  SELECT "tablename"."fieldname" FROM tablename
     if (mOptions.quoteStringWithFieldsTablesSeparator) {
       if (fieldValue.contains(mOptions.fieldsTablesSeparator)) {
-        fieldValue = fieldValue.split(mOptions.fieldsTablesSeparator).map((f) => f).join(
-            '${mOptions.fieldAliasQuoteCharacter}${mOptions.fieldsTablesSeparator}${mOptions.fieldAliasQuoteCharacter}');
+        fieldValue = fieldValue
+            .split(mOptions.fieldsTablesSeparator)
+            .map((f) => f)
+            .join(
+                '${mOptions.fieldAliasQuoteCharacter}${mOptions.fieldsTablesSeparator}${mOptions.fieldAliasQuoteCharacter}');
       }
     }
 
@@ -70,7 +74,8 @@ class GetFieldBlock extends Block {
 
   void setFieldFromSubQuery(QueryBuilder field, String alias) {
     final fieldName = Validator.sanitizeFieldFromQueryBuilder(field);
-    final aliasValue = alias != null ? Validator.sanitizeFieldAlias(alias, mOptions) : null;
+    final aliasValue =
+        alias != null ? Validator.sanitizeFieldAlias(alias, mOptions) : null;
     doSetField(fieldName, aliasValue);
   }
 

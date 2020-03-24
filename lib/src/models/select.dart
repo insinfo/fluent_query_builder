@@ -23,7 +23,8 @@ class Select extends QueryBuilder {
     QueryBuilderOptions options, {
     Future<List<List>> Function() execFunc,
     Future<Map<String, Map<String, dynamic>>> Function() firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String, dynamic>>>> Function() getAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String, dynamic>>>> Function()
+        getAsMapFuncWithMeta,
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
@@ -133,21 +134,24 @@ class Select extends QueryBuilder {
   // JOIN
   //
   @override
-  QueryBuilder join(String joinTableName, String condition, {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder join(String joinTableName, String condition,
+      {String alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks[4] as JoinBlock;
     block.setJoin(joinTableName, alias, condition, type);
     return this;
   }
 
   @override
-  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition, {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition,
+      {String alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks[4] as JoinBlock;
     block.setJoinWithSubQuery(table, alias, condition, type);
     return this;
   }
 
   @override
-  QueryBuilder joinWithExpression(String table, Expression condition, {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithExpression(String table, Expression condition,
+      {String alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks[4] as JoinBlock;
     block.setJoinWithExpression(table, alias, condition, type);
     return this;

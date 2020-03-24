@@ -30,18 +30,21 @@ class JoinBlock extends Block {
     doJoin(tbl, als, condition, type);
   }
 
-  void setJoinWithExpression(String table, String alias, Expression condition, JoinType type) {
+  void setJoinWithExpression(
+      String table, String alias, Expression condition, JoinType type) {
     final tbl = Validator.sanitizeTable(table, mOptions);
     final als = Validator.sanitizeTableAlias(alias, mOptions);
     doJoin(tbl, als, condition, type);
   }
 
-  void setJoinWithSubQuery(QueryBuilder table, String alias, String condition, JoinType type) {
+  void setJoinWithSubQuery(
+      QueryBuilder table, String alias, String condition, JoinType type) {
     final als = Validator.sanitizeTableAlias(alias, mOptions);
     doJoin(table, als, condition, type);
   }
 
-  void setJoinWithQueryWithExpr(QueryBuilder table, String alias, Expression condition, JoinType type) {
+  void setJoinWithQueryWithExpr(
+      QueryBuilder table, String alias, Expression condition, JoinType type) {
     final als = Validator.sanitizeTableAlias(alias, mOptions);
     doJoin(table, als, condition, type);
   }

@@ -60,7 +60,8 @@ class WhereBlock extends Block {
         sb.write(') AND (');
       }
 
-      sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
+      sb.write(where.text
+          .replaceAll('?', Validator.formatValue(where.param, mOptions)));
     }
 
     return 'WHERE ($sb)';

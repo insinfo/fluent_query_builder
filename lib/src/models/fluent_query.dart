@@ -44,7 +44,4 @@ class FluentQuery {
   static QueryBuilder delete(QueryBuilderOptions options) {
     return Delete(options);
   }
-
- 
-
 }

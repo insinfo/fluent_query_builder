@@ -11,7 +11,8 @@ enum ExpressionType { AND, OR }
 class ExpressionNode {
   ExpressionNode();
 
-  ExpressionNode.fromTypeExprParam(ExpressionType type, String expr, Object param) {
+  ExpressionNode.fromTypeExprParam(
+      ExpressionType type, String expr, Object param) {
     this.type = type;
     this.expr = expr;
     this.param = param;
@@ -55,7 +56,8 @@ class Expression {
   /// End the current compound expression.
   /// @return Expression
   Expression end() {
-    assert(mCurrent != null && mCurrent.parent != null); // "begin() needs to be called"
+    assert(mCurrent != null &&
+        mCurrent.parent != null); // "begin() needs to be called"
     mCurrent = mCurrent.parent;
     return this;
   }
@@ -73,7 +75,8 @@ class Expression {
   /// @param <P> Number|String|Boolean|QueryBuilder|Expression|Array|Iterable
   /// @return Expression
   Expression andWithParam(String expr, param) {
-    final newNode = ExpressionNode.fromTypeExprParam(ExpressionType.AND, expr, param);
+    final newNode =
+        ExpressionNode.fromTypeExprParam(ExpressionType.AND, expr, param);
     mCurrent.nodes.add(newNode);
     return this;
   }
@@ -91,7 +94,8 @@ class Expression {
   /// @param <P> Number|String|Boolean|QueryBuilder|Expression|Array|Iterable
   /// @return Expression
   Expression orFromExprParam(String expr, param) {
-    final newNode = ExpressionNode.fromTypeExprParam(ExpressionType.OR, expr, param);
+    final newNode =
+        ExpressionNode.fromTypeExprParam(ExpressionType.OR, expr, param);
     mCurrent.nodes.add(newNode);
     return this;
   }
@@ -100,7 +104,8 @@ class Expression {
   /// @return A String representation of the expression.
   @override
   String toString() {
-    assert(mCurrent != null && mCurrent.parent == null); // "end() needs to be called"
+    assert(mCurrent != null &&
+        mCurrent.parent == null); // "end() needs to be called"
     return doString(mTree);
   }
 
@@ -122,7 +127,8 @@ class Expression {
     String nodeStr;
     for (var child in node.nodes) {
       if (child.expr != null) {
-        nodeStr = child.expr.replaceAll('?', Validator.formatValue(child.param, mOptions));
+        nodeStr = child.expr
+            .replaceAll('?', Validator.formatValue(child.param, mOptions));
       } else {
         nodeStr = doString(child);
 

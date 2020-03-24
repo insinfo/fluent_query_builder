@@ -30,7 +30,8 @@ class ExpressionNode {
 
 class Expression {
   Expression(QueryBuilderOptions options) {
-    mOptions = options != null ? options : QueryBuilderOptions();
+    mOptions = options ?? QueryBuilderOptions();
+    //mOptions = options != null ? options : QueryBuilderOptions();
     mTree = ExpressionNode();
     mCurrent = ExpressionNode();
   }
@@ -119,23 +120,23 @@ class Expression {
   String doString(ExpressionNode node) {
     var sb = StringBuffer();
     String nodeStr;
-    for (ExpressionNode child in node.nodes) {
+    for (var child in node.nodes) {
       if (child.expr != null) {
-        nodeStr = child.expr.replaceAll("?", Validator.formatValue(child.param, mOptions));
+        nodeStr = child.expr.replaceAll('?', Validator.formatValue(child.param, mOptions));
       } else {
         nodeStr = doString(child);
 
         // wrap nested expressions in brackets
         if (!Util.isEmpty(nodeStr)) {
-          nodeStr = "($nodeStr)";
+          nodeStr = '($nodeStr)';
         }
       }
 
       if (!Util.isEmpty(nodeStr)) {
         if (sb.length > 0) {
-          sb.write(" ");
+          sb.write(' ');
           sb.write(child.type);
-          sb.write(" ");
+          sb.write(' ');
         }
         sb.write(nodeStr);
       }

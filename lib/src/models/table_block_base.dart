@@ -31,21 +31,21 @@ abstract class TableBlockBase extends Block {
     assert(mTables != null && mTables.isNotEmpty);
 
     final sb = StringBuffer();
-    for (TableNode tab in mTables) {
+    for (var tab in mTables) {
       if (sb.length > 0) {
-        sb.write(", ");
+        sb.write(', ');
       }
 
       if (tab.table is String) {
         sb.write(tab.table.toString());
       } else {
-        sb.write("(");
+        sb.write('(');
         sb.write(tab.table.toString());
-        sb.write(")");
+        sb.write(')');
       }
 
       if (tab.alias != null) {
-        sb.write(" ");
+        sb.write(' ');
         sb.write(tab.alias);
       }
     }

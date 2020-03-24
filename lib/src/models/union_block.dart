@@ -37,24 +37,24 @@ class UnionBlock extends Block {
   @override
   String buildStr(QueryBuilder queryBuilder) {
     if (mUnions == null || mUnions.isEmpty) {
-      return "";
+      return '';
     }
 
     final sb = StringBuffer();
-    for (UnionNode j in mUnions) {
+    for (var j in mUnions) {
       if (sb.length > 0) {
-        sb.write(" ");
+        sb.write(' ');
       }
 
       sb.write(unionTypeToSql(j.unionType));
-      sb.write(" ");
+      sb.write(' ');
 
       if (j.table is String) {
         sb.write(j.table);
       } else {
-        sb.write("(");
+        sb.write('(');
         sb.write(j.table.toString());
-        sb.write(")");
+        sb.write(')');
       }
     }
 

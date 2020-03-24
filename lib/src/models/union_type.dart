@@ -6,12 +6,12 @@ String unionTypeToSql(UnionType type) {
   String result;
   switch (type) {
     case UnionType.UNION_ALL:
-      result = "UNION ALL";
+      result = 'UNION ALL';
       break;
 
     case UnionType.UNION:
     default:
-      result = "UNION";
+      result = 'UNION';
       break;
   }
 

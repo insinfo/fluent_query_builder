@@ -1,5 +1,5 @@
 import 'block.dart';
-import 'dart:collection';
+
 import 'query_builder_options.dart';
 import 'query_builder.dart';
 import 'validator.dart';
@@ -12,7 +12,7 @@ class GroupByBlock extends Block {
   String groupRawSql;
 
   void setGroups(Iterable<String> groups) {
-    for (String field in groups) {
+    for (var field in groups) {
       setGroup(field);
     }
   }
@@ -37,10 +37,10 @@ class GroupByBlock extends Block {
   @override
   String buildStr(QueryBuilder queryBuilder) {
     if (groupRawSql != null) {
-      return "GROUP BY $groupRawSql";
+      return 'GROUP BY $groupRawSql';
     }
     if (mGroups == null || mGroups.isEmpty) {
-      return "";
+      return '';
     }
     return "GROUP BY ${Util.join(', ', mGroups)}";
   }

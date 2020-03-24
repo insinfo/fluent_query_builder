@@ -14,6 +14,6 @@ class OffsetBlock extends Block {
 
   @override
   String buildStr(QueryBuilder queryBuilder) {
-    return mOffset != null ? "OFFSET $mOffset" : "";
+    return mOffset != null ? 'OFFSET $mOffset' : '';
   }
 }

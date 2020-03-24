@@ -1,6 +1,5 @@
 import 'block.dart';
 import 'query_builder_options.dart';
-import 'query_builder.dart';
 import 'validator.dart';
 
 class SetNode {

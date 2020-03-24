@@ -1,6 +1,4 @@
-import 'dart:async';
-import 'query_executor.dart';
-import 'package:logging/logging.dart';
+
 // import 'package:pool/pool.dart';
 /*import 'package:sqljocky5/connection/connection.dart';
 import 'package:sqljocky5/sqljocky.dart';

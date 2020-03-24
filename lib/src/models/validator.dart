@@ -5,41 +5,40 @@ import 'expression.dart';
 
 /// Validator & Sanitizer
 class Validator {
-
   Validator();
 
   static String sanitizeFieldAlias(String value, QueryBuilderOptions options) {
     var result = options.autoQuoteAliasNames
         ? options.fieldAliasQuoteCharacter + value + options.fieldAliasQuoteCharacter
         : value;
-    
+
     return result;
   }
 
   static String sanitizeFieldFromQueryBuilder(QueryBuilder value) {
-    return "(${value.toString()})";
+    return '(${value.toString()})';
   }
 
   static String sanitizeField(String value, QueryBuilderOptions options) {
-    String result = "";
+    var result = '';
     if (options.autoQuoteFieldNames) {
-      final String quoteChar = options.nameQuoteCharacter;
+      final quoteChar = options.nameQuoteCharacter;
       if (options.ignorePeriodsForFieldNameQuotes) {
         // a.b.c -> `a.b.c`
         result = quoteChar + value + quoteChar;
       } else {
         // a.b.c -> `a`.`b`.`c`
-        final List<String> parts = value.split("\\.");
-        final List<String> newParts = [];
-        for (String part in parts) {
+        final parts = value.split('\\.');
+        final newParts = [];
+        for (var part in parts) {
           // treat '*' as special case
-          if (part == "*") {
+          if (part == '*') {
             newParts.add(part);
           } else {
             newParts.add(quoteChar + part + quoteChar);
           }
         }
-        result = Util.join(".", newParts);
+        result = Util.join('.', newParts as List<String>);
       }
     }
 
@@ -85,11 +84,11 @@ class Validator {
   }
 
   static String formatNull() {
-    return "NULL";
+    return 'NULL';
   }
 
   static String formatBoolean(bool value) {
-    return value ? "TRUE" : "FALSE";
+    return value ? 'TRUE' : 'FALSE';
   }
 
   static String formatNumber(num value) {
@@ -101,19 +100,19 @@ class Validator {
   }
 
   static String formatQueryBuilder(QueryBuilder value) {
-    return "(${value.toString()})";
+    return '(${value.toString()})';
   }
 
   static String formatExpression(Expression value) {
-    return "(${value.toString()})";
+    return '(${value.toString()})';
   }
 
   static String formatIterable(List values, QueryBuilderOptions options) {
-    final List<String> results = [];
+    final results = [];
     for (Object value in values) {
       results.add(formatValue(value, options));
     }
-    return "(${Util.join(', ', results)})";
+    return "(${Util.join(', ', results as List<String>)})";
   }
 
   static String formatArray(List<Object> values, QueryBuilderOptions options) {

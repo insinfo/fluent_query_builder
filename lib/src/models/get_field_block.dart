@@ -21,7 +21,7 @@ class GetFieldBlock extends Block {
   /// Add the given fields to the result.
   /// @param fields A collection of fields to add
   void setFields(Iterable<String> fields) {
-    for (String field in fields) {
+    for (var field in fields) {
       setField(field, null);
     }
   }
@@ -58,7 +58,7 @@ class GetFieldBlock extends Block {
     /// db.select().fields(['tablename.fieldname as f']).from('tablename') result in
     ///  SELECT "tablename"."fieldname" as "f" FROM tablename
     if (mOptions.allowAliasInFields) {
-      final reg = RegExp(r"\s+\b|\b\s");
+      final reg = RegExp(r'\s+\b|\b\s');
       if (fieldValue.contains(reg)) {
         fieldValue = fieldValue.replaceAll(' as ', ' ');
         fieldValue = fieldValue.replaceAll(reg, '" as "');
@@ -81,19 +81,19 @@ class GetFieldBlock extends Block {
     }
 
     if (mFields == null || mFields.isEmpty) {
-      return "*";
+      return '*';
     }
 
     final sb = StringBuffer();
-    for (FieldNode field in mFields) {
+    for (var field in mFields) {
       if (sb.length > 0) {
-        sb.write(", ");
+        sb.write(', ');
       }
 
       sb.write(field.name);
 
       if (!Util.isEmpty(field.alias)) {
-        sb.write(" AS ");
+        sb.write(' AS ');
         sb.write(field.alias);
       }
     }

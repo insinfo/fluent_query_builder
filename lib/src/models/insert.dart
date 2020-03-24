@@ -18,7 +18,7 @@ class Insert extends QueryBuilder {
   }) : super(
           options,
           [
-            StringBlock(options, "INSERT"),
+            StringBlock(options, 'INSERT'),
             IntoTableBlock(options), // 1
             InsertFieldValueBlock(options), // 2
             InsertFieldsFromQueryBlock(options) // 3
@@ -33,21 +33,21 @@ class Insert extends QueryBuilder {
 
   @override
   QueryBuilder into(String table) {
-    final IntoTableBlock block = mBlocks[1] as IntoTableBlock;
+    final block = mBlocks[1] as IntoTableBlock;
     block.setInto(table);
     return this;
   }
 
   @override
   QueryBuilder set(String field, value) {
-    final InsertFieldValueBlock block = mBlocks[2] as InsertFieldValueBlock;
+    final block = mBlocks[2] as InsertFieldValueBlock;
     block.setFieldValue(field, value);
     return this;
   }
 
   @override
   QueryBuilder fromQuery(Iterable<String> fields, QueryBuilder query) {
-    final InsertFieldsFromQueryBlock block = mBlocks[3] as InsertFieldsFromQueryBlock;
+    final block = mBlocks[3] as InsertFieldsFromQueryBlock;
     block.setFromQuery(fields, query);
     return this;
   }

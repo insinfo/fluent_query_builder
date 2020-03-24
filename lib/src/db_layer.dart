@@ -1,14 +1,12 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:postgres/postgres.dart';
 import 'connection_info.dart';
 import 'query_executors/postgre_sql_executor.dart';
 import 'query_executors/query_executor.dart';
 import 'models/query_builder.dart';
-import 'models/fluent_query.dart';
 
 import 'models/expression.dart';
-import 'models/query_builder.dart';
+
 import 'models/query_builder_options.dart';
 import 'models/select.dart';
 import 'models/update.dart';
@@ -181,9 +179,9 @@ class DBLayer {
       throw Exception('Is nessesary query');
     }
     final rows = await getAsMapWithMeta();
-    final List<Map<String, dynamic>> result = [];
+    final result = <Map<String, dynamic>>[];
     if (rows != null || rows.isNotEmpty) {
-      for (Map<String, Map<String, dynamic>> item in rows) {
+      for (var item in rows) {
         //Combine/merge multiple maps into 1 map
         result.add(item.values.reduce((map1, map2) => map1..addAll(map2)));
       }
@@ -197,6 +195,7 @@ class DBLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
+    //final List<Map<String, dynamic>> rows = await getAsMap();
     final rows = await getAsMap();
     if (rows != null) {
       if (rows.isNotEmpty) {

@@ -18,6 +18,6 @@ class IntoTableBlock extends Block {
   @override
   String buildStr(QueryBuilder queryBuilder) {
     assert(mTable != null && !Util.isEmpty(mTable));
-    return "INTO $mTable";
+    return 'INTO $mTable';
   }
 }

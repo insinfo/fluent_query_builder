@@ -2,7 +2,7 @@ import 'sort_order.dart';
 
 import 'expression.dart';
 import 'query_builder_options.dart';
-import 'table_block_base.dart';
+
 import 'query_builder.dart';
 import 'string_block.dart';
 import 'update_table_block.dart';
@@ -24,7 +24,7 @@ class Update extends QueryBuilder {
   }) : super(
           options,
           [
-            StringBlock(options, "UPDATE"),
+            StringBlock(options, 'UPDATE'),
             UpdateTableBlock(options), // 1
             SetFieldBlock(options), // 2
             WhereBlock(options), // 3
@@ -41,42 +41,42 @@ class Update extends QueryBuilder {
 
   @override
   QueryBuilder table(String table, {String alias}) {
-    final UpdateTableBlock block = mBlocks[1] as UpdateTableBlock;
+    final block = mBlocks[1] as UpdateTableBlock;
     block.setTable(table, alias);
     return this;
   }
 
   @override
   QueryBuilder set(String field, value) {
-    final SetFieldBlock block = mBlocks[2] as SetFieldBlock;
+    final block = mBlocks[2] as SetFieldBlock;
     block.setFieldValue(field, value);
     return this;
   }
 
   @override
   QueryBuilder where(String condition, [Object param]) {
-    final WhereBlock block = mBlocks[3] as WhereBlock;
+    final block = mBlocks[3] as WhereBlock;
     block.setWhere(condition, param);
     return this;
   }
 
   @override
   QueryBuilder whereExpr(Expression condition, [Object param]) {
-    final WhereBlock block = mBlocks[3] as WhereBlock;
+    final block = mBlocks[3] as WhereBlock;
     block.setWhereWithExpression(condition, param);
     return this;
   }
 
   @override
   QueryBuilder order(String field, {SortOrder dir = SortOrder.ASC}) {
-    final OrderByBlock block = mBlocks[4] as OrderByBlock;
+    final block = mBlocks[4] as OrderByBlock;
     block.setOrder(field, dir);
     return this;
   }
 
   @override
   QueryBuilder limit(int value) {
-    final LimitBlock block = mBlocks[5] as LimitBlock;
+    final block = mBlocks[5] as LimitBlock;
     block.setLimit(value);
     return this;
   }

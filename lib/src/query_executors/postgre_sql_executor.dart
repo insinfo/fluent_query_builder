@@ -6,7 +6,7 @@ import 'package:postgres/postgres.dart';
 
 /// A [QueryExecutor] that queries a PostgreSQL database.
 class PostgreSqlExecutor implements QueryExecutor {
-  PostgreSQLExecutionContext _connection;
+  final PostgreSQLExecutionContext _connection;
 
   /// An optional [Logger] to print information to.
   final Logger logger;
@@ -53,7 +53,9 @@ class PostgreSqlExecutor implements QueryExecutor {
     return _connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
   }
 
-  Future<dynamic> simpleTransaction(Future<dynamic> f(QueryExecutor connection)) async {
+  //Use generic function type syntax for parameters.
+  //Future<dynamic> f(QueryExecutor connection)
+  Future<dynamic> simpleTransaction(Future<dynamic> Function(QueryExecutor) f) async {
     logger?.fine('Entering simpleTransaction');
     if (_connection is! PostgreSQLConnection) {
       return await f(this);
@@ -142,8 +144,8 @@ class PostgreSqlExecutorPool implements QueryExecutor {
 
   /// Closes all connections.
   Future close() async {
-    _pool.close();
-    _connMutex.close();
+    await _pool.close();
+    await _connMutex.close();
     return Future.wait(_connections.map((c) => c.close()));
   }
 
@@ -152,14 +154,14 @@ class PostgreSqlExecutorPool implements QueryExecutor {
       final listCon = await Future.wait(
         List.generate(size, (_) async {
           logger?.fine('Spawning connections...');
-          final PostgreSQLConnection conn = connectionFactory();
+          final conn = connectionFactory();
 
           final executor = await conn.open().then((_) => PostgreSqlExecutor(conn, logger: logger));
 
           //isso executa uma query para definir os esquemas
           if (schemes != null && schemes.isNotEmpty) {
             final schs = schemes.map((i) => '"$i"').toList().join(', ');
-            await executor.query('user','set search_path to $schs;',{});
+            await executor.query('user', 'set search_path to $schs;', {});
           }
 
           return executor;
@@ -180,14 +182,14 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   Future<List<Map<String, Map<String, dynamic>>>> mappedResultsQuery(String query,
       {Map<String, dynamic> substitutionValues}) {
     return _pool.withResource(() async {
-      final PostgreSqlExecutor executor = await _next();
+      final executor = await _next();
       return executor.mappedResultsQuery(query, substitutionValues: substitutionValues);
     });
   }
 
   Future<int> execute(String query, {Map<String, dynamic> substitutionValues}) {
     return _pool.withResource(() async {
-      final PostgreSqlExecutor executor = await _next();
+      final executor = await _next();
       return executor.execute(query, substitutionValues: substitutionValues);
     });
   }
@@ -196,7 +198,7 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   Future<List<List>> query(String tableName, String query, Map<String, dynamic> substitutionValues,
       [List<String> returningFields]) {
     return _pool.withResource(() async {
-      final PostgreSqlExecutor executor = await _next();
+      final executor = await _next();
       return executor.query(tableName, query, substitutionValues, returningFields);
     });
   }

@@ -12,6 +12,6 @@ class DistinctBlock extends Block {
 
   @override
   String buildStr(QueryBuilder queryBuilder) {
-    return mIsDistinct ? "DISTINCT" : "";
+    return mIsDistinct ? 'DISTINCT' : '';
   }
 }

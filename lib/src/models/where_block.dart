@@ -1,9 +1,7 @@
 import 'block.dart';
-import 'dart:collection';
 import 'query_builder_options.dart';
 import 'query_builder.dart';
 import 'validator.dart';
-import 'util.dart';
 import 'expression.dart';
 
 class WhereNode {
@@ -29,8 +27,8 @@ class WhereBlock extends Block {
 
   void setWhereRaw(String whereRawSql) {
     assert(whereRawSql != null);
-    this.wheresRawSql ??= [];
-    this.wheresRawSql.add(whereRawSql);
+    wheresRawSql ??= [];
+    wheresRawSql.add(whereRawSql);
   }
 
   void setWhereWithExpression(Expression condition, param) {
@@ -45,27 +43,27 @@ class WhereBlock extends Block {
     if (wheresRawSql != null) {
       for (var whereRaw in wheresRawSql) {
         if (sb.length > 0) {
-          sb.write(" AND ");
+          sb.write(' AND ');
         }
 
         sb.write(whereRaw);
       }
-      return "WHERE $sb";
+      return 'WHERE $sb';
     }
 
     if (mWheres == null || mWheres.isEmpty) {
-      return "";
+      return '';
     }
 
-    for (WhereNode where in mWheres) {
+    for (var where in mWheres) {
       if (sb.length > 0) {
-        sb.write(") AND (");
+        sb.write(') AND (');
       }
 
-      sb.write(where.text.replaceAll("?", Validator.formatValue(where.param, mOptions)));
+      sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
     }
 
-    return "WHERE ($sb)";
+    return 'WHERE ($sb)';
   }
 
   void doSetWhere(String condition, param) {

@@ -1,4 +1,3 @@
-import 'block.dart';
 import 'query_builder_options.dart';
 import 'query_builder.dart';
 import 'set_field_block_base.dart';
@@ -12,17 +11,17 @@ class SetFieldBlock extends SetFieldBlockBase {
   String buildStr(QueryBuilder queryBuilder) {
     assert(mFields != null && mFields.isNotEmpty);
 
-    final StringBuffer sb = StringBuffer();
-    for (SetNode n in mFields) {
+    final sb = StringBuffer();
+    for (var n in mFields) {
       if (sb.length > 0) {
-        sb.write(", ");
+        sb.write(', ');
       }
 
       sb.write(n.field);
-      sb.write(" = ");
+      sb.write(' = ');
       sb.write(Validator.formatValue(n.value, mOptions));
     }
 
-    return "SET $sb";
+    return 'SET $sb';
   }
 }

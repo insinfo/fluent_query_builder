@@ -24,7 +24,7 @@ class Delete extends QueryBuilder {
   }) : super(
           options,
           [
-            StringBlock(options, "DELETE"),
+            StringBlock(options, 'DELETE'),
             FromTableBlock(options), // 1
             JoinBlock(options), // 2
             WhereBlock(options), // 3
@@ -40,42 +40,42 @@ class Delete extends QueryBuilder {
         );
   @override
   QueryBuilder from(String table, {String alias}) {
-    final FromTableBlock block = mBlocks[1] as FromTableBlock;
+    final block = mBlocks[1] as FromTableBlock;
     block.setFrom(table, alias);
     return this;
   }
 
   @override
   QueryBuilder where(String condition, [Object param]) {
-    final WhereBlock block = mBlocks[3] as WhereBlock;
+    final block = mBlocks[3] as WhereBlock;
     block.setWhere(condition, param);
     return this;
   }
 
   @override
   QueryBuilder whereExpr(Expression condition, [Object param]) {
-    final WhereBlock block = mBlocks[3] as WhereBlock;
+    final block = mBlocks[3] as WhereBlock;
     block.setWhereWithExpression(condition, param);
     return this;
   }
 
   @override
   QueryBuilder join(String joinTableName, String condition, {String alias, JoinType type = JoinType.INNER}) {
-    final JoinBlock block = mBlocks[2] as JoinBlock;
+    final block = mBlocks[2] as JoinBlock;
     block.setJoin(joinTableName, alias, condition, type);
     return this;
   }
 
   @override
   QueryBuilder joinWithSubQuery(QueryBuilder table, String condition, {String alias, JoinType type = JoinType.INNER}) {
-    final JoinBlock block = mBlocks[2] as JoinBlock;
+    final block = mBlocks[2] as JoinBlock;
     block.setJoinWithSubQuery(table, alias, condition, type);
     return this;
   }
 
   @override
   QueryBuilder joinWithExpression(String table, Expression condition, {String alias, JoinType type = JoinType.INNER}) {
-    final JoinBlock block = mBlocks[2] as JoinBlock;
+    final block = mBlocks[2] as JoinBlock;
     block.setJoinWithExpression(table, alias, condition, type);
     return this;
   }
@@ -83,21 +83,21 @@ class Delete extends QueryBuilder {
   @override
   QueryBuilder joinWithQueryExpr(QueryBuilder table, Expression condition,
       {String alias, JoinType type = JoinType.INNER}) {
-    final JoinBlock block = mBlocks[2] as JoinBlock;
+    final block = mBlocks[2] as JoinBlock;
     block.setJoinWithQueryWithExpr(table, alias, condition, type);
     return this;
   }
 
   @override
   QueryBuilder order(String field, {SortOrder dir = SortOrder.ASC}) {
-    final OrderByBlock block = mBlocks[4] as OrderByBlock;
+    final block = mBlocks[4] as OrderByBlock;
     block.setOrder(field, dir);
     return this;
   }
 
   @override
   QueryBuilder limit(int value) {
-    final LimitBlock block = mBlocks[5] as LimitBlock;
+    final block = mBlocks[5] as LimitBlock;
     block.setLimit(value);
     return this;
   }

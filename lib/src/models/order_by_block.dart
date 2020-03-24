@@ -27,20 +27,20 @@ class OrderByBlock extends Block {
   @override
   String buildStr(QueryBuilder queryBuilder) {
     if (mOrders == null || mOrders.isEmpty) {
-      return "";
+      return '';
     }
 
     final sb = StringBuffer();
-    for (OrderNode o in mOrders) {
+    for (var o in mOrders) {
       if (sb.length > 0) {
-        sb.write(", ");
+        sb.write(', ');
       }
 
       sb.write(o.field);
-      sb.write(" ");
+      sb.write(' ');
       sb.write(o.dir.toString());
     }
 
-    return "ORDER BY $sb";
+    return 'ORDER BY $sb';
   }
 }

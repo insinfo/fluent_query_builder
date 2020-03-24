@@ -49,28 +49,28 @@ class JoinBlock extends Block {
   @override
   String buildStr(QueryBuilder queryBuilder) {
     if (mJoins == null || mJoins.isEmpty) {
-      return "";
+      return '';
     }
 
     final sb = StringBuffer();
-    for (JoinNode j in mJoins) {
+    for (var j in mJoins) {
       if (sb.length > 0) {
-        sb.write(" ");
+        sb.write(' ');
       }
 
       sb.write(joinTypeToSql(j.type));
-      sb.write(" JOIN ");
+      sb.write(' JOIN ');
 
       if (j.table is String) {
         sb.write(j.table);
       } else {
-        sb.write("(");
+        sb.write('(');
         sb.write(j.table.toString());
-        sb.write(")");
+        sb.write(')');
       }
 
       if (!Util.isEmpty(j.alias)) {
-        sb.write(" ");
+        sb.write(' ');
         sb.write(j.alias);
       }
 
@@ -83,9 +83,9 @@ class JoinBlock extends Block {
         }
 
         if (!Util.isEmpty(conditionStr)) {
-          sb.write(" ON (");
+          sb.write(' ON (');
           sb.write(conditionStr);
-          sb.write(")");
+          sb.write(')');
         }
       }
     }

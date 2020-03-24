@@ -14,6 +14,6 @@ class LimitBlock extends Block {
 
   @override
   String buildStr(QueryBuilder queryBuilder) {
-    return mLimit != null ? "LIMIT $mLimit" : "";
+    return mLimit != null ? 'LIMIT $mLimit' : '';
   }
 }

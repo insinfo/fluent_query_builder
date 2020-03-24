@@ -9,7 +9,7 @@ class Util {
 
   static String join(String separator, Iterable<String> values) {
     final sb = StringBuffer();
-    for (String value in values) {
+    for (var value in values) {
       if (sb.length > 0) {
         sb.write(separator);
       }
@@ -20,7 +20,7 @@ class Util {
 
   static String joinNonEmpty(String separator, Iterable<String> values) {
     final sb = StringBuffer();
-    for (String value in values) {
+    for (var value in values) {
       if (!isEmpty(value)) {
         if (sb.length > 0) {
           sb.write(separator);

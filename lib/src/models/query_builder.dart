@@ -19,8 +19,10 @@ abstract class QueryBuilder {
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
   }) {
-    mOptions = options != null ? options : QueryBuilderOptions();
-    mBlocks = blocks != null ? blocks : [];
+    mOptions = options ?? QueryBuilderOptions();
+    //mOptions = options != null ? options : QueryBuilderOptions();
+    //mBlocks = blocks != null ? blocks : [];
+    mBlocks = blocks ?? [];
 
     _execFunc = execFunc;
     _firstAsMapFuncWithMeta = firstAsMapFuncWithMeta;
@@ -50,8 +52,8 @@ abstract class QueryBuilder {
 
   @override
   String toString() {
-    final List<String> results = [];
-    for (Block block in mBlocks) {
+    final results = <String>[];
+    for (var block in mBlocks) {
       results.add(block.buildStr(this));
     }
 
@@ -60,8 +62,8 @@ abstract class QueryBuilder {
 
   //isFirst used to add or replace limit 1 offset 0 in query string
   String toSql({bool isFirst = false}) {
-    final List<String> results = [];
-    for (Block block in mBlocks) {
+    final results = <String>[];
+    for (var block in mBlocks) {
       results.add(block.buildStr(this));
     }
     var result = Util.joinNonEmpty(mOptions.separator, results);
@@ -139,63 +141,63 @@ abstract class QueryBuilder {
   // DISTINCT
   //
   QueryBuilder distinct() {
-    throw UnsupportedOperationException("`distinct` not implemented");
+    throw UnsupportedOperationException('`distinct` not implemented');
   }
 
   //
   // FROM
   //
   QueryBuilder from(String table, {String alias}) {
-    throw UnsupportedOperationException("`from` not implemented");
+    throw UnsupportedOperationException('`from` not implemented');
   }
 
   QueryBuilder fromSubQuery(QueryBuilder table, {String alias}) {
-    throw UnsupportedOperationException("`fromSubQuery` not implemented");
+    throw UnsupportedOperationException('`fromSubQuery` not implemented');
   }
 
   //
   // GET FIELDS
   //
   QueryBuilder field(String field, {String alias}) {
-    throw UnsupportedOperationException("`fieldWithAlias` not implemented");
+    throw UnsupportedOperationException('`fieldWithAlias` not implemented');
   }
 
   QueryBuilder fieldSubQuery(QueryBuilder field, {String alias}) {
-    throw UnsupportedOperationException("`fieldSubQueryWithAlias` not implemented");
+    throw UnsupportedOperationException('`fieldSubQueryWithAlias` not implemented');
   }
 
   QueryBuilder fields(Iterable<String> fields) {
-    throw UnsupportedOperationException("`fields` not implemented");
+    throw UnsupportedOperationException('`fields` not implemented');
   }
 
   QueryBuilder fieldRaw(String setFieldRawSql) {
-    throw UnsupportedOperationException("`fieldRaw` not implemented");
+    throw UnsupportedOperationException('`fieldRaw` not implemented');
   }
 
   //
   // GROUP
   //
   QueryBuilder group(String field) {
-    throw UnsupportedOperationException("`group` not implemented");
+    throw UnsupportedOperationException('`group` not implemented');
   }
 
   QueryBuilder groups(Iterable<String> fields) {
-    throw UnsupportedOperationException("`groups` not implemented");
+    throw UnsupportedOperationException('`groups` not implemented');
   }
 
   QueryBuilder groupRaw(String groupRawSql) {
-    throw UnsupportedOperationException("`groupRaw` not implemented");
+    throw UnsupportedOperationException('`groupRaw` not implemented');
   }
 
   //
   // JOIN
   //
   QueryBuilder joinRaw(String sql) {
-    throw UnsupportedOperationException("`joinRaw` not implemented");
+    throw UnsupportedOperationException('`joinRaw` not implemented');
   }
 
   QueryBuilder join(String joinTableName, String condition, {String alias, JoinType type = JoinType.INNER}) {
-    throw UnsupportedOperationException("`join` not implemented");
+    throw UnsupportedOperationException('`join` not implemented');
   }
 
   QueryBuilder innerJoin(String joinTableName, String field1, String operator, String field2, {String alias}) {
@@ -211,90 +213,90 @@ abstract class QueryBuilder {
   }
 
   QueryBuilder joinWithSubQuery(QueryBuilder table, String condition, {String alias, JoinType type = JoinType.INNER}) {
-    throw UnsupportedOperationException("`joinWithSubQuery` not implemented");
+    throw UnsupportedOperationException('`joinWithSubQuery` not implemented');
   }
 
   QueryBuilder joinWithExpression(String table, Expression condition, {String alias, JoinType type = JoinType.INNER}) {
-    throw UnsupportedOperationException("`joinWithExpression` not implemented");
+    throw UnsupportedOperationException('`joinWithExpression` not implemented');
   }
 
   QueryBuilder joinWithQueryExpr(QueryBuilder table, Expression condition,
       {String alias, JoinType type = JoinType.INNER}) {
-    throw UnsupportedOperationException("`joinWithQueryExpr` not implemented");
+    throw UnsupportedOperationException('`joinWithQueryExpr` not implemented');
   }
 
   //
   // WHERE
   //
   QueryBuilder where(String condition, [Object param]) {
-    throw UnsupportedOperationException("`where` not implemented");
+    throw UnsupportedOperationException('`where` not implemented');
   }
 
   QueryBuilder whereExpr(Expression condition, [Object param]) {
-    throw UnsupportedOperationException("`whereExpr` not implemented");
+    throw UnsupportedOperationException('`whereExpr` not implemented');
   }
 
   QueryBuilder whereRaw(String whereRawSql) {
-    throw UnsupportedOperationException("`whereRaw` not implemented");
+    throw UnsupportedOperationException('`whereRaw` not implemented');
   }
 
   //
   // LIMIT
   //
   QueryBuilder limit(int value) {
-    throw UnsupportedOperationException("`limit` not implemented");
+    throw UnsupportedOperationException('`limit` not implemented');
   }
 
   //
   // ORDER BY
   //
   QueryBuilder order(String field, {SortOrder dir = SortOrder.ASC}) {
-    throw UnsupportedOperationException("`order` not implemented");
+    throw UnsupportedOperationException('`order` not implemented');
   }
 
   //
   // OFFSET
   //
   QueryBuilder offset(int value) {
-    throw UnsupportedOperationException("`offset` not implemented");
+    throw UnsupportedOperationException('`offset` not implemented');
   }
 
   //
   // UNION
   //
   QueryBuilder union(String table, UnionType unionType) {
-    throw UnsupportedOperationException("union not implemented");
+    throw UnsupportedOperationException('union not implemented');
   }
 
   QueryBuilder unionSubQuery(QueryBuilder table, UnionType unionType) {
-    throw UnsupportedOperationException("unionSubQuery not implemented");
+    throw UnsupportedOperationException('unionSubQuery not implemented');
   }
 
   //
   // TABLE
   //
   QueryBuilder table(String table, {String alias}) {
-    throw UnsupportedOperationException("`table` not implemented");
+    throw UnsupportedOperationException('`table` not implemented');
   }
 
   //
   // SET
   //
   QueryBuilder set(String field, value) {
-    throw UnsupportedOperationException("`set` not implemented");
+    throw UnsupportedOperationException('`set` not implemented');
   }
 
   //
   // INTO
   //
   QueryBuilder into(String table) {
-    throw UnsupportedOperationException("`into` not implemented");
+    throw UnsupportedOperationException('`into` not implemented');
   }
 
   //
   // `FROM QUERY`
   //
   QueryBuilder fromQuery(Iterable<String> fields, QueryBuilder query) {
-    throw UnsupportedOperationException("`fromQuery` not implemented");
+    throw UnsupportedOperationException('`fromQuery` not implemented');
   }
 }

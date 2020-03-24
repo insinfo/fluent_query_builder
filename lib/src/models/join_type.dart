@@ -11,24 +11,24 @@ String joinTypeToSql(JoinType type) {
   String result;
   switch (type) {
     case JoinType.LEFT:
-      result = "LEFT";
+      result = 'LEFT';
       break;
 
     case JoinType.RIGHT:
-      result = "RIGHT";
+      result = 'RIGHT';
       break;
 
     case JoinType.FULL:
-      result = "FULL";
+      result = 'FULL';
       break;
 
     case JoinType.CROSS:
-      result = "CROSS";
+      result = 'CROSS';
       break;
 
     case JoinType.INNER:
     default:
-      result = "INNER";
+      result = 'INNER';
       break;
   }
 

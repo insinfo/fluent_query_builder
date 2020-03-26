@@ -9,3 +9,7 @@
 ## 1.0.1
 
 - fix dartfmt 
+
+## 1.0.5
+
+- remove static DBLayer db conection

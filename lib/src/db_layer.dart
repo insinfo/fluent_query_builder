@@ -14,7 +14,7 @@ import 'models/insert.dart';
 import 'models/delete.dart';
 
 class DBLayer {
-  static PostgreSqlExecutorPool executor;
+  PostgreSqlExecutorPool executor;
   QueryBuilder currentQuery;
 
   DBLayer() {
@@ -22,7 +22,7 @@ class DBLayer {
   }
   //Platform.numberOfProcessors
 
-  static Future<DBLayer> connect(DBConnectionInfo connectionInfo) async {
+  Future<DBLayer> connect(DBConnectionInfo connectionInfo) async {
     executor = PostgreSqlExecutorPool(
       1,
       () {
@@ -137,8 +137,7 @@ class DBLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
-    final rows = await executor
-        .mappedResultsQuery(currentQuery.toSql(), substitutionValues: {});
+    final rows = await executor.mappedResultsQuery(currentQuery.toSql(), substitutionValues: {});
     return rows;
   }
 

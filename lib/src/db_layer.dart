@@ -14,14 +14,17 @@ import 'models/update.dart';
 import 'models/insert.dart';
 import 'models/delete.dart';
 
+import 'orm_model_base.dart';
+
 class DbLayer {
   PostgreSqlExecutorPool executor;
   QueryBuilder currentQuery;
+  final Map<Type, Function> factory; // = <Type, Function>{};
+  //ex: DiskCache<Agenda>(factories: {Agenda: (x) => Agenda.fromJson(x)});
 
-  DbLayer() {
+  DbLayer({this.factory}) {
     //currentQuery = Select(QueryBuilderOptions());
   }
-  //
 
   Future<DbLayer> connect(DBConnectionInfo connectionInfo) async {
     var nOfProces = connectionInfo.setNumberOfProcessorsFromPlatform
@@ -29,7 +32,7 @@ class DbLayer {
         : connectionInfo.numberOfProcessors;
 
     //Todo implementar
-    //se connectionInfo.driver for pgsql chama PostgreSqlExecutorPool 
+    //se connectionInfo.driver for pgsql chama PostgreSqlExecutorPool
     //se for mysql chama  MySqlExecutor
     executor = PostgreSqlExecutorPool(
       nOfProces,
@@ -81,6 +84,8 @@ class DbLayer {
       getAsMapFuncWithMeta: getAsMapWithMeta,
       getAsMapFunc: getAsMap,
       firstAsMapFunc: firstAsMap,
+      fetchAllFunc: fetchAll,
+      fetchSingleFunc: fetchSingle,
     );
   }
 
@@ -103,15 +108,14 @@ class DbLayer {
   /// @param options Options to use for query generation.
   /// @return QueryBuilder
   QueryBuilder insert({QueryBuilderOptions options}) {
-    return currentQuery = Insert(
-      options,
-      execFunc: exec,
-      firstFunc: first,
-      firstAsMapFuncWithMeta: firstAsMapWithMeta,
-      getAsMapFuncWithMeta: getAsMapWithMeta,
-      getAsMapFunc: getAsMap,
-      firstAsMapFunc: firstAsMap,
-    );
+    return currentQuery = Insert(options,
+        execFunc: exec,
+        firstFunc: first,
+        firstAsMapFuncWithMeta: firstAsMapWithMeta,
+        getAsMapFuncWithMeta: getAsMapWithMeta,
+        getAsMapFunc: getAsMap,
+        firstAsMapFunc: firstAsMap,
+        putSingleFunc: putSingle);
   }
 
   /// Starts the DELETE-query with the provided options.
@@ -133,7 +137,7 @@ class DbLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
-    final rows = await executor.query('users', currentQuery.toSql(), {});
+    final rows = await executor.query(currentQuery.toSql(), {});
     return rows;
   }
 
@@ -222,5 +226,53 @@ class DbLayer {
 
   Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) {
     return executor.transaction<T>(f);
+  }
+
+  Future<List<T>> fetchAll<T>() async {
+    List<Map<String, dynamic>> records = await getAsMap();
+
+    if (factory == null) {
+      throw Exception('QueryBuilder@fetchAll factory not defined');
+    }
+
+    final list = <T>[];
+    if (records != null) {
+      if (records.isNotEmpty) {
+        for (Map<String, dynamic> item in records) {
+          list.add(factory[T](item));
+        }
+      }
+    }
+    return list;
+  }
+
+  Future<T> fetchSingle<T>() async {
+    if (factory == null) {
+      throw Exception('QueryBuilder@fetchSingle factory not defined');
+    }
+    Map<String, dynamic> record = await firstAsMap();
+
+    if (record != null) {
+      return factory[T](record);
+    }
+    return null;
+  }
+
+  Future putSingle<T>(T entity) async {
+    if (entity == null) {
+      throw Exception('QueryBuilder@putSingle entity not defined');
+    }
+    if (entity != null) {
+      var db = insert();
+      var model = entity as OrmModelBase;
+      var map = model.toMap();
+
+      map.forEach((key, value) {
+        db.set(key, value);
+      });
+
+      db.into(model.tableName);
+      await db.exec();
+    }
   }
 }

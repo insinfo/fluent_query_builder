@@ -6,6 +6,10 @@ export 'src/query_executors/postgre_sql_executor.dart';
 export 'src/db_layer.dart';
 export 'src/connection_info.dart';
 
+
+export 'src/orm_model_base.dart';
+
+//models
 export 'src/models/block.dart';
 export 'src/models/delete.dart';
 export 'src/models/distinct_block.dart';

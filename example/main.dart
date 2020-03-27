@@ -9,24 +9,17 @@ void main() {
     username: 'sisadmin',
     password: 's1sadm1n',
     charset: 'utf8',
-    schemes: [
-      'pmro_padrao',
-      'jubarte',
-      'ciente',
-      'portal_rh',
-      'jubarte_app',
-      'faq'
-    ],
+    schemes: ['riodasostrasapp'],
   );
 
-  DBLayer().connect(com).then((db) {
+  /*DbLayer().connect(com).then((db) {
     final query = db
         .select()
         //.fields(['login', 'idSistema', 's.sigla'])
         //.fieldRaw('DISTINCT jubarte.sistemas.sigla as')
         //.from('usuarios', alias: 't')
-      //  .leftJoin('sistemas', 's.id', '=', 't."idSistema"', alias: 's')
-       // .whereRaw("login='isaque.neves'")
+        //  .leftJoin('sistemas', 's.id', '=', 't."idSistema"', alias: 's')
+        // .whereRaw("login='isaque.neves'")
         // .whereRaw("s.id='8'")
         // .where("login=?", 'isaque.neves')
         /*.group('login')
@@ -39,5 +32,47 @@ void main() {
     query.firstAsMap().then((onValue) {
       print(onValue);
     });
+  });*/
+
+  DbLayer(factory: {Usuario: (x) => Usuario.fromMap(x)}).connect(com).then((db) {
+    final query = db.select().from(Usuario().tableName);
+
+    query.fetchAll<Usuario>().then((onValue) {
+      print(onValue);
+    });
   });
+}
+
+class Usuario implements OrmModelBase {
+  Usuario({this.username});
+
+  Usuario.fromMap(Map<String, dynamic> map) {
+    id = map['id'] as int;
+    username = map['username'] as String;
+    password = map['password'] as String;
+    ativo = map['ativo'] as bool;
+    idPerfil = map['idPerfil'] as int;
+  }
+
+  int id;
+  String username;
+  String password;
+  bool ativo;
+  int idPerfil;
+
+  @override
+  Map<String, dynamic> toMap() {
+    final Map<String, dynamic> data = Map<String, dynamic>();
+    if (id != null) {
+      data['id'] = id;
+    }
+    data['username'] = username;
+    data['password'] = password;
+    data['ativo'] = ativo;
+    data['idPerfil'] = idPerfil;
+    return data;
+  }
+
+  @override
+  String get tableName => 'usuarios';
 }

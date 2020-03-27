@@ -1,4 +1,5 @@
 abstract class OrmModelBase {
+  String get tableName;
   Map<String, dynamic> toMap();
   //T fromMap(Map<String, dynamic> json);
   /// Todo implementar

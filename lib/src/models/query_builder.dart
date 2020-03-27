@@ -20,6 +20,9 @@ abstract class QueryBuilder {
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
+    Future<List<T>> Function<T>() fetchAllFunc,
+    Future<T> Function<T>() fetchSingleFunc,
+    Future Function<T>(T entity) putSingleFunc,
   }) {
     mOptions = options ?? QueryBuilderOptions();
     //mOptions = options != null ? options : QueryBuilderOptions();
@@ -32,6 +35,9 @@ abstract class QueryBuilder {
     _firstFunc = firstFunc;
     _firstAsMapFunc = firstAsMapFunc;
     _getAsMapFunc = getAsMapFunc;
+    _fetchAllFunc = fetchAllFunc;
+    _fetchSingleFunc = fetchSingleFunc;
+    _putSingleFunc = putSingleFunc;
   }
   QueryBuilderOptions mOptions;
   List<Block> mBlocks;
@@ -42,13 +48,16 @@ abstract class QueryBuilder {
   Future<Map<String, dynamic>> Function() _firstAsMapFunc;
   Future<List<Map<String, dynamic>>> Function() _getAsMapFunc;
   Future<List> Function() _firstFunc;
+  Future<List<T>> Function<T>() _fetchAllFunc;
+  Future<T> Function<T>() _fetchSingleFunc;
+  Future Function<T>(T entity) _putSingleFunc;
 
   bool isQuery() {
     if (mBlocks == null) {
       return false;
     } else if (mBlocks.isEmpty) {
       return false;
-    } 
+    }
     return true;
   }
 
@@ -152,6 +161,30 @@ abstract class QueryBuilder {
       throw Exception('QueryBuilder@firstAsMap firstAsMapFunc not defined');
     }
     return _firstAsMapFunc();
+  }
+
+  Future<List<T>> fetchAll<T>() async {
+    if (_fetchAllFunc == null) {
+      throw Exception('QueryBuilder@fetchAll _fetchAllFunc not defined');
+    }
+    //throw UnsupportedOperationException('`fetchAll` not implemented');
+    return _fetchAllFunc();
+  }
+
+  Future<T> fetchSingle<T>() async {
+    if (_fetchSingleFunc == null) {
+      throw Exception('QueryBuilder@fetchSingle _fetchSingleFunc not defined');
+    }
+    //throw UnsupportedOperationException('`fetchSingle` not implemented');
+    return _fetchSingleFunc();
+  }
+
+  Future putSingle<T>(T entity) async {
+    if (_putSingleFunc == null) {
+      throw Exception('QueryBuilder@putSingle _putSingleFunc not defined');
+    }
+    //throw UnsupportedOperationException('`putSingle` not implemented');
+    return _putSingleFunc(entity);
   }
 
   //

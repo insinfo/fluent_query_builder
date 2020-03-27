@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:postgres/postgres.dart';
 import 'connection_info.dart';
 import 'query_executors/postgre_sql_executor.dart';
@@ -13,18 +14,25 @@ import 'models/update.dart';
 import 'models/insert.dart';
 import 'models/delete.dart';
 
-class DBLayer {
+class DbLayer {
   PostgreSqlExecutorPool executor;
   QueryBuilder currentQuery;
 
-  DBLayer() {
+  DbLayer() {
     //currentQuery = Select(QueryBuilderOptions());
   }
-  //Platform.numberOfProcessors
+  //
 
-  Future<DBLayer> connect(DBConnectionInfo connectionInfo) async {
+  Future<DbLayer> connect(DBConnectionInfo connectionInfo) async {
+    var nOfProces = connectionInfo.setNumberOfProcessorsFromPlatform
+        ? Platform.numberOfProcessors
+        : connectionInfo.numberOfProcessors;
+
+    //Todo implementar
+    //se connectionInfo.driver for pgsql chama PostgreSqlExecutorPool 
+    //se for mysql chama  MySqlExecutor
     executor = PostgreSqlExecutorPool(
-      1,
+      nOfProces,
       () {
         return PostgreSQLConnection(
           connectionInfo.host,
@@ -51,7 +59,7 @@ class DBLayer {
       await executor.query('users', 'set search_path to $schemas;', {});
     }*/
 
-    return DBLayer();
+    return this;
   }
 
   /// Starts a new expression with the provided options.

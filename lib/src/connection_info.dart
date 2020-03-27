@@ -1,15 +1,18 @@
 class DBConnectionInfo {
-  DBConnectionInfo(
-      {this.driver,
-      this.host,
-      this.port,
-      this.database,
-      this.username,
-      this.password,
-      this.charset,
-      this.schemes,
-      this.prefix,
-      this.sslmode});
+  DBConnectionInfo({
+    this.driver,
+    this.host,
+    this.port,
+    this.database,
+    this.username,
+    this.password,
+    this.charset,
+    this.schemes,
+    this.prefix,
+    this.sslmode,
+    this.numberOfProcessors = 1,
+    this.setNumberOfProcessorsFromPlatform = false,
+  });
   String prefix = '';
   String sslmode = 'prefer';
   String driver = 'pgsql';
@@ -20,4 +23,6 @@ class DBConnectionInfo {
   String password = '';
   String charset = 'utf8';
   List<String> schemes = ['public'];
+  int numberOfProcessors = 1;
+  bool setNumberOfProcessorsFromPlatform = false;
 }

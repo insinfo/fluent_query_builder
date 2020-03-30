@@ -3,12 +3,14 @@ class QueryBuilderOptions {
   bool autoQuoteFieldNames = true;
   bool autoQuoteAliasNames = true;
   bool replaceSingleQuotes = false;
+  bool replaceDoubleQuotes = false;
   bool ignorePeriodsForFieldNameQuotes = false;
-  bool dontQuote = false;
+  bool dontQuote = true;
   String nameQuoteCharacter = '"';
   String tableAliasQuoteCharacter = '"';
   String fieldAliasQuoteCharacter = '"';
-  String singleQuoteReplacement = "\'";
+  String singleQuoteReplacement = "''";
+  String doubleQuoteReplacement = '""';
   String separator = ' ';
 
   /// quote table and field string with dot, example:

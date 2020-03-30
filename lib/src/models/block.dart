@@ -9,4 +9,9 @@ abstract class Block {
 
   QueryBuilderOptions mOptions;
   String buildStr(QueryBuilder queryBuilder);
+
+  Map<String, dynamic> buildSubstitutionValues() {
+    //throw Exception('Block@buildSubstitutionValues not implemented exception');
+    return {};
+  }
 }

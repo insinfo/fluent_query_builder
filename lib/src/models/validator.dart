@@ -9,9 +9,7 @@ class Validator {
 
   static String sanitizeFieldAlias(String value, QueryBuilderOptions options) {
     var result = options.autoQuoteAliasNames
-        ? options.fieldAliasQuoteCharacter +
-            value +
-            options.fieldAliasQuoteCharacter
+        ? options.fieldAliasQuoteCharacter + value + options.fieldAliasQuoteCharacter
         : value;
 
     return result;
@@ -31,7 +29,7 @@ class Validator {
       } else {
         // a.b.c -> `a`.`b`.`c`
         final parts = value.split('\\.');
-        final newParts = [];
+        final newParts = <String>[];
         for (var part in parts) {
           // treat '*' as special case
           if (part == '*') {
@@ -40,7 +38,7 @@ class Validator {
             newParts.add(quoteChar + part + quoteChar);
           }
         }
-        result = Util.join('.', newParts as List<String>);
+        result = Util.join('.', newParts);
       }
     }
 
@@ -48,17 +46,13 @@ class Validator {
   }
 
   static String sanitizeTable(String name, QueryBuilderOptions options) {
-    return options.autoQuoteTableNames
-        ? options.nameQuoteCharacter + name + options.nameQuoteCharacter
-        : name;
+    return options.autoQuoteTableNames ? options.nameQuoteCharacter + name + options.nameQuoteCharacter : name;
   }
 
   static String sanitizeTableAlias(String value, QueryBuilderOptions options) {
     return value != null
         ? (options.autoQuoteAliasNames
-            ? options.tableAliasQuoteCharacter +
-                value +
-                options.tableAliasQuoteCharacter
+            ? options.tableAliasQuoteCharacter + value + options.tableAliasQuoteCharacter
             : value)
         : null;
   }
@@ -86,17 +80,18 @@ class Validator {
   }
 
   static String escapeValue(String value, QueryBuilderOptions options) {
-    return options.replaceSingleQuotes
-        ? value.replaceAll("'", options.singleQuoteReplacement)
-        : value;
+    if (value == null) {
+      return null;
+    }
+    return options.replaceSingleQuotes ? value.replaceAll("'", options.singleQuoteReplacement) : value;
   }
 
   static String formatNull() {
-    return 'NULL';
+    return null;
   }
 
   static String formatBoolean(bool value) {
-    return value ? 'TRUE' : 'FALSE';
+    return value ? 't' : 'f';
   }
 
   static String formatNumber(num value) {
@@ -104,7 +99,7 @@ class Validator {
   }
 
   static String formatString(String value, QueryBuilderOptions options) {
-    return options.dontQuote ? value : "'${escapeValue(value, options)}'";
+    return options.dontQuote ? value : "'${escapeValue(value, options)}'";   
   }
 
   static String formatQueryBuilder(QueryBuilder value) {

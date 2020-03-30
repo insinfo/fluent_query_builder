@@ -48,7 +48,7 @@ void main() {
 
 ```
 
-A simple ORM usage example:
+A simple beta pre ORM usage example:
 
 ```dart
 import 'package:fluent_query_builder/fluent_query_builder.dart';
@@ -88,7 +88,7 @@ class Usuario implements OrmModelBase {
 }
 
 void main() {
-  //configura a conexão
+  //connection settings
   final com = DBConnectionInfo(
     host: '192.168.133.13',
     database: 'sistemas',
@@ -99,13 +99,20 @@ void main() {
     schemes: ['riodasostrasapp'],
   );
   
-  DbLayer(factory: {Usuario: (x) => Usuario.fromMap(x)}).connect(com).then((db) {
-    final query = db.select().from(Usuario().tableName);
-    //get list of Usuario
-    query.fetchAll<Usuario>().then((onValue) {
-      print(onValue);
-      //result [Instance of 'Usuario', Instance of 'Usuario', Instance of 'Usuario',...]
+  //connect on database and set factories for construct instance of model
+   DbLayer(factories: [
+    {Usuario: (x) => Usuario.fromMap(x)}
+  ]).connect(com).then((db) {
+    //insert Usuario
+    db.putSingle<Usuario>(Usuario(username: 'jon.doe', password: '123456'));
+    //update Usuario
+    db.update().where('id=?', 20).updateSingle<Usuario>(Usuario(username: 'jon.doe', password: '987'));
+    //select Usuario
+    db.select().from(Usuario().tableName).where('id>?', 2).fetchAll<Usuario>().then((result) {
+      print(result);
     });
+    //delete Usuario
+    db.delete().deleteSingle<Usuario>(Usuario(id: 20, username: 'jon.doe', password: '123456'));
   });
 }
 

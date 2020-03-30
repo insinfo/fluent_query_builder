@@ -20,9 +20,11 @@ abstract class QueryBuilder {
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
-    Future<List<T>> Function<T>() fetchAllFunc,
-    Future<T> Function<T>() fetchSingleFunc,
+    Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory]) fetchAllFunc,
+    Future<T> Function<T>([T Function(Map<String, dynamic>) factory]) fetchSingleFunc,
     Future Function<T>(T entity) putSingleFunc,
+    Future Function<T>(T entity, [QueryBuilder queryBuilder]) updateSingleFunc,
+    Future Function<T>(T entity, [QueryBuilder queryBuilder]) deleteSingleFunc,
   }) {
     mOptions = options ?? QueryBuilderOptions();
     //mOptions = options != null ? options : QueryBuilderOptions();
@@ -38,6 +40,8 @@ abstract class QueryBuilder {
     _fetchAllFunc = fetchAllFunc;
     _fetchSingleFunc = fetchSingleFunc;
     _putSingleFunc = putSingleFunc;
+    _updateSingleFunc = updateSingleFunc;
+    _deleteSingleFunc = deleteSingleFunc;
   }
   QueryBuilderOptions mOptions;
   List<Block> mBlocks;
@@ -48,9 +52,11 @@ abstract class QueryBuilder {
   Future<Map<String, dynamic>> Function() _firstAsMapFunc;
   Future<List<Map<String, dynamic>>> Function() _getAsMapFunc;
   Future<List> Function() _firstFunc;
-  Future<List<T>> Function<T>() _fetchAllFunc;
-  Future<T> Function<T>() _fetchSingleFunc;
+  Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory]) _fetchAllFunc;
+  Future<T> Function<T>([T Function(Map<String, dynamic>) factory]) _fetchSingleFunc;
   Future Function<T>(T entity) _putSingleFunc;
+  Future Function<T>(T entity, [QueryBuilder queryBuilder]) _updateSingleFunc;
+  Future Function<T>(T entity, [QueryBuilder queryBuilder]) _deleteSingleFunc;
 
   bool isQuery() {
     if (mBlocks == null) {
@@ -109,6 +115,14 @@ abstract class QueryBuilder {
     return result;
   }
 
+  Map<String, dynamic> buildSubstitutionValues() {
+    final result = <String, dynamic>{};
+    for (var block in mBlocks) {
+      result.addAll(block.buildSubstitutionValues());
+    }
+    return result;
+  }
+
   //
   // EXECUTE QUERY AND GET DATA FROM DATABASE
   //
@@ -163,20 +177,20 @@ abstract class QueryBuilder {
     return _firstAsMapFunc();
   }
 
-  Future<List<T>> fetchAll<T>() async {
+  Future<List<T>> fetchAll<T>([T Function(Map<String, dynamic>) factory]) async {
     if (_fetchAllFunc == null) {
       throw Exception('QueryBuilder@fetchAll _fetchAllFunc not defined');
     }
     //throw UnsupportedOperationException('`fetchAll` not implemented');
-    return _fetchAllFunc();
+    return _fetchAllFunc(factory);
   }
 
-  Future<T> fetchSingle<T>() async {
+  Future<T> fetchSingle<T>([T Function(Map<String, dynamic>) factory]) async {
     if (_fetchSingleFunc == null) {
       throw Exception('QueryBuilder@fetchSingle _fetchSingleFunc not defined');
     }
     //throw UnsupportedOperationException('`fetchSingle` not implemented');
-    return _fetchSingleFunc();
+    return _fetchSingleFunc(factory);
   }
 
   Future putSingle<T>(T entity) async {
@@ -185,6 +199,14 @@ abstract class QueryBuilder {
     }
     //throw UnsupportedOperationException('`putSingle` not implemented');
     return _putSingleFunc(entity);
+  }
+
+  Future updateSingle<T>(T entity, [QueryBuilder queryBuilder]) {
+    throw UnsupportedOperationException('`updateSingle` not implemented');
+  }
+
+  Future deleteSingle<T>(T entity, [QueryBuilder queryBuilder]) {
+    throw UnsupportedOperationException('`deleteSingle` not implemented');
   }
 
   //

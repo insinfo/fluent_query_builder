@@ -1,3 +1,5 @@
+import '../../fluent_query_builder.dart';
+
 import 'sort_order.dart';
 
 import 'expression.dart';
@@ -17,11 +19,11 @@ class Update extends QueryBuilder {
     QueryBuilderOptions options, {
     Future<List<List>> Function() execFunc,
     Future<Map<String, Map<String, dynamic>>> Function() firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String, dynamic>>>> Function()
-        getAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String, dynamic>>>> Function() getAsMapFuncWithMeta,
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
+    this.updateSingleFunc,
   }) : super(
           options,
           [
@@ -38,13 +40,21 @@ class Update extends QueryBuilder {
           firstFunc: firstFunc,
           firstAsMapFunc: firstAsMapFunc,
           getAsMapFunc: getAsMapFunc,
+         // updateSingleFunc: updateSingleFunc,
         );
+
+  Future Function<T>(T entity, [QueryBuilder queryBuilder]) updateSingleFunc;
 
   @override
   QueryBuilder table(String table, {String alias}) {
     final block = mBlocks[1] as UpdateTableBlock;
     block.setTable(table, alias);
     return this;
+  }
+
+  @override
+  Future updateSingle<T>(T entity, [QueryBuilder queryBuilder]) {
+    return updateSingleFunc(entity, this);
   }
 
   @override

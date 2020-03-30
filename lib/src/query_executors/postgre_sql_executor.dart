@@ -35,7 +35,9 @@ class PostgreSqlExecutor implements QueryExecutor {
 
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
-
+    //print('Query ${query}');
+    //print('Values ${substitutionValues}');
+    
     return _connection.query(query, substitutionValues: substitutionValues);
   }
 

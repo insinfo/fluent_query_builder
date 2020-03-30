@@ -27,8 +27,8 @@ class Select extends QueryBuilder {
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
-    Future<List<T>> Function<T>() fetchAllFunc,
-    Future<T> Function<T>() fetchSingleFunc,
+    Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory]) fetchAllFunc,
+    Future<T> Function<T>([T Function(Map<String, dynamic>) factory]) fetchSingleFunc,
   }) : super(
           options,
           [

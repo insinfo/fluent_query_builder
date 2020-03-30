@@ -7,7 +7,7 @@ export 'src/db_layer.dart';
 export 'src/connection_info.dart';
 
 
-export 'src/orm_model_base.dart';
+export 'src/fluent_model_base.dart';
 
 //models
 export 'src/models/block.dart';

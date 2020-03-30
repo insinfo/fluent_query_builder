@@ -13,3 +13,7 @@
 ## 1.0.5
 
 - remove static DBLayer db conection
+
+## 1.0.11
+
+- refactor and overall bug fixes

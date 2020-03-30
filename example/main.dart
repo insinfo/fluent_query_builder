@@ -34,17 +34,24 @@ void main() {
     });
   });*/
 
-  DbLayer(factory: {Usuario: (x) => Usuario.fromMap(x)}).connect(com).then((db) {
-    final query = db.select().from(Usuario().tableName);
-
-    query.fetchAll<Usuario>().then((onValue) {
-      print(onValue);
+  DbLayer(factories: [
+    {Usuario: (x) => Usuario.fromMap(x)}
+  ]).connect(com).then((db) {
+    //insert Usuario
+    db.putSingle<Usuario>(Usuario(username: 'jon.doe', password: '123456'));
+    //update Usuario
+    db.update().where('id=?', 20).updateSingle<Usuario>(Usuario(username: 'jon.doe', password: '987'));
+    //select Usuario
+    db.select().from(Usuario().tableName).where('id>?', 2).fetchAll<Usuario>().then((result) {
+      print(result);
     });
+    //delete Usuario
+    db.delete().deleteSingle<Usuario>(Usuario(id: 20, username: 'jon.doe', password: '123456'));
   });
 }
 
-class Usuario implements OrmModelBase {
-  Usuario({this.username});
+class Usuario implements FluentModelBase {
+  Usuario({this.id, this.username, this.password, this.idPerfil});
 
   Usuario.fromMap(Map<String, dynamic> map) {
     id = map['id'] as int;
@@ -52,6 +59,11 @@ class Usuario implements OrmModelBase {
     password = map['password'] as String;
     ativo = map['ativo'] as bool;
     idPerfil = map['idPerfil'] as int;
+  }
+
+  @override
+  Usuario fromMap(Map<String, dynamic> map) {
+    return Usuario.fromMap(map);
   }
 
   int id;
@@ -75,4 +87,10 @@ class Usuario implements OrmModelBase {
 
   @override
   String get tableName => 'usuarios';
+
+  @override
+  String get primaryKey => 'id';
+
+  @override
+  dynamic get primaryKeyVal => id;
 }

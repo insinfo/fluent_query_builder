@@ -14,15 +14,15 @@ import 'models/update.dart';
 import 'models/insert.dart';
 import 'models/delete.dart';
 
-import 'orm_model_base.dart';
+import 'fluent_model_base.dart';
 
 class DbLayer {
   PostgreSqlExecutorPool executor;
   QueryBuilder currentQuery;
-  final Map<Type, Function> factory; // = <Type, Function>{};
+  final List<Map<Type, Function>> factories; // = <Type, Function>{};
   //ex: DiskCache<Agenda>(factories: {Agenda: (x) => Agenda.fromJson(x)});
-
-  DbLayer({this.factory}) {
+  //{this.factory}
+  DbLayer({this.factories}) {
     //currentQuery = Select(QueryBuilderOptions());
   }
 
@@ -84,8 +84,8 @@ class DbLayer {
       getAsMapFuncWithMeta: getAsMapWithMeta,
       getAsMapFunc: getAsMap,
       firstAsMapFunc: firstAsMap,
-      fetchAllFunc: fetchAll,
-      fetchSingleFunc: fetchSingle,
+      fetchAllFunc: _fetchAll,
+      fetchSingleFunc: _fetchSingle,
     );
   }
 
@@ -101,6 +101,7 @@ class DbLayer {
       getAsMapFuncWithMeta: getAsMapWithMeta,
       getAsMapFunc: getAsMap,
       firstAsMapFunc: firstAsMap,
+      updateSingleFunc: _updateSingle,
     );
   }
 
@@ -121,7 +122,7 @@ class DbLayer {
   /// Starts the DELETE-query with the provided options.
   /// @param options Options to use for query generation.
   /// @return QueryBuilder
-  QueryBuilder delete(QueryBuilderOptions options) {
+  QueryBuilder delete({QueryBuilderOptions options}) {
     return currentQuery = Delete(
       options,
       execFunc: exec,
@@ -130,6 +131,7 @@ class DbLayer {
       getAsMapFuncWithMeta: getAsMapWithMeta,
       getAsMapFunc: getAsMap,
       firstAsMapFunc: firstAsMap,
+      deleteSingleFunc: _deleteSingle,
     );
   }
 
@@ -137,7 +139,8 @@ class DbLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
-    final rows = await executor.query(currentQuery.toSql(), {});
+
+    final rows = await executor.query(currentQuery.toSql(), currentQuery.buildSubstitutionValues());
     return rows;
   }
 
@@ -147,7 +150,7 @@ class DbLayer {
 
   Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta() async {
     if (!currentQuery.isQuery()) {
-      throw Exception('Is nessesary query');
+      throw Exception('Dblayer@getAsMapWithMeta Is nessesary query');
     }
     final rows = await executor.mappedResultsQuery(currentQuery.toSql(), substitutionValues: {});
     return rows;
@@ -155,7 +158,7 @@ class DbLayer {
 
   Future<List> first() async {
     if (!currentQuery.isQuery()) {
-      throw Exception('Is nessesary query');
+      throw Exception('Dblayer@first Is nessesary query');
     }
     final rows = await get();
 
@@ -172,7 +175,7 @@ class DbLayer {
 
   Future<Map<String, Map<String, dynamic>>> firstAsMapWithMeta() async {
     if (!currentQuery.isQuery()) {
-      throw Exception('Is nessesary query');
+      throw Exception('Dblayer@firstAsMapWithMeta Is nessesary query');
     }
     final rows = await getAsMapWithMeta();
     if (rows != null) {
@@ -188,7 +191,7 @@ class DbLayer {
 
   Future<List<Map<String, dynamic>>> getAsMap() async {
     if (!currentQuery.isQuery()) {
-      throw Exception('Is nessesary query');
+      throw Exception('Dblayer@getAsMap Is nessesary query');
     }
     final rows = await getAsMapWithMeta();
     final result = <Map<String, dynamic>>[];
@@ -205,7 +208,7 @@ class DbLayer {
 
   Future<Map<String, dynamic>> firstAsMap() async {
     if (!currentQuery.isQuery()) {
-      throw Exception('Is nessesary query');
+      throw Exception('Dblayer@firstAsMap Is nessesary query');
     }
     //final List<Map<String, dynamic>> rows = await getAsMap();
     final rows = await getAsMap();
@@ -228,43 +231,66 @@ class DbLayer {
     return executor.transaction<T>(f);
   }
 
-  Future<List<T>> fetchAll<T>() async {
-    List<Map<String, dynamic>> records = await getAsMap();
+  //
+  Future<List<T>> _fetchAll<T>([T Function(Map<String, dynamic>) factory]) async {
+    var records = await getAsMap();
 
-    if (factory == null) {
-      throw Exception('QueryBuilder@fetchAll factory not defined');
+    Function fac;
+    if (factories != null) {
+      for (var item in factories) {
+        if (item.containsKey(T)) {
+          fac = item[T];
+        }
+      }
+    }
+
+    fac ??= factory;
+
+    if (fac == null) {
+      throw Exception('Dblayer@fetchAll factory not defined');
     }
 
     final list = <T>[];
     if (records != null) {
       if (records.isNotEmpty) {
-        for (Map<String, dynamic> item in records) {
-          list.add(factory[T](item));
+        for (var item in records) {
+          list.add(fac(item));
         }
       }
     }
     return list;
   }
 
-  Future<T> fetchSingle<T>() async {
-    if (factory == null) {
-      throw Exception('QueryBuilder@fetchSingle factory not defined');
+  Future<T> _fetchSingle<T>([T Function(Map<String, dynamic>) factory]) async {
+    Function fac;
+    if (factories != null) {
+      for (var item in factories) {
+        if (item.containsKey(T)) {
+          fac = item[T];
+        }
+      }
     }
-    Map<String, dynamic> record = await firstAsMap();
+
+    fac ??= factory;
+
+    if (fac == null) {
+      throw Exception('Dblayer@fetchAll factory not defined');
+    }
+    final record = await firstAsMap();
 
     if (record != null) {
-      return factory[T](record);
+      return factory(record);
     }
     return null;
   }
 
   Future putSingle<T>(T entity) async {
     if (entity == null) {
-      throw Exception('QueryBuilder@putSingle entity not defined');
+      throw Exception('Dblayer@putSingle entity not defined');
     }
     if (entity != null) {
       var db = insert();
-      var model = entity as OrmModelBase;
+      var model = entity as FluentModelBase;
       var map = model.toMap();
 
       map.forEach((key, value) {
@@ -274,5 +300,34 @@ class DbLayer {
       db.into(model.tableName);
       await db.exec();
     }
+  }
+
+  Future _updateSingle<T>(T entity, [QueryBuilder queryBuilder]) async {
+    if (entity == null) {
+      throw Exception('Dblayer@updateSingle entity not defined');
+    }
+    if (queryBuilder == null) {
+      throw Exception('Dblayer@updateSingle queryBuilder not defined');
+    }
+    var model = entity as FluentModelBase;
+    queryBuilder.table(model.tableName);
+    var map = model.toMap();
+    map.forEach((key, value) {
+      queryBuilder.set(key, value);
+    });
+    await queryBuilder.exec();
+  }
+
+  Future _deleteSingle<T>(T entity, [QueryBuilder queryBuilder]) async {
+    if (entity == null) {
+      throw Exception('Dblayer@_deleteSingle entity not defined');
+    }
+    if (queryBuilder == null) {
+      throw Exception('Dblayer@_deleteSingle queryBuilder not defined');
+    }
+    var model = entity as FluentModelBase;
+    queryBuilder.from(model.tableName);
+    queryBuilder.where('${model.primaryKey}=?', model.primaryKeyVal);
+    await exec();
   }
 }

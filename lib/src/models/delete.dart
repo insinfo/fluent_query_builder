@@ -4,7 +4,7 @@ import 'expression.dart';
 import 'join_type.dart';
 import 'query_builder.dart';
 import 'query_builder_options.dart';
-import 'string_block.dart';
+import 'delete_block.dart';
 import 'from_table_block.dart';
 import 'join_block.dart';
 import 'where_block.dart';
@@ -17,15 +17,15 @@ class Delete extends QueryBuilder {
     QueryBuilderOptions options, {
     Future<List<List>> Function() execFunc,
     Future<Map<String, Map<String, dynamic>>> Function() firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String, dynamic>>>> Function()
-        getAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String, dynamic>>>> Function() getAsMapFuncWithMeta,
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
+    this.deleteSingleFunc,
   }) : super(
           options,
           [
-            StringBlock(options, 'DELETE'),
+            DeleteBlock(options),
             FromTableBlock(options), // 1
             JoinBlock(options), // 2
             WhereBlock(options), // 3
@@ -39,6 +39,14 @@ class Delete extends QueryBuilder {
           firstAsMapFunc: firstAsMapFunc,
           getAsMapFunc: getAsMapFunc,
         );
+
+  Future Function<T>(T entity, [QueryBuilder queryBuilder]) deleteSingleFunc;
+
+  @override
+  Future deleteSingle<T>(T entity, [QueryBuilder queryBuilder]) {
+    return deleteSingleFunc(entity, this);
+  }
+
   @override
   QueryBuilder from(String table, {String alias}) {
     final block = mBlocks[1] as FromTableBlock;
@@ -61,24 +69,21 @@ class Delete extends QueryBuilder {
   }
 
   @override
-  QueryBuilder join(String joinTableName, String condition,
-      {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder join(String joinTableName, String condition, {String alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks[2] as JoinBlock;
     block.setJoin(joinTableName, alias, condition, type);
     return this;
   }
 
   @override
-  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition,
-      {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition, {String alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks[2] as JoinBlock;
     block.setJoinWithSubQuery(table, alias, condition, type);
     return this;
   }
 
   @override
-  QueryBuilder joinWithExpression(String table, Expression condition,
-      {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithExpression(String table, Expression condition, {String alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks[2] as JoinBlock;
     block.setJoinWithExpression(table, alias, condition, type);
     return this;

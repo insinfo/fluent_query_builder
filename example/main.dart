@@ -12,7 +12,7 @@ void main() {
     schemes: ['riodasostrasapp'],
   );
 
-  /*DbLayer().connect(com).then((db) {
+  DbLayer().connect(com).then((db) {
     final query = db
         .select()
         //.fields(['login', 'idSistema', 's.sigla'])
@@ -32,7 +32,7 @@ void main() {
     query.firstAsMap().then((onValue) {
       print(onValue);
     });
-  });*/
+  });
 
   DbLayer(factories: [
     {Usuario: (x) => Usuario.fromMap(x)}

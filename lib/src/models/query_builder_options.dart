@@ -1,16 +1,41 @@
 class QueryBuilderOptions {
+  ///Indicates whether table names are rendered inside quotes. Default: TRUE.
+  /// The quote character used is configurable via the `nameQuoteCharacter` option
   bool autoQuoteTableNames = true;
+
+  ///Indicates whether field names are rendered inside quotes. Default: TRUE.
+  // The quote character used is configurable via the nameQuoteCharacter option.
   bool autoQuoteFieldNames = true;
+
+  /// Indicates whether alias names are rendered inside quotes. Default: TRUE.
+  /// The quote character used is configurable via the `tableAliasQuoteCharacter` and `fieldAliasQuoteCharacter` options.
   bool autoQuoteAliasNames = true;
+
+  /// Indicates whether to replaces all single quotes within strings. Default: FALSE.
+  /// The replacement string used is configurable via the `singleQuoteReplacement` option.
   bool replaceSingleQuotes = false;
+
+  /// Indicates whether to ignore period (.) when automatically quoting the `field` name. Default: FALSE.
   bool replaceDoubleQuotes = false;
+
+  /// Indicates whether don't quote string values while formatting. Default: FALSE.
   bool ignorePeriodsForFieldNameQuotes = false;
+
+  /// Specifies the quote character used for when quoting `table` and `field` names.
   bool dontQuote = true;
   String nameQuoteCharacter = '"';
+
+  /// Specifies the quote character used for when quoting `table alias` names.
   String tableAliasQuoteCharacter = '"';
+
+  /// Specifies the quote character used for when quoting `field alias` names.
   String fieldAliasQuoteCharacter = '"';
+
+  /// Specifies the string to replace single quotes with in query strings.
   String singleQuoteReplacement = "''";
   String doubleQuoteReplacement = '""';
+
+  /// Specifies the string to join individual blocks in a query when it's stringified.
   String separator = ' ';
 
   /// quote table and field string with dot, example:

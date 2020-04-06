@@ -53,7 +53,7 @@ A simple beta pre ORM usage example:
 ```dart
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
-class Usuario implements OrmModelBase {
+class Usuario implements FluentModelBase {
   Usuario({this.username});
 
   Usuario.fromMap(Map<String, dynamic> map) {

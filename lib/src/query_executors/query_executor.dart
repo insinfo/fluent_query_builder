@@ -18,4 +18,9 @@ abstract class QueryExecutor {
   /// Whether nested transactions are supported depends on the
   /// underlying driver.
   Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f);
+
+  Future<List<Map<String, Map<String, dynamic>>>> mappedResultsQuery(String query,
+      {Map<String, dynamic> substitutionValues});
+
+  Future close();
 }

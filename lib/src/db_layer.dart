@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:fluent_query_builder/src/query_executors/mysql_executor.dart';
 import 'package:postgres/postgres.dart';
+import 'package:sqljocky5/connection/connection.dart';
 import 'connection_info.dart';
 import 'query_executors/postgre_sql_executor.dart';
+import 'query_executors/mysql_executor.dart';
 import 'query_executors/query_executor.dart';
 import 'models/query_builder.dart';
 
@@ -17,7 +20,7 @@ import 'models/delete.dart';
 import 'fluent_model_base.dart';
 
 class DbLayer {
-  PostgreSqlExecutorPool executor;
+  QueryExecutor executor;
   QueryBuilder currentQuery;
   final List<Map<Type, Function>> factories; // = <Type, Function>{};
   //ex: DiskCache<Agenda>(factories: {Agenda: (x) => Agenda.fromJson(x)});
@@ -25,8 +28,12 @@ class DbLayer {
   DbLayer({this.factories}) {
     //currentQuery = Select(QueryBuilderOptions());
   }
+  QueryBuilderOptions options;
+  DBConnectionInfo connectionInfo;
 
   Future<DbLayer> connect(DBConnectionInfo connectionInfo) async {
+    options = connectionInfo.getQueryOptions();
+    this.connectionInfo = connectionInfo.getSettings();
     var nOfProces = connectionInfo.setNumberOfProcessorsFromPlatform
         ? Platform.numberOfProcessors
         : connectionInfo.numberOfProcessors;
@@ -34,33 +41,33 @@ class DbLayer {
     //Todo implementar
     //se connectionInfo.driver for pgsql chama PostgreSqlExecutorPool
     //se for mysql chama  MySqlExecutor
-    executor = PostgreSqlExecutorPool(
-      nOfProces,
-      () {
-        return PostgreSQLConnection(
-          connectionInfo.host,
-          connectionInfo.port,
-          connectionInfo.database,
-          username: connectionInfo.username,
-          password: connectionInfo.password,
-        );
-      },
-      schemes: connectionInfo.schemes,
-    );
-
-    //In order to specify the default schema you should set the search_path instead.
-    //$Conn->exec('SET search_path TO accountschema');
-    //You can also set the default search_path per database user
-    //and in that case the above statement becomes redundant.
-    //ALTER USER user SET search_path TO accountschema;
-    //Not sure what you mean with 1. ALTER USER username SET search_path TO schema1, schema2,
-    //schema3 or ALTER ROLL some_role SET search_path or even
-    //ALTER DATABASE start SET search_path TO schema1,schema2 on the PG server directly allows you to do that
-    //set squema
-    /*if (connectionInfo.schema != null && connectionInfo.schema.isNotEmpty) {
-      final schemas = connectionInfo.schema.map((i) => '"$i"').toList().join(', ');
-      await executor.query('users', 'set search_path to $schemas;', {});
-    }*/
+    if (this.connectionInfo.driver == ConnectionDriver.pgsql) {
+      executor = PostgreSqlExecutorPool(
+        nOfProces,
+        () {
+          return PostgreSQLConnection(
+            this.connectionInfo.host,
+            this.connectionInfo.port,
+            this.connectionInfo.database,
+            username: this.connectionInfo.username,
+            password: this.connectionInfo.password,
+          );
+        },
+        schemes: this.connectionInfo.schemes,
+      );
+    } else {
+      executor = MySqlExecutor(
+        await MySqlConnection.connect(
+          ConnectionSettings(
+            host: this.connectionInfo.host,
+            port: this.connectionInfo.port,
+            db: this.connectionInfo.database,
+            user: this.connectionInfo.username,
+            password: this.connectionInfo.password,
+          ),
+        ),
+      );
+    }
 
     return this;
   }
@@ -68,14 +75,14 @@ class DbLayer {
   /// Starts a new expression with the provided options.
   /// @param options Options to use for expression generation.
   /// @return Expression
-  Expression expression({QueryBuilderOptions options}) {
+  Expression expression() {
     return Expression(options);
   }
 
   /// Starts the SELECT-query chain with the provided options
   /// @param options Options to use for query generation.
   /// @return QueryBuilder
-  QueryBuilder select({QueryBuilderOptions options}) {
+  QueryBuilder select() {
     return currentQuery = Select(
       options,
       execFunc: exec,
@@ -92,7 +99,7 @@ class DbLayer {
   /// Starts the UPDATE-query.
   /// @param options Options to use for query generation.
   /// @return QueryBuilder
-  QueryBuilder update({QueryBuilderOptions options}) {
+  QueryBuilder update() {
     return currentQuery = Update(
       options,
       execFunc: exec,
@@ -108,7 +115,7 @@ class DbLayer {
   /// Starts the INSERT-query with the provided options.
   /// @param options Options to use for query generation.
   /// @return QueryBuilder
-  QueryBuilder insert({QueryBuilderOptions options}) {
+  QueryBuilder insert() {
     return currentQuery = Insert(options,
         execFunc: exec,
         firstFunc: first,
@@ -122,7 +129,7 @@ class DbLayer {
   /// Starts the DELETE-query with the provided options.
   /// @param options Options to use for query generation.
   /// @return QueryBuilder
-  QueryBuilder delete({QueryBuilderOptions options}) {
+  QueryBuilder delete() {
     return currentQuery = Delete(
       options,
       execFunc: exec,

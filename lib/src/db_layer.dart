@@ -159,7 +159,8 @@ class DbLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@getAsMapWithMeta Is nessesary query');
     }
-    final rows = await executor.mappedResultsQuery(currentQuery.toSql(), substitutionValues: {});
+    final rows = await executor.getAsMapWithMeta(currentQuery.toSql(),
+        substitutionValues: currentQuery.buildSubstitutionValues());
     return rows;
   }
 
@@ -200,17 +201,10 @@ class DbLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@getAsMap Is nessesary query');
     }
-    final rows = await getAsMapWithMeta();
-    final result = <Map<String, dynamic>>[];
-    if (rows != null || rows.isNotEmpty) {
-      for (var item in rows) {
-        //Combine/merge multiple maps into 1 map
-        result.add(item.values.reduce((map1, map2) => map1..addAll(map2)));
-      }
-      return result;
-    } else {
-      return null;
-    }
+
+    final rows =
+        await executor.getAsMap(currentQuery.toSql(), substitutionValues: currentQuery.buildSubstitutionValues());
+    return rows;
   }
 
   Future<Map<String, dynamic>> firstAsMap() async {

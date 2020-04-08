@@ -4,6 +4,7 @@ import 'package:pool/pool.dart';
 import 'package:sqljocky5/connection/connection.dart';
 import 'package:sqljocky5/sqljocky.dart';
 //import 'package:mysql1/mysql1.dart';
+
 import '../models/exceptions.dart';
 import 'query_executor.dart';
 import 'package:logging/logging.dart';
@@ -16,6 +17,7 @@ class MySqlExecutor extends QueryExecutor {
 
   MySqlExecutor(this._connection, {this.logger});
 
+  @override
   Future<void> close() {
     if (_connection is MySqlConnection) {
       return (_connection as MySqlConnection).close();
@@ -88,9 +90,31 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, Map<String, dynamic>>>> mappedResultsQuery(String query,
-      {Map<String, dynamic> substitutionValues}) {
+  Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
+      {Map<String, dynamic> substitutionValues}) async {
+    // return rs.map((row) => row.toTableColumnMap()).toList();
     throw UnsupportedOperationException('mappedResultsQuery not implemented');
+    //var rows = await this.query(query,substitutionValues);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
+    print('MySqlExecutor@getAsMap query $query');
+    print('MySqlExecutor@getAsMap substitutionValues $substitutionValues');
+    var rows = await this.query(query, null);
+
+    final result = <Map<String, dynamic>>[];
+    /*if (rows != null || rows.isNotEmpty) {
+      for (var row in rows) {
+        var map = <String, dynamic>{};
+        for (var i = 0; i < row.length; i++) {
+          map.addAll({row[i]: row[i + 1]});
+        }
+        result.add(map);
+      }
+      return result;
+    }*/
+    return result;
   }
 }
 
@@ -116,6 +140,7 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   }
 
   /// Closes all connections.
+  @override
   Future close() async {
     await _pool.close();
     await _connMutex.close();
@@ -146,13 +171,22 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
     });
   }
 
-  Future<List<Map<String, Map<String, dynamic>>>> mappedResultsQuery(String query,
+  @override
+  Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
       {Map<String, dynamic> substitutionValues}) {
     /*return _pool.withResource(() async {
       final executor = await _next();
       return executor.mappedResultsQuery(query, substitutionValues: substitutionValues);
     });*/
     throw UnsupportedOperationException('mappedResultsQuery not implemented');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
+    return _pool.withResource(() async {
+      final executor = await _next();
+      return executor.getAsMap(query, substitutionValues: substitutionValues);
+    });
   }
 
   Future<List<List>> execute(String query, {Map<String, dynamic> substitutionValues}) {

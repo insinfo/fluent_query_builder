@@ -17,6 +17,7 @@ class PostgreSqlExecutor implements QueryExecutor {
   PostgreSQLExecutionContext get connection => _connection;
 
   /// Closes the connection.
+  @override
   Future close() {
     if (_connection is PostgreSQLConnection) {
       return (_connection as PostgreSQLConnection).close();
@@ -37,8 +38,26 @@ class PostgreSqlExecutor implements QueryExecutor {
     logger?.fine('Values: $substitutionValues');
     //print('Query ${query}');
     //print('Values ${substitutionValues}');
-    
+
     return _connection.query(query, substitutionValues: substitutionValues);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
+    var rows = await this.query(query, substitutionValues);
+
+    final result = <Map<String, dynamic>>[];
+    if (rows != null || rows.isNotEmpty) {
+      for (var row in rows) {
+        var map = <String, dynamic>{};
+        for (var i = 0; i < row.length; i++) {
+          map.addAll({row[i]: row[i + 1]});
+        }
+        result.add(map);
+      }
+      return result;
+    }
+    return result;
   }
 
   Future<int> execute(String query, {Map<String, dynamic> substitutionValues}) {
@@ -47,7 +66,8 @@ class PostgreSqlExecutor implements QueryExecutor {
     return _connection.execute(query, substitutionValues: substitutionValues);
   }
 
-  Future<List<Map<String, Map<String, dynamic>>>> mappedResultsQuery(String query,
+  @override
+  Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
       {Map<String, dynamic> substitutionValues}) {
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
@@ -144,6 +164,7 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   }
 
   /// Closes all connections.
+  @override
   Future close() async {
     await _pool.close();
     await _connMutex.close();
@@ -180,11 +201,20 @@ class PostgreSqlExecutorPool implements QueryExecutor {
     });
   }
 
-  Future<List<Map<String, Map<String, dynamic>>>> mappedResultsQuery(String query,
+  @override
+  Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
       {Map<String, dynamic> substitutionValues}) {
     return _pool.withResource(() async {
       final executor = await _next();
-      return executor.mappedResultsQuery(query, substitutionValues: substitutionValues);
+      return executor.getAsMapWithMeta(query, substitutionValues: substitutionValues);
+    });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
+    return _pool.withResource(() async {
+      final executor = await _next();
+      return executor.getAsMap(query, substitutionValues: substitutionValues);
     });
   }
 

@@ -19,7 +19,10 @@ abstract class QueryExecutor {
   /// underlying driver.
   Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f);
 
-  Future<List<Map<String, Map<String, dynamic>>>> mappedResultsQuery(String query,
+  Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
+      {Map<String, dynamic> substitutionValues});
+
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
       {Map<String, dynamic> substitutionValues});
 
   Future close();

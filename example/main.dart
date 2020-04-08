@@ -1,10 +1,11 @@
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
 void main() {
-  //configura a conexão
-  final com = DBConnectionInfo(
+  //PostgreSQL connection information
+  final pgsqlCom = DBConnectionInfo(
     host: '192.168.133.13',
     database: 'sistemas',
+    driver: ConnectionDriver.pgsql,
     port: 5432,
     username: 'sisadmin',
     password: 's1sadm1n',
@@ -12,7 +13,40 @@ void main() {
     schemes: ['riodasostrasapp'],
   );
 
-  DbLayer().connect(com).then((db) {
+  //MySQL connection information
+  final mysqlCom = DBConnectionInfo(
+    host: '10.0.0.22',
+    database: 'cep.gpbe.17.01.2014',
+    driver: ConnectionDriver.mysql,
+    port: 3306,
+    username: 'sisadmin',
+    password: 's1sadm1n',
+    charset: 'utf8',
+  );
+
+  DbLayer().connect(mysqlCom).then((db) {
+    final query = db
+        .select()
+        //.fields(['login', 'idSistema', 's.sigla'])
+        //.fieldRaw('DISTINCT jubarte.sistemas.sigla as')
+        .from('log_bairro', alias: 't')
+        //  .leftJoin('sistemas', 's.id', '=', 't."idSistema"', alias: 's')
+        // .whereRaw("login='isaque.neves'")
+        // .whereRaw("s.id='8'")
+        // .where("login=?", 'isaque.neves')
+        /*.group('login')
+      .group('t.idSistema')
+      .group('sistemas.sigla');*/
+        //.groupRaw('"login", "t"."idSistema", "s"."sigla"')
+        .limit(1);
+    // .groups(['login', 't.idSistema', 's.sigla']);
+
+    query.firstAsMap().then((onValue) {
+      print(onValue);
+    });
+  });
+
+  /*DbLayer().connect(pgsqlCom).then((db) {
     final query = db
         .select()
         //.fields(['login', 'idSistema', 's.sigla'])
@@ -32,9 +66,10 @@ void main() {
     query.firstAsMap().then((onValue) {
       print(onValue);
     });
-  });
+  });*/
 
-  DbLayer(factories: [
+  //example
+  /* DbLayer(factories: [
     {Usuario: (x) => Usuario.fromMap(x)}
   ]).connect(com).then((db) {
     //insert Usuario
@@ -47,7 +82,7 @@ void main() {
     });
     //delete Usuario
     db.delete().deleteSingle<Usuario>(Usuario(id: 20, username: 'jon.doe', password: '123456'));
-  });
+  });*/
 }
 
 class Usuario implements FluentModelBase {
@@ -74,7 +109,7 @@ class Usuario implements FluentModelBase {
 
   @override
   Map<String, dynamic> toMap() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final  data = <String, dynamic>{};
     if (id != null) {
       data['id'] = id;
     }

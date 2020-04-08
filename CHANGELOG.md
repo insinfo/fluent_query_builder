@@ -17,3 +17,7 @@
 ## 1.0.11
 
 - refactor and overall bug fixes
+
+## 1.0.16
+
+- implemented mysql initial support

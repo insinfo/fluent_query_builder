@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:fluent_query_builder/src/query_executors/mysql_executor.dart';
+
 import 'package:postgres/postgres.dart';
-import 'package:sqljocky5/connection/connection.dart';
+
+//import 'package:mysql1/mysql1.dart';
+import 'package:sqljocky5/sqljocky.dart';
+
 import 'connection_info.dart';
 import 'query_executors/postgre_sql_executor.dart';
-import 'query_executors/mysql_executor.dart';
+//import 'query_executors/mysql_executor.dart';
+import 'query_executors/mysql_executor_sqljocky5.dart';
 import 'query_executors/query_executor.dart';
 import 'models/query_builder.dart';
 

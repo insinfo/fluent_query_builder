@@ -44,18 +44,16 @@ class PostgreSqlExecutor implements QueryExecutor {
 
   @override
   Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
-    var rows = await this.query(query, substitutionValues);
-
+    //print('PostgreSqlExecutor@getAsMap query $query');
+    //print('PostgreSqlExecutor@getAsMap substitutionValues $substitutionValues');
+    var rows = await getAsMapWithMeta(query, substitutionValues: substitutionValues);
+   
     final result = <Map<String, dynamic>>[];
     if (rows != null || rows.isNotEmpty) {
-      for (var row in rows) {
-        var map = <String, dynamic>{};
-        for (var i = 0; i < row.length; i++) {
-          map.addAll({row[i]: row[i + 1]});
-        }
-        result.add(map);
-      }
-      return result;
+      for (var item in rows) {
+        //Combine/merge multiple maps into 1 map
+        result.add(item.values.reduce((map1, map2) => map1..addAll(map2)));
+      }      
     }
     return result;
   }

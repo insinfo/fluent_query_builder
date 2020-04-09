@@ -14,24 +14,24 @@ import 'package:fluent_query_builder/fluent_query_builder.dart';
 void main() {
   //PostgreSQL connection information
   final pgsqlCom = DBConnectionInfo(
-    host: '192.168.133.13',
+    host: 'localhost',
     database: 'banco_teste',
     driver: ConnectionDriver.pgsql,
     port: 5432,
-    username: 'sisadmin',
-    password: 's1sadm1n',
+    username: 'user',
+    password: 'pass',
     charset: 'utf8',
     schemes: ['public'],
   );
 
   //MySQL connection information
   final mysqlCom = DBConnectionInfo(
-    host: '10.0.0.22',
+    host: 'localhost',
     database: 'banco_teste',
     driver: ConnectionDriver.mysql,
     port: 3306,
-    username: 'sisadmin',
-    password: 's1sadm1n',
+     username: 'user',
+    password: 'pass',
     charset: 'utf8',
   );
 
@@ -105,21 +105,7 @@ void main() {
         .then((result) => print('pgsql count $result'));
   });
   
-  //example
-   DbLayer(factories: [
-    {Usuario: (x) => Usuario.fromMap(x)}
-  ]).connect(com).then((db) {
-    //insert Usuario
-    db.putSingle<Usuario>(Usuario(username: 'jon.doe', password: '123456'));
-    //update Usuario
-    db.update().where('id=?', 20).updateSingle<Usuario>(Usuario(username: 'jon.doe', password: '987'));
-    //select Usuario
-    db.select().from(Usuario().tableName).where('id>?', 2).fetchAll<Usuario>().then((result) {
-      print(result);
-    });
-    //delete Usuario
-    db.delete().deleteSingle<Usuario>(Usuario(id: 20, username: 'jon.doe', password: '123456'));
-  });
+  
 }
 
 ```

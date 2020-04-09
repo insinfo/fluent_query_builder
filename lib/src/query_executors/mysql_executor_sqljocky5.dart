@@ -44,8 +44,8 @@ class MySqlExecutor extends QueryExecutor {
 
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
-   // print('Query: $query');
-   // print('Values: $substitutionValues');
+    //print('Query: $query');
+    //print('Values: $substitutionValues');
 
     //if (returningFields?.isNotEmpty != true) {
     return _connection

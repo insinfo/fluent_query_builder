@@ -65,15 +65,15 @@ void main() {
         .raw("SELECT * FROM `pessoas`")
         .firstAsMap()
         .then((result) => print('mysql raw $result'));*/
-        
+
     //mysql count records 
-    db
+    /*db
         .select()
         .from('pessoas')
         .orWhereSafe('nome', 'like', '%Sant\'Ana%')
         .orWhereSafe('id', '<', 20)
         .count()
-        .then((result) => print('mysql select $result'));
+        .then((result) => print('mysql select $result'));*/
   });
 
   DbLayer().connect(pgsqlCom).then((db) {
@@ -86,10 +86,17 @@ void main() {
         .exec()
         .then((result) => print('pgsql insert $result'));*/
 
-         db
+      /*   db
         .select()
         .from('pessoas')       
         .count()
+        .then((result) => print('pgsql count $result'));*/
+
+        db
+        .select()       
+        .from('pessoas')
+        .whereSafe('nome', 'ilike', '%Sant\'Ana%')      
+        .firstAsMap()
         .then((result) => print('pgsql select $result'));
   });
 

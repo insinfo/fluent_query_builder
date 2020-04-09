@@ -44,6 +44,8 @@ class MySqlExecutor extends QueryExecutor {
 
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
+   // print('Query: $query');
+   // print('Values: $substitutionValues');
 
     //if (returningFields?.isNotEmpty != true) {
     return _connection
@@ -101,7 +103,7 @@ class MySqlExecutor extends QueryExecutor {
     //print('MySqlExecutor@getAsMap query $query');
     //print('MySqlExecutor@getAsMap substitutionValues $substitutionValues');
     var results = <Map<String, dynamic>>[];
-    
+
     for (var name in substitutionValues.keys) {
       query = query.replaceAll('@$name', '?');
     }

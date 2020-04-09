@@ -87,6 +87,7 @@ class DBConnectionInfo {
     options.quoteStringWithFieldsTablesSeparator = true;
     options.fieldsTablesSeparator = '.';
     options.allowAliasInFields = true;
+    options.valueQuoteCharacter = "'";
 
     switch (driver) {
       case ConnectionDriver.pgsql:
@@ -107,6 +108,7 @@ class DBConnectionInfo {
           options.fieldAliasQuoteCharacter = '"';
           options.singleQuoteReplacement = "\'";
           options.separator = ' ';
+          options.valueQuoteCharacter = '';
           return options;
         }
         break;

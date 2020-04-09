@@ -25,6 +25,7 @@ abstract class QueryBuilder {
     Future Function<T>(T entity) putSingleFunc,
     Future Function<T>(T entity, [QueryBuilder queryBuilder]) updateSingleFunc,
     Future Function<T>(T entity, [QueryBuilder queryBuilder]) deleteSingleFunc,
+    Future<int> Function() countFunc,
   }) {
     mOptions = options ?? QueryBuilderOptions();
     //mOptions = options != null ? options : QueryBuilderOptions();
@@ -42,11 +43,14 @@ abstract class QueryBuilder {
     _putSingleFunc = putSingleFunc;
     _updateSingleFunc = updateSingleFunc;
     _deleteSingleFunc = deleteSingleFunc;
+    _countFunc = countFunc;
   }
   QueryBuilderOptions mOptions;
   List<Block> mBlocks;
 
   Future<List<List>> Function() _execFunc;
+  Future<int> Function() _countFunc;
+  
   Future<Map<String, Map<String, dynamic>>> Function() _firstAsMapFuncWithMeta;
   Future<List<Map<String, Map<String, dynamic>>>> Function() _getAsMapFuncWithMeta;
   Future<Map<String, dynamic>> Function() _firstAsMapFunc;
@@ -92,8 +96,8 @@ abstract class QueryBuilder {
     return Util.joinNonEmpty(mOptions.separator, results);
   }
 
-  //isFirst used to add or replace limit 1 offset 0 in query string
-  String toSql({bool isFirst = false}) {
+  ///isFirst used to add or replace limit 1 offset 0 in query string
+  String toSql({bool isFirst = false, bool isCount = false}) {
     final results = <String>[];
     for (var block in mBlocks) {
       results.add(block.buildStr(this));
@@ -112,6 +116,16 @@ abstract class QueryBuilder {
       }
       result = '$result LIMIT 1 OFFSET 0';
     }
+
+    if (isCount) {
+      //result.replaceFirst(from, to)
+      final fromIdx = result.lastIndexOf(RegExp(r'FROM', caseSensitive: false));
+      if (fromIdx != -1) {
+        result = result.substring(fromIdx, result.length );
+        result = 'SELECT COUNT(*) as total_records $result';
+      }
+    }
+
     return result;
   }
 
@@ -131,6 +145,13 @@ abstract class QueryBuilder {
       throw Exception('QueryBuilder@exec execFunc not defined');
     }
     return _execFunc();
+  }
+
+  Future<int> count() async {
+    if (_countFunc == null) {
+      throw Exception('QueryBuilder@count _countFunc not defined');
+    }
+    return _countFunc();
   }
 
   Future<List<List>> get() async {
@@ -310,6 +331,16 @@ abstract class QueryBuilder {
 
   QueryBuilder whereRaw(String whereRawSql) {
     throw UnsupportedOperationException('`whereRaw` not implemented');
+  }
+
+  ///add a andWhere safe way against SQL injection
+  QueryBuilder whereSafe(String field, String operator, value) {
+    throw UnsupportedOperationException('`whereSafe` not implemented');
+  }
+
+  ///add a orWhere safe way against SQL injection
+  QueryBuilder orWhereSafe(String field, String operator, value) {
+    throw UnsupportedOperationException('`orWhereSafe` not implemented');
   }
 
   //

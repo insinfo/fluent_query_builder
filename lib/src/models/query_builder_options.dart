@@ -28,6 +28,8 @@ class QueryBuilderOptions {
   /// Specifies the quote character used for when quoting `table alias` names.
   String tableAliasQuoteCharacter = '"';
 
+  String valueQuoteCharacter = "'";
+
   /// Specifies the quote character used for when quoting `field alias` names.
   String fieldAliasQuoteCharacter = '"';
 
@@ -48,4 +50,26 @@ class QueryBuilderOptions {
   /// db.select().fields(['tablename.fieldname as f']).from('tablename') result in
   ///  SELECT "tablename"."fieldname" as "f" FROM tablename
   bool allowAliasInFields = true;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'autoQuoteTableNames': autoQuoteTableNames,
+      'autoQuoteFieldNames': autoQuoteFieldNames,
+      'autoQuoteAliasNames': autoQuoteAliasNames,
+      'replaceSingleQuotes': replaceSingleQuotes,
+      'replaceDoubleQuotes': replaceDoubleQuotes,
+      'ignorePeriodsForFieldNameQuotes': ignorePeriodsForFieldNameQuotes,
+      'dontQuote': dontQuote,
+      'nameQuoteCharacter': nameQuoteCharacter,
+      'tableAliasQuoteCharacter': tableAliasQuoteCharacter,
+      'fieldAliasQuoteCharacter': fieldAliasQuoteCharacter,
+      'singleQuoteReplacement': singleQuoteReplacement,
+      'doubleQuoteReplacement': doubleQuoteReplacement,
+      'separator': separator,
+      'quoteStringWithFieldsTablesSeparator': quoteStringWithFieldsTablesSeparator,
+      'fieldsTablesSeparator': fieldsTablesSeparator,
+      'allowAliasInFields': allowAliasInFields,
+      'valueQuoteCharacter': valueQuoteCharacter
+    };
+  }
 }

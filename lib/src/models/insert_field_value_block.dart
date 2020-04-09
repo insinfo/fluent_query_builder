@@ -16,9 +16,12 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
     }
 
     final fields = Util.join(', ', buildFieldNames(mFields));
+
     final values = Util.join(', ', buildFieldValuesForSubstitution(mFields));
 
-    return '($fields) VALUES ($values)';
+    var sql = '($fields) VALUES ($values)';
+  
+    return sql;
   }
 
   @override
@@ -32,6 +35,7 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
       var v = Validator.formatValue(item.value, mOptions);
       result.addAll({'${item.field}': v});
     }
+   
     return result;
   }
 
@@ -47,8 +51,10 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
     final names = <String>[];
     for (var item in nodes) {
       var field = Validator.sanitizeField(item.field, mOptions);
+
       names.add(field);
     }
+
     return names;
   }
 

@@ -1,9 +1,11 @@
+import '../../fluent_query_builder.dart';
 import 'distinct_block.dart';
 import 'from_table_block.dart';
 import 'get_field_block.dart';
 import 'group_by_block.dart';
 import 'join_block.dart';
 import 'limit_block.dart';
+import 'orwhere_block.dart';
 import 'sort_order.dart';
 import 'union_block.dart';
 import 'union_type.dart';
@@ -29,6 +31,7 @@ class Select extends QueryBuilder {
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
     Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory]) fetchAllFunc,
     Future<T> Function<T>([T Function(Map<String, dynamic>) factory]) fetchSingleFunc,
+    Future<int> Function() countFunc,
   }) : super(
           options,
           [
@@ -42,7 +45,8 @@ class Select extends QueryBuilder {
             OrderByBlock(options), // 7
             LimitBlock(options), // 8
             OffsetBlock(options), // 9
-            UnionBlock(options) // 10
+            UnionBlock(options), // 10
+            OrWhereBlock(options) // 11
           ],
           execFunc: execFunc,
           firstAsMapFuncWithMeta: firstAsMapFuncWithMeta,
@@ -52,6 +56,7 @@ class Select extends QueryBuilder {
           getAsMapFunc: getAsMapFunc,
           fetchAllFunc: fetchAllFunc,
           fetchSingleFunc: fetchSingleFunc,
+          countFunc: countFunc,
         );
 
   //
@@ -169,6 +174,20 @@ class Select extends QueryBuilder {
   QueryBuilder where(String condition, [Object param]) {
     final block = mBlocks[5] as WhereBlock;
     block.setWhere(condition, param);
+    return this;
+  }
+
+  @override
+  QueryBuilder whereSafe(String field, String operator, value) {
+    final block = mBlocks[5] as WhereBlock;
+    block.setWhereSafe(field, operator, value);
+    return this;
+  }
+
+  @override
+  QueryBuilder orWhereSafe(String field, String operator, value) {
+    final block = mBlocks[11] as OrWhereBlock;
+    block.setWhereSafe(field, operator, value);
     return this;
   }
 

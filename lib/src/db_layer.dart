@@ -7,6 +7,7 @@ import 'package:postgres/postgres.dart';
 import 'package:sqljocky5/sqljocky.dart';
 
 import 'connection_info.dart';
+import 'models/raw.dart';
 import 'query_executors/postgre_sql_executor.dart';
 //import 'query_executors/mysql_executor.dart';
 import 'query_executors/mysql_executor_sqljocky5.dart';
@@ -97,6 +98,7 @@ class DbLayer {
       firstAsMapFunc: firstAsMap,
       fetchAllFunc: _fetchAll,
       fetchSingleFunc: _fetchSingle,
+      countFunc: _count,
     );
   }
 
@@ -146,6 +148,20 @@ class DbLayer {
     );
   }
 
+  QueryBuilder raw(String rawQueryString) {
+    return currentQuery = Raw(
+      rawQueryString,
+      options: options,
+      execFunc: exec,
+      firstFunc: first,
+      firstAsMapFuncWithMeta: firstAsMapWithMeta,
+      getAsMapFuncWithMeta: getAsMapWithMeta,
+      getAsMapFunc: getAsMap,
+      firstAsMapFunc: firstAsMap,
+      countFunc: _count,
+    );
+  }
+
   Future<List<List>> exec() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
@@ -172,7 +188,7 @@ class DbLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@first Is nessesary query');
     }
-    final rows = await get();
+    final rows = await executor.query(currentQuery.toSql(isFirst: true), currentQuery.buildSubstitutionValues());
 
     if (rows != null) {
       if (rows.isNotEmpty) {
@@ -183,6 +199,22 @@ class DbLayer {
     } else {
       return null;
     }
+  }
+
+  Future<int> _count() async {
+    if (!currentQuery.isQuery()) {
+      throw Exception('Is nessesary query');
+    }
+
+    final rows = await executor.query(currentQuery.toSql(isCount: true), currentQuery.buildSubstitutionValues());
+    //total_records
+    if (rows != null) {
+      if (rows.isNotEmpty) {
+        return rows[0][0];
+      }
+    }
+
+    return 0;
   }
 
   Future<Map<String, Map<String, dynamic>>> firstAsMapWithMeta() async {
@@ -215,8 +247,10 @@ class DbLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@firstAsMap Is nessesary query');
     }
-    //final List<Map<String, dynamic>> rows = await getAsMap();
-    final rows = await getAsMap();
+
+    final rows = await executor.getAsMap(currentQuery.toSql(isFirst: true),
+        substitutionValues: currentQuery.buildSubstitutionValues());
+
     if (rows != null) {
       if (rows.isNotEmpty) {
         return rows[0];

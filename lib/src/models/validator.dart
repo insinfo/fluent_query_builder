@@ -20,7 +20,7 @@ class Validator {
   }
 
   static String sanitizeField(String value, QueryBuilderOptions options) {
-    var result = '';
+    var result = value;
     if (options.autoQuoteFieldNames) {
       final quoteChar = options.nameQuoteCharacter;
       if (options.ignorePeriodsForFieldNameQuotes) {
@@ -83,7 +83,9 @@ class Validator {
     if (value == null) {
       return null;
     }
-    return options.replaceSingleQuotes ? value.replaceAll("'", options.singleQuoteReplacement) : value;
+    var result = options.replaceSingleQuotes ? value.replaceAll("'", options.singleQuoteReplacement) : value;
+
+    return result;
   }
 
   static String formatNull() {
@@ -99,7 +101,11 @@ class Validator {
   }
 
   static String formatString(String value, QueryBuilderOptions options) {
-    return options.dontQuote ? value : "'${escapeValue(value, options)}'";   
+    var result = options.dontQuote
+        ? value
+        : '${options.valueQuoteCharacter}${escapeValue(value, options)}${options.valueQuoteCharacter}';
+
+    return result;
   }
 
   static String formatQueryBuilder(QueryBuilder value) {

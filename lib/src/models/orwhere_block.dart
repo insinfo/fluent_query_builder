@@ -12,12 +12,12 @@ class WhereNode {
 }
 
 /// WHERE
-class WhereBlock extends Block {
-  WhereBlock(QueryBuilderOptions options) : super(options);
+class OrWhereBlock extends Block {
+  OrWhereBlock(QueryBuilderOptions options) : super(options);
   List<WhereNode> mWheres;
   List<String> wheresRawSql;
 
-  /// Add a WHERE condition.
+  /// Add a Or Where condition.
   /// @param condition Condition to add
   /// @param param Parameter to add to condition.
   /// @param <P> Type of the parameter to add.
@@ -52,7 +52,7 @@ class WhereBlock extends Block {
     if (wheresRawSql != null) {
       for (var whereRaw in wheresRawSql) {
         if (sb.length > 0) {
-          sb.write(' AND ');
+          sb.write(' OR ');
         }
 
         sb.write(whereRaw);
@@ -66,7 +66,7 @@ class WhereBlock extends Block {
 
     for (var where in mWheres) {
       if (sb.length > 0) {
-        sb.write(') AND (');
+        sb.write(') OR (');
       }
       if (where.operator == null) {
         sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));

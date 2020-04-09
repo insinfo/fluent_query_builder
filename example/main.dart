@@ -4,19 +4,19 @@ void main() {
   //PostgreSQL connection information
   final pgsqlCom = DBConnectionInfo(
     host: '192.168.133.13',
-    database: 'sistemas',
+    database: 'banco_teste',
     driver: ConnectionDriver.pgsql,
     port: 5432,
     username: 'sisadmin',
     password: 's1sadm1n',
     charset: 'utf8',
-    schemes: ['riodasostrasapp'],
+    schemes: ['public'],
   );
 
   //MySQL connection information
   final mysqlCom = DBConnectionInfo(
     host: '10.0.0.22',
-    database: 'cep.gpbe.17.01.2014',
+    database: 'banco_teste',
     driver: ConnectionDriver.mysql,
     port: 3306,
     username: 'sisadmin',
@@ -25,25 +25,72 @@ void main() {
   );
 
   DbLayer().connect(mysqlCom).then((db) {
-    final query = db
+    //mysql insert
+    /*db
+        .insert()
+        .into('pessoas')
+        .set('nome', 'Isaque Neves Sant\'Ana')
+        .set('telefone', '(22) 2771-6265')
+        .exec()
+        .then((result) => print('mysql insert $result'));*/
+
+    //mysql update
+    /*db
+        .update()
+        .table('pessoas')
+        .set('nome', 'João')
+        .where('id=?', 13)
+        .exec()
+        .then((result) => print('mysql update $result'));*/
+
+    //mysql delete
+    /*db.delete().from('pessoas')
+    .where('id=?', 14)
+    .exec()
+    .then((result) => print('mysql delete $result'));*/
+
+    //mysql select
+    /*db
         .select()
         //.fields(['login', 'idSistema', 's.sigla'])
-        //.fieldRaw('DISTINCT jubarte.sistemas.sigla as')
-        .from('log_bairro', alias: 't')
-        //  .leftJoin('sistemas', 's.id', '=', 't."idSistema"', alias: 's')
-        // .whereRaw("login='isaque.neves'")
-        // .whereRaw("s.id='8'")
-        // .where("login=?", 'isaque.neves')
-        /*.group('login')
-      .group('t.idSistema')
-      .group('sistemas.sigla');*/
-        //.groupRaw('"login", "t"."idSistema", "s"."sigla"')
-        .limit(1);
-    // .groups(['login', 't.idSistema', 's.sigla']);
+        //.fieldRaw('SELECT COUNT(*)')
+        .from('pessoas')
+        .whereSafe('nome', 'like', '%Sant\'Ana%')
+        //.limit(1)
+        .firstAsMap()
+        .then((result) => print('mysql select $result'));*/
 
-    query.firstAsMap().then((onValue) {
-      print(onValue);
-    });
+    //mysql raw query SELECT * FROM `pessoas` or SELECT COUNT(*) FROM pessoas
+    /*db  
+        .raw("SELECT * FROM `pessoas`")
+        .firstAsMap()
+        .then((result) => print('mysql raw $result'));*/
+        
+    //mysql count records 
+    db
+        .select()
+        .from('pessoas')
+        .orWhereSafe('nome', 'like', '%Sant\'Ana%')
+        .orWhereSafe('id', '<', 20)
+        .count()
+        .then((result) => print('mysql select $result'));
+  });
+
+  DbLayer().connect(pgsqlCom).then((db) {
+    //pgsql insert
+    /*db
+        .insert()
+        .into('usuarios')
+        .set('username', 'isaque')
+        .set('password', '123456')
+        .exec()
+        .then((result) => print('pgsql insert $result'));*/
+
+         db
+        .select()
+        .from('pessoas')       
+        .count()
+        .then((result) => print('pgsql select $result'));
   });
 
   /*DbLayer().connect(pgsqlCom).then((db) {
@@ -109,7 +156,7 @@ class Usuario implements FluentModelBase {
 
   @override
   Map<String, dynamic> toMap() {
-    final  data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     if (id != null) {
       data['id'] = id;
     }

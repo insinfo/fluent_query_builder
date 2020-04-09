@@ -21,3 +21,7 @@
 ## 1.0.16
 
 - implemented mysql initial support
+
+## 1.1.0
+
+- improvements against SQL injection with the introduction of the whereSafe() and orWhereSafe() methods, introducing the count() method to modify the query to count the database records, in addition to automatically introducing the limit and offset for the first() and firstAsMap(), in addition to several bug fixes for better compatibility with MySQL. And update the Readme with more examples.

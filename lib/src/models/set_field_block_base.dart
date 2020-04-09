@@ -17,7 +17,7 @@ abstract class SetFieldBlockBase extends Block {
   /// @param value Value to set.
   /// @param <T> Type of the Value.
   void setFieldValue(String field, value) {
-    mFields ??= <SetNode>[];   
+    mFields ??= <SetNode>[];
     mFields.add(SetNode(field, value));
   }
 }

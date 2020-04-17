@@ -50,7 +50,7 @@ abstract class QueryBuilder {
 
   Future<List<List>> Function() _execFunc;
   Future<int> Function() _countFunc;
-  
+
   Future<Map<String, Map<String, dynamic>>> Function() _firstAsMapFuncWithMeta;
   Future<List<Map<String, Map<String, dynamic>>>> Function() _getAsMapFuncWithMeta;
   Future<Map<String, dynamic>> Function() _firstAsMapFunc;
@@ -121,7 +121,7 @@ abstract class QueryBuilder {
       //result.replaceFirst(from, to)
       final fromIdx = result.lastIndexOf(RegExp(r'FROM', caseSensitive: false));
       if (fromIdx != -1) {
-        result = result.substring(fromIdx, result.length );
+        result = result.substring(fromIdx, result.length);
         result = 'SELECT COUNT(*) as total_records $result';
       }
     }
@@ -341,6 +341,15 @@ abstract class QueryBuilder {
   ///add a orWhere safe way against SQL injection
   QueryBuilder orWhereSafe(String field, String operator, value) {
     throw UnsupportedOperationException('`orWhereSafe` not implemented');
+  }
+
+  //Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory])
+  QueryBuilder whereGroup(Function(QueryBuilder) function) {
+    throw UnsupportedOperationException('`whereGroup` not implemented');
+  }
+
+  QueryBuilder orWhereGroup(Function(QueryBuilder) function) {
+    throw UnsupportedOperationException('`orWhereGroup` not implemented');
   }
 
   //

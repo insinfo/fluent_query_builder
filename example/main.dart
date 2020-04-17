@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
 void main() {
+  print('start execution');
   //PostgreSQL connection information
   final pgsqlCom = DBConnectionInfo(
     host: '192.168.133.13',
@@ -66,7 +69,7 @@ void main() {
         .firstAsMap()
         .then((result) => print('mysql raw $result'));*/
 
-    //mysql count records 
+    //mysql count records
     /*db
         .select()
         .from('pessoas')
@@ -86,16 +89,20 @@ void main() {
         .exec()
         .then((result) => print('pgsql insert $result'));*/
 
-      /*   db
+    /*   db
         .select()
         .from('pessoas')       
         .count()
         .then((result) => print('pgsql count $result'));*/
 
-        db
-        .select()       
+    db
+        .select()
         .from('pessoas')
-        .whereSafe('nome', 'ilike', '%Sant\'Ana%')      
+        //.whereSafe('nome', 'ilike', '%Sant\'Ana%')
+        .orWhereGroup((query) {
+          return query.orWhereSafe('nome', 'ilike', '%5%').orWhereSafe('cpf', 'ilike', '%5%');
+        })
+        //.whereSafe('id', '>', 1)
         .firstAsMap()
         .then((result) => print('pgsql select $result'));
   });
@@ -137,6 +144,8 @@ void main() {
     //delete Usuario
     db.delete().deleteSingle<Usuario>(Usuario(id: 20, username: 'jon.doe', password: '123456'));
   });*/
+  print('end execution');
+  // exit(0);
 }
 
 class Usuario implements FluentModelBase {

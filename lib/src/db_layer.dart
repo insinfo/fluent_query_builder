@@ -102,8 +102,7 @@ class DbLayer {
     );
   }
 
-  /// Starts the UPDATE-query.
-  /// @param options Options to use for query generation.
+  /// Starts the UPDATE-query. 
   /// @return QueryBuilder
   QueryBuilder update() {
     return currentQuery = Update(
@@ -118,8 +117,7 @@ class DbLayer {
     );
   }
 
-  /// Starts the INSERT-query with the provided options.
-  /// @param options Options to use for query generation.
+  /// Starts the INSERT-query with the provided options. 
   /// @return QueryBuilder
   QueryBuilder insert() {
     return currentQuery = Insert(options,
@@ -132,8 +130,7 @@ class DbLayer {
         putSingleFunc: putSingle);
   }
 
-  /// Starts the DELETE-query with the provided options.
-  /// @param options Options to use for query generation.
+  /// Starts the DELETE-query with the provided options. 
   /// @return QueryBuilder
   QueryBuilder delete() {
     return currentQuery = Delete(

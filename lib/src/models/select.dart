@@ -170,6 +170,10 @@ class Select extends QueryBuilder {
     return this;
   }
 
+  //
+  // WHERE
+  //
+
   @override
   QueryBuilder where(String condition, [Object param]) {
     final block = mBlocks[5] as WhereBlock;
@@ -203,6 +207,32 @@ class Select extends QueryBuilder {
     final block = mBlocks[5] as WhereBlock;
     block.setWhereRaw(whereRawSql);
     return this;
+  }
+
+  @override
+  QueryBuilder whereGroup(Function(QueryBuilder) function) {
+    if (function == null) {
+      throw Exception('function cannot be null');
+    }
+
+    final block = mBlocks[5] as WhereBlock;
+    block.setStartGroup();
+    var r = function(this);
+    block.setEndGroup();
+    return r;
+  }
+
+  @override
+  QueryBuilder orWhereGroup(Function(QueryBuilder) function) {
+    if (function == null) {
+      throw Exception('function cannot be null');
+    }
+
+    final block = mBlocks[11] as OrWhereBlock;
+    block.setStartGroup();
+    var r = function(this);
+    block.setEndGroup();
+    return r;
   }
 
   //

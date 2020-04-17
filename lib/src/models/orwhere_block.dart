@@ -3,19 +3,23 @@ import 'query_builder_options.dart';
 import 'query_builder.dart';
 import 'validator.dart';
 import 'expression.dart';
-
-class WhereNode {
-  WhereNode(this.text, this.param, {this.operator});
-  final String text;
-  final Object param;
-  String operator;
-}
+import 'where_node.dart';
 
 /// WHERE
 class OrWhereBlock extends Block {
   OrWhereBlock(QueryBuilderOptions options) : super(options);
   List<WhereNode> mWheres;
   List<String> wheresRawSql;
+
+  void setStartGroup() {
+    mWheres ??= [];
+    mWheres.add(WhereNode(null, null, groupDivider: '('));
+  }
+
+  void setEndGroup() {
+    mWheres ??= [];
+    mWheres.add(WhereNode(null, null, groupDivider: ')'));
+  }
 
   /// Add a Or Where condition.
   /// @param condition Condition to add
@@ -63,21 +67,33 @@ class OrWhereBlock extends Block {
     if (mWheres == null || mWheres.isEmpty) {
       return '';
     }
-
+    var isDividerAdded = false;
     for (var where in mWheres) {
-      if (sb.length > 0) {
-        sb.write(') OR (');
-      }
-      if (where.operator == null) {
-        sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
-      } else {
-        sb.write('${where.text}');
-        sb.write(' ${where.operator} ');
-        sb.write('@${where.text}');
+      if (where.text != null) {
+        if (sb.length > 0) {
+          //sb.write(') OR (');
+          if (isDividerAdded) {
+            if (sb.length > 1) {
+              sb.write(' OR ');
+            }
+          } else {
+            sb.write(' OR ');
+          }
+        }
+        if (where.operator == null) {
+          sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
+        } else {
+          sb.write('${where.text}');
+          sb.write(' ${where.operator} ');
+          sb.write('@${where.text}');
+        }
+      } else if (where.groupDivider != null) {
+        sb.write('${where.groupDivider}');
+        isDividerAdded = true;
       }
     }
-
-    return 'WHERE ($sb)';
+    // return 'WHERE ($sb)';
+    return 'WHERE $sb';
   }
 
   @override

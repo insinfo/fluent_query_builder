@@ -321,15 +321,15 @@ abstract class QueryBuilder {
   //
   // WHERE
   //
-  QueryBuilder where(String condition, [Object param]) {
+  QueryBuilder where(String condition, [Object param, String andOr = 'AND']) {
     throw UnsupportedOperationException('`where` not implemented');
   }
 
-  QueryBuilder whereExpr(Expression condition, [Object param]) {
+  QueryBuilder whereExpr(Expression condition, [Object param, String andOr = 'AND']) {
     throw UnsupportedOperationException('`whereExpr` not implemented');
   }
 
-  QueryBuilder whereRaw(String whereRawSql) {
+  QueryBuilder whereRaw(String whereRawSql, [String andOr = 'AND']) {
     throw UnsupportedOperationException('`whereRaw` not implemented');
   }
 

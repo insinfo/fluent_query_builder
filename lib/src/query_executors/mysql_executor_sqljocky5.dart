@@ -121,6 +121,21 @@ class MySqlExecutor extends QueryExecutor {
     //print('MySqlExecutor@getAsMap results ${results}');
     return results;
   }
+
+  @override
+  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
+    Transaction tx;
+    try {
+      tx = await _startTransaction();
+      var executor = MySqlExecutor(tx, logger: logger);
+      var result = await queryBlock(executor);
+      await tx.commit();
+      return result;
+    } catch (_) {
+      await tx?.rollback();
+      rethrow;
+    }
+  }
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
@@ -214,6 +229,14 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
     return _pool.withResource(() async {
       var executor = await _next();
       return executor.transaction(f);
+    });
+  }
+
+  @override
+  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
+    return _pool.withResource(() async {
+      var executor = await _next();
+      return executor.transaction(queryBlock);
     });
   }
 }

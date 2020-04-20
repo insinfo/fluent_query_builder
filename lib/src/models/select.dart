@@ -5,7 +5,6 @@ import 'get_field_block.dart';
 import 'group_by_block.dart';
 import 'join_block.dart';
 import 'limit_block.dart';
-import 'orwhere_block.dart';
 import 'sort_order.dart';
 import 'union_block.dart';
 import 'union_type.dart';
@@ -46,7 +45,7 @@ class Select extends QueryBuilder {
             LimitBlock(options), // 8
             OffsetBlock(options), // 9
             UnionBlock(options), // 10
-            OrWhereBlock(options) // 11
+            //OrWhereBlock(options) // 11
           ],
           execFunc: execFunc,
           firstAsMapFuncWithMeta: firstAsMapFuncWithMeta,
@@ -175,9 +174,23 @@ class Select extends QueryBuilder {
   //
 
   @override
-  QueryBuilder where(String condition, [Object param]) {
+  QueryBuilder where(String condition, [Object param, String andOr = 'AND']) {
     final block = mBlocks[5] as WhereBlock;
-    block.setWhere(condition, param);
+    block.setWhere(condition, param, andOr);
+    return this;
+  }
+
+  @override
+  QueryBuilder whereExpr(Expression condition, [Object param, String andOr = 'AND']) {
+    final block = mBlocks[5] as WhereBlock;
+    block.setWhereWithExpression(condition, param);
+    return this;
+  }
+
+  @override
+  QueryBuilder whereRaw(String whereRawSql, [String andOr = 'AND']) {
+    final block = mBlocks[5] as WhereBlock;
+    block.setWhereRaw(whereRawSql, andOr);
     return this;
   }
 
@@ -190,22 +203,8 @@ class Select extends QueryBuilder {
 
   @override
   QueryBuilder orWhereSafe(String field, String operator, value) {
-    final block = mBlocks[11] as OrWhereBlock;
-    block.setWhereSafe(field, operator, value);
-    return this;
-  }
-
-  @override
-  QueryBuilder whereExpr(Expression condition, [Object param]) {
     final block = mBlocks[5] as WhereBlock;
-    block.setWhereWithExpression(condition, param);
-    return this;
-  }
-
-  @override
-  QueryBuilder whereRaw(String whereRawSql) {
-    final block = mBlocks[5] as WhereBlock;
-    block.setWhereRaw(whereRawSql);
+    block.setOrWhereSafe(field, operator, value);
     return this;
   }
 
@@ -228,7 +227,7 @@ class Select extends QueryBuilder {
       throw Exception('function cannot be null');
     }
 
-    final block = mBlocks[11] as OrWhereBlock;
+    final block = mBlocks[5] as WhereBlock;
     block.setStartGroup();
     var r = function(this);
     block.setEndGroup();

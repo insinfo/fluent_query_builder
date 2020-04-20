@@ -19,11 +19,12 @@ abstract class QueryExecutor {
   /// underlying driver.
   Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f);
 
+  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds});
+
   Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
       {Map<String, dynamic> substitutionValues});
 
-  Future<List<Map<String, dynamic>>> getAsMap(String query,
-      {Map<String, dynamic> substitutionValues});
+  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues});
 
   Future close();
 }

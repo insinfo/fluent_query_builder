@@ -36,9 +36,9 @@ class DbLayer {
   QueryBuilderOptions options;
   DBConnectionInfo connectionInfo;
 
-  Future<DbLayer> connect(DBConnectionInfo connectionInfo) async {
-    options = connectionInfo.getQueryOptions();
-    this.connectionInfo = connectionInfo.getSettings();
+  Future<DbLayer> connect(DBConnectionInfo connInfo) async {
+    options = connInfo.getQueryOptions();
+    connectionInfo = connInfo.getSettings();
     var nOfProces = connectionInfo.setNumberOfProcessorsFromPlatform
         ? Platform.numberOfProcessors
         : connectionInfo.numberOfProcessors;
@@ -102,7 +102,7 @@ class DbLayer {
     );
   }
 
-  /// Starts the UPDATE-query. 
+  /// Starts the UPDATE-query.
   /// @return QueryBuilder
   QueryBuilder update() {
     return currentQuery = Update(
@@ -117,7 +117,7 @@ class DbLayer {
     );
   }
 
-  /// Starts the INSERT-query with the provided options. 
+  /// Starts the INSERT-query with the provided options.
   /// @return QueryBuilder
   QueryBuilder insert() {
     return currentQuery = Insert(options,
@@ -130,7 +130,7 @@ class DbLayer {
         putSingleFunc: putSingle);
   }
 
-  /// Starts the DELETE-query with the provided options. 
+  /// Starts the DELETE-query with the provided options.
   /// @return QueryBuilder
   QueryBuilder delete() {
     return currentQuery = Delete(
@@ -263,8 +263,16 @@ class DbLayer {
     await executor.close();
   }
 
-  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) {
-    return executor.transaction<T>(f);
+  Future<T> transaction<T>(FutureOr<T> Function(DbLayer) f) {
+    return executor.transaction<T>((queryEcecutor) async{
+      var db = await DbLayer(factories:factories);
+      db.executor = queryEcecutor;
+      return f(db);
+    });
+  }
+
+  Future transaction2(Future Function(dynamic) queryBlock, {int commitTimeoutInSeconds}) {
+    return executor.transaction2(queryBlock);
   }
 
   //

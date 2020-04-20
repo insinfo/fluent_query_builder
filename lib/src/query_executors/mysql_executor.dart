@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:fluent_query_builder/src/query_executors/mysql_executor_sqljocky5.dart';
+
 import 'package:pool/pool.dart';
 import 'package:mysql1/mysql1.dart';
 import '../models/exceptions.dart';
@@ -25,8 +25,6 @@ class MySqlExecutor extends QueryExecutor {
     }
   }
 
-  
-
   @override
   Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
     // Change @id -> ?
@@ -38,7 +36,9 @@ class MySqlExecutor extends QueryExecutor {
     logger?.fine('Values: $substitutionValues');
 
     //if (returningFields?.isNotEmpty != true) {
-    return _connection.query(query, Utils.substitutionMapToList(substitutionValues)).then((results) => results.map((r) => r.toList()).toList());
+    return _connection
+        .query(query, Utils.substitutionMapToList(substitutionValues))
+        .then((results) => results.map((r) => r.toList()).toList());
     /*} else {
       return Future(() async {
         var tx = await _startTransaction();
@@ -152,6 +152,11 @@ class MySqlExecutor extends QueryExecutor {
     }*/
     return result;
   }
+
+  @override
+  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) {
+    return _connection.transaction(queryBlock);
+  }
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
@@ -246,5 +251,11 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
       var executor = await _next();
       return executor.transaction(f);
     });
+  }
+
+  @override
+  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
+    var executor = await _next();
+    return executor.transaction(queryBlock);
   }
 }

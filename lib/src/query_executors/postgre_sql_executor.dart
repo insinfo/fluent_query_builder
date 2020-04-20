@@ -47,13 +47,13 @@ class PostgreSqlExecutor implements QueryExecutor {
     //print('PostgreSqlExecutor@getAsMap query $query');
     //print('PostgreSqlExecutor@getAsMap substitutionValues $substitutionValues');
     var rows = await getAsMapWithMeta(query, substitutionValues: substitutionValues);
-   
+
     final result = <Map<String, dynamic>>[];
     if (rows != null || rows.isNotEmpty) {
       for (var item in rows) {
         //Combine/merge multiple maps into 1 map
         result.add(item.values.reduce((map1, map2) => map1..addAll(map2)));
-      }      
+      }
     }
     return result;
   }
@@ -136,6 +136,12 @@ class PostgreSqlExecutor implements QueryExecutor {
     } else {
       return returnValue;
     }
+  }
+
+  @override
+  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) {
+    var conn = _connection as PostgreSQLConnection;
+    return conn.transaction(queryBlock, commitTimeoutInSeconds: commitTimeoutInSeconds);
   }
 }
 
@@ -237,5 +243,11 @@ class PostgreSqlExecutorPool implements QueryExecutor {
       var executor = await _next();
       return executor.transaction(f);
     });
+  }
+
+  @override
+  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
+    var executor = await _next();
+    return executor.transaction2(queryBlock, commitTimeoutInSeconds: commitTimeoutInSeconds);
   }
 }

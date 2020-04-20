@@ -103,9 +103,32 @@ void main() {
         .from('pessoas')       
         .count()
         .then((result) => print('pgsql count $result'));
+
+        
   });
   
-  
+  //pgsql transaction example
+  var db = await DbLayer().connect(pgsqlCom);
+  await db.transaction((ctx) async {
+    
+    var result = await ctx.insert().into('usuarios')
+    .set('username', 'isaque')
+    .set('password', '123456')
+    .exec();
+
+    await ctx
+    .select()
+    .from('pessoas')     
+    .orWhereGroup((query) {
+      return query
+      .orWhereSafe('nome', 'ilike', '%5%')
+      .orWhereSafe('cpf', 'ilike', '%5%');
+    })
+    .whereSafe('id', '>', 0)
+    .getAsMap();
+
+    print('pgsql transaction $result');
+  });
 }
 
 ```

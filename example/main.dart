@@ -1,8 +1,6 @@
-import 'dart:io';
-
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
-void main() {
+void main() async {
   print('start execution');
   //PostgreSQL connection information
   final pgsqlCom = DBConnectionInfo(
@@ -27,33 +25,33 @@ void main() {
     charset: 'utf8',
   );
 
-  DbLayer().connect(mysqlCom).then((db) {
+  /*DbLayer().connect(mysqlCom).then((db) {
     //mysql insert
-    /*db
+    db
         .insert()
         .into('pessoas')
         .set('nome', 'Isaque Neves Sant\'Ana')
         .set('telefone', '(22) 2771-6265')
         .exec()
-        .then((result) => print('mysql insert $result'));*/
+        .then((result) => print('mysql insert $result'));
 
     //mysql update
-    /*db
+    db
         .update()
         .table('pessoas')
         .set('nome', 'João')
         .where('id=?', 13)
         .exec()
-        .then((result) => print('mysql update $result'));*/
+        .then((result) => print('mysql update $result'));
 
     //mysql delete
-    /*db.delete().from('pessoas')
+    db.delete().from('pessoas')
     .where('id=?', 14)
     .exec()
-    .then((result) => print('mysql delete $result'));*/
+    .then((result) => print('mysql delete $result'));
 
     //mysql select
-    /*db
+    db
         .select()
         //.fields(['login', 'idSistema', 's.sigla'])
         //.fieldRaw('SELECT COUNT(*)')
@@ -61,27 +59,27 @@ void main() {
         .whereSafe('nome', 'like', '%Sant\'Ana%')
         //.limit(1)
         .firstAsMap()
-        .then((result) => print('mysql select $result'));*/
+        .then((result) => print('mysql select $result'));
 
     //mysql raw query SELECT * FROM `pessoas` or SELECT COUNT(*) FROM pessoas
-    /*db  
+    db  
         .raw("SELECT * FROM `pessoas`")
         .firstAsMap()
-        .then((result) => print('mysql raw $result'));*/
+        .then((result) => print('mysql raw $result'));
 
     //mysql count records
-    /*db
+    db
         .select()
         .from('pessoas')
         .orWhereSafe('nome', 'like', '%Sant\'Ana%')
         .orWhereSafe('id', '<', 20)
         .count()
-        .then((result) => print('mysql select $result'));*/
-  });
+        .then((result) => print('mysql select $result'));
+  });*/
 
-  DbLayer().connect(pgsqlCom).then((db) {
-    //pgsql insert
-    /*db
+  var db = await DbLayer().connect(pgsqlCom);
+  //pgsql insert
+  /*db
         .insert()
         .into('usuarios')
         .set('username', 'isaque')
@@ -89,22 +87,32 @@ void main() {
         .exec()
         .then((result) => print('pgsql insert $result'));*/
 
-    /*   db
+  /*   db
         .select()
         .from('pessoas')       
         .count()
         .then((result) => print('pgsql count $result'));*/
 
-    db
+  await db.transaction((ctx) async {
+    
+    var result = await ctx.insert().into('usuarios')
+    .set('username', 'isaque')
+    .set('password', '123456')
+    .exec();
+
+    await ctx
         .select()
         .from('pessoas')
-        //.whereSafe('nome', 'ilike', '%Sant\'Ana%')
+        // .whereSafe('nome', 'ilike', '%Sant\'Ana%')
         .orWhereGroup((query) {
-          return query.orWhereSafe('nome', 'ilike', '%5%').orWhereSafe('cpf', 'ilike', '%5%');
+          return query
+          .orWhereSafe('nome', 'ilike', '%5%')
+          .orWhereSafe('cpf', 'ilike', '%5%');
         })
-        //.whereSafe('id', '>', 1)
-        .firstAsMap()
-        .then((result) => print('pgsql select $result'));
+        .whereSafe('id', '>', 0)
+        .getAsMap();
+
+    print('pgsql transaction $result');
   });
 
   /*DbLayer().connect(pgsqlCom).then((db) {

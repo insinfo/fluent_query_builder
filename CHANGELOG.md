@@ -29,3 +29,7 @@
 ## 1.1.1
 
 - fix break in getAsMap method in PostgreSQL implementation
+
+## 1.1.2
+
+- add orWhereGroup and whereGroup method for grouping conditions

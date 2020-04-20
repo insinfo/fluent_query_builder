@@ -9,7 +9,7 @@ import 'where_node.dart';
 class WhereBlock extends Block {
   WhereBlock(QueryBuilderOptions options) : super(options);
   List<WhereNode> mWheres;
-  List<String> wheresRawSql;
+  List<WhereRawNode> wheresRawSql;
 
   void setStartGroup() {
     mWheres ??= [];
@@ -25,15 +25,15 @@ class WhereBlock extends Block {
   /// @param condition Condition to add
   /// @param param Parameter to add to condition.
   /// @param <P> Type of the parameter to add.
-  void setWhere(String condition, param) {
+  void setWhere(String condition, param, [String andOr = 'AND']) {
     assert(condition != null);
-    doSetWhere(condition, param);
+    doSetWhere(condition, param, andOr);
   }
 
-  void setWhereRaw(String whereRawSql) {
+  void setWhereRaw(String whereRawSql, [String andOr = 'AND']) {
     assert(whereRawSql != null);
     wheresRawSql ??= [];
-    wheresRawSql.add(whereRawSql);
+    wheresRawSql.add(WhereRawNode(whereRawSql, andOr));
   }
 
   void setWhereSafe(String field, String operator, value) {
@@ -41,12 +41,20 @@ class WhereBlock extends Block {
     assert(operator != null);
     assert(value != null);
     mWheres ??= [];
-    mWheres.add(WhereNode(field, value, operator: operator));
+    mWheres.add(WhereNode(field, value, operator: operator, andOr: 'AND'));
   }
 
-  void setWhereWithExpression(Expression condition, param) {
+  void setOrWhereSafe(String field, String operator, value) {
+    assert(field != null);
+    assert(operator != null);
+    assert(value != null);
+    mWheres ??= [];
+    mWheres.add(WhereNode(field, value, operator: operator, andOr: 'OR'));
+  }
+
+  void setWhereWithExpression(Expression condition, param, [String andOr = 'AND']) {
     assert(condition != null);
-    doSetWhere(condition.toString(), param);
+    doSetWhere(condition.toString(), param, andOr);
   }
 
   @override
@@ -56,10 +64,10 @@ class WhereBlock extends Block {
     if (wheresRawSql != null) {
       for (var whereRaw in wheresRawSql) {
         if (sb.length > 0) {
-          sb.write(' AND ');
+          sb.write(' ${whereRaw.andOr} ');
         }
 
-        sb.write(whereRaw);
+        sb.write(whereRaw.sqlString);
       }
       return 'WHERE $sb';
     }
@@ -67,19 +75,23 @@ class WhereBlock extends Block {
     if (mWheres == null || mWheres.isEmpty) {
       return '';
     }
-    var isDividerAdded = false;
-    for (var where in mWheres) {
-      if (where.text != null) {
-        if (sb.length > 0) {
+
+    var length = mWheres.length;
+    for (var i = 0; i < length; i++) {
+      var where = mWheres[i];
+
+      if (where.groupDivider == null) {
+        /*if (sb.length > 0) {
           //sb.write(') OR (');
           if (isDividerAdded) {
             if (sb.length > 1) {
-              sb.write(' AND ');
+              sb.write(' ${where.andOr} ');
             }
           } else {
-            sb.write(' AND ');
+            sb.write(' ${where.andOr} ');
           }
-        }
+        }*/
+
         if (where.operator == null) {
           sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
         } else {
@@ -87,11 +99,23 @@ class WhereBlock extends Block {
           sb.write(' ${where.operator} ');
           sb.write('@${where.text}');
         }
-      } else if (where.groupDivider != null) {
-        sb.write('${where.groupDivider}');
-        isDividerAdded = true;
+
+        if (i < length - 1) {
+          sb.write(' ${where.andOr} ');
+        }
+      } else {
+        sb.write(' ${where.groupDivider} ');
+        if (where.groupDivider == ')') {
+          var str = sb.toString();
+          //print('WhereBlock@buildStr $str');
+          str = str.substring(0, str.lastIndexOf('OR'));
+          sb.clear();
+          sb.write(' ${str} ) ${where.andOr} ');
+          //print('WhereBlock@buildStr $sb');
+        }
       }
     }
+
     // return 'WHERE ($sb)';
     return 'WHERE $sb';
   }
@@ -123,8 +147,8 @@ class WhereBlock extends Block {
     return values;
   }*/
 
-  void doSetWhere(String condition, param) {
+  void doSetWhere(String condition, param, [String andOr = 'AND']) {
     mWheres ??= [];
-    mWheres.add(WhereNode(condition, param));
+    mWheres.add(WhereNode(condition, param, andOr: andOr));
   }
 }

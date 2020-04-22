@@ -416,6 +416,23 @@ class DbLayer {
     Function(QueryBuilder) callback_query,
     isSingle = false,
   }) async {
+    if (data == null) {
+      //throw Exception('data cannot be null');
+      return data;
+    }
+
+    if (tableName == null) {
+      throw Exception('tableName cannot be null');
+    }
+
+    if (localKey == null) {
+      throw Exception('localKey cannot be null');
+    }
+
+    if (foreignKey == null) {
+      throw Exception('foreignKey cannot be null');
+    }
+
     //1º obtem os ids
     var itens_id = <int>[];
     for (var item2 in data) {

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/github/insinfo/fluent_query_builder.svg?branch=master)](https://travis-ci.com/github/insinfo/fluent_query_builder) 
+
 A dart library that allows you to execute SQL queries in the PostgreSQL database in a fluent way, is very easy to execute.
 This library implements POOL of connections.
 This lib implements the vast majority of SQL statements and clauses

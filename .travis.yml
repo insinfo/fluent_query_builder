@@ -23,7 +23,7 @@ before_script:
   - psql -c "INSERT INTO pessoas (nome,telefone,cpf) VALUES ('Isaque Neves Sant Ana', '(22) 99701-5305', '54654');" -U postgres -d banco_teste
   - PGPASSWORD=s1sadm1n
   - echo $PGPASSWORD
-  - psql -c "SELECT * FROM pessoas;" -U sisadmin -w -d banco_teste
+  - psql -c "SELECT * FROM pessoas;" -U sisadmin -d banco_teste
   - pub get
 dart_task:
   - test: --run-skipped -r expanded -j 1

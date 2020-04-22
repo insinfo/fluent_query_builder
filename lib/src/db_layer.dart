@@ -35,6 +35,7 @@ class DbLayer {
   }
   QueryBuilderOptions options;
   DBConnectionInfo connectionInfo;
+  static const dynamic DEFAULT_NULL = [];
 
   Future<DbLayer> connect(DBConnectionInfo connInfo) async {
     options = connInfo.getQueryOptions();
@@ -46,29 +47,29 @@ class DbLayer {
     //Todo implementar
     //se connectionInfo.driver for pgsql chama PostgreSqlExecutorPool
     //se for mysql chama  MySqlExecutor
-    if (this.connectionInfo.driver == ConnectionDriver.pgsql) {
+    if (connectionInfo.driver == ConnectionDriver.pgsql) {
       executor = PostgreSqlExecutorPool(
         nOfProces,
         () {
           return PostgreSQLConnection(
-            this.connectionInfo.host,
-            this.connectionInfo.port,
-            this.connectionInfo.database,
-            username: this.connectionInfo.username,
-            password: this.connectionInfo.password,
+            connectionInfo.host,
+            connectionInfo.port,
+            connectionInfo.database,
+            username: connectionInfo.username,
+            password: connectionInfo.password,
           );
         },
-        schemes: this.connectionInfo.schemes,
+        schemes: connectionInfo.schemes,
       );
     } else {
       executor = MySqlExecutor(
         await MySqlConnection.connect(
           ConnectionSettings(
-            host: this.connectionInfo.host,
-            port: this.connectionInfo.port,
-            db: this.connectionInfo.database,
-            user: this.connectionInfo.username,
-            password: this.connectionInfo.password,
+            host: connectionInfo.host,
+            port: connectionInfo.port,
+            db: connectionInfo.database,
+            user: connectionInfo.username,
+            password: connectionInfo.password,
           ),
         ),
       );
@@ -264,8 +265,8 @@ class DbLayer {
   }
 
   Future<T> transaction<T>(FutureOr<T> Function(DbLayer) f) {
-    return executor.transaction<T>((queryEcecutor) async{
-      var db = await DbLayer(factories:factories);
+    return executor.transaction<T>((queryEcecutor) async {
+      var db = await DbLayer(factories: factories);
       db.executor = queryEcecutor;
       return f(db);
     });
@@ -373,5 +374,114 @@ class DbLayer {
     queryBuilder.from(model.tableName);
     queryBuilder.where('${model.primaryKey}=?', model.primaryKeyVal);
     await exec();
+  }
+
+  ///
+  /// @param data
+  /// @param tableName nome da tabela relacionada
+  /// @param localKey key id da tabela relacionada
+  /// @param foreignKey id contido nos dados passados pelo parametro data para comparar com o key id da tabela relacionada
+  /// @param relationName nome da chave no map que estara com o resultado
+  /// @param defaultNull valor padrão para a chave no map caso não tenha resultado List | null
+  ///
+  /// @param null callback_fields
+  /// Este parametro deve ser uma função anonima com um parametro que é o campo
+  /// utilizada para alterar as informações de um determinado campo vindo do banco
+  /// Exemplo:
+  /// (field) {
+  ///  field['description'] = strip_tags(field['description']);
+  /// }
+  ///
+  /// @param null $callback_query
+  /// Este parametro deve ser uma função com um parametro. Neste parametro você
+  /// receberá a query utilizada na consulta, possibilitando
+  /// realizar operações de querys extras para esta ação.
+  ///
+  /// Exemplo:
+  /// (query) {
+  ///  query.orderBy('field_name', 'asc');
+  /// }
+  ///
+  /// @param bool isSingle
+  ///
+  ///
+  Future<List<Map<String, dynamic>>> getRelationFromMaps(
+    List<Map<String, dynamic>> data,
+    String tableName,
+    String localKey,
+    String foreignKey, {
+    String relationName,
+    dynamic defaultNull = DEFAULT_NULL,
+    Function(Map<String, dynamic>) callback_fields,
+    Function(QueryBuilder) callback_query,
+    isSingle = false,
+  }) async {
+    //1º obtem os ids
+    var itens_id = <int>[];
+    for (var item2 in data) {
+      var itemId = item2.containsKey(foreignKey) ? item2[foreignKey] : null;
+      //não adiciona se for nulo ou vazio ou diferente de int
+      if (itemId != null) {
+        itens_id.add(itemId);
+      }
+    }
+    //instancia o objeto query builder
+    var query = select().from(tableName);
+    //checa se foi passado callback_query para mudar a query
+    if (callback_query != null) {
+      callback_query(query);
+    }
+
+    List<Map<String, dynamic>> queryResult;
+    //se ouver itens a serem pegos no banco
+    if (itens_id.isNotEmpty) {
+      //prepara a query where in e executa
+      query.whereRaw('"$tableName"."$localKey" in (${itens_id.join(",")})');
+      queryResult = await query.getAsMap();
+    } else {
+      queryResult = null;
+    }
+
+    //verifica se foi passado um nome para o node de resultados
+    if (relationName != null) {
+      relationName = relationName + '';
+    } else {
+      relationName = tableName;
+    }
+    if (isSingle) {
+      defaultNull = null;
+    }
+
+    //var result = <Map<String, dynamic>>[];
+    //intera sobre a lista de dados passados
+    for (var item in data) {
+      //result.add({relationName: defaultNull});
+      item[relationName] = defaultNull;
+      var conjunto = [];
+      //faz o loop sobre os resultados da query
+      if (queryResult != null) {
+        for (var value in queryResult) {
+          //verifica se o item corrente tem relação com algum filho trazido pela query
+          if (item[foreignKey] == value[localKey]) {
+            //checa se foi passado callback_fields
+            if (callback_fields != null) {
+              value = callback_fields(value);
+            }
+            //verifica se é para trazer um filho ou varios
+            if (isSingle) {
+              item[relationName] = value ?? defaultNull;
+              break;
+            } else {
+              conjunto.add(value ?? defaultNull);
+            }
+
+            item[relationName] = conjunto;
+          }
+        }
+      }
+    }
+
+    //fim
+    return data;
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
 void main() async {
@@ -79,13 +81,13 @@ void main() async {
 
   var db = await DbLayer().connect(pgsqlCom);
   //pgsql insert
-  /*db
-        .insert()
-        .into('usuarios')
-        .set('username', 'isaque')
-        .set('password', '123456')
-        .exec()
-        .then((result) => print('pgsql insert $result'));*/
+  /* db
+      .insert()
+      .into('usuarios')
+      .set('username', 'isaque')
+      .set('password', '123456')
+      .exec()
+      .then((result) => print('pgsql insert $result'));*/
 
   /*   db
         .select()
@@ -93,8 +95,24 @@ void main() async {
         .count()
         .then((result) => print('pgsql count $result'));*/
 
-  await db.transaction((ctx) async {
-    
+  var data = await db
+      .select()
+      .from('pessoas')
+      // .whereSafe('nome', 'ilike', '%Sant\'Ana%')
+      .orWhereGroup((query) {
+        return query.orWhereSafe('nome', 'ilike', '%5%').orWhereSafe('cpf', 'ilike', '%5%');
+      })
+      .whereSafe('id', '>', 0)
+      .getAsMap();
+
+  data = await db.getRelationFromMaps(data, 'usuarios', 'idPessoa', 'id');
+
+  print('pgsql select \r\n ${jsonEncode(data)}');
+
+   
+
+  /*await db.transaction((ctx) async {
+
     var result = await ctx.insert().into('usuarios')
     .set('username', 'isaque')
     .set('password', '123456')
@@ -113,7 +131,7 @@ void main() async {
         .getAsMap();
 
     print('pgsql transaction $result');
-  });
+  });*/
 
   /*DbLayer().connect(pgsqlCom).then((db) {
     final query = db

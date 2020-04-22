@@ -115,7 +115,7 @@ void main() {
     .set('username', 'isaque')
     .set('password', '123456')
     .exec();
-
+    //pgsql use of Where Group => WHERE (nome ilike '%5%' or cpf ilike '%5%') AND id > 0
     await ctx
     .select()
     .from('pessoas')     
@@ -129,6 +129,47 @@ void main() {
 
     print('pgsql transaction $result');
   });
+
+  //pgsql getRelationFromMaps example
+   var data = await db
+      .select()
+      .from('pessoas') 
+      .orWhereGroup((query) {
+        return query.orWhereSafe('nome', 'ilike', '%5%').orWhereSafe('cpf', 'ilike', '%5%');
+      })
+      .whereSafe('id', '>', 0)
+      .getAsMap();
+
+  data = await db.getRelationFromMaps(data, 'usuarios', 'idPessoa', 'id');
+
+  print('pgsql select \r\n ${jsonEncode(data)}');
+  /* pgsql select 
+    [
+      {
+        "id":2,
+        "nome":"Isaque Neves Sant'Ana",
+        "telefone":"(22) 99701-5305",
+        "cpf":"54654",
+        "usuarios":[
+            {
+              "id":16,
+              "username":"isaque",
+              "password":"123456",
+              "ativo":null,
+              "idPessoa":2
+            }
+        ]
+      },
+      {
+        "id":1,
+        "nome":"João da Silva 5",
+        "telefone":"27772339",
+        "cpf":"1111",
+        "usuarios":[
+
+        ]
+      }
+    ]  */
 }
 
 ```

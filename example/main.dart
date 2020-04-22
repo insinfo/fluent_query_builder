@@ -95,7 +95,7 @@ void main() async {
         .count()
         .then((result) => print('pgsql count $result'));*/
 
-  var data = await db
+  /*var data = await db
       .select()
       .from('pessoas')
       // .whereSafe('nome', 'ilike', '%Sant\'Ana%')
@@ -107,9 +107,11 @@ void main() async {
 
   data = await db.getRelationFromMaps(data, 'usuarios', 'idPessoa', 'id');
 
-  print('pgsql select \r\n ${jsonEncode(data)}');
+  print('pgsql select \r\n ${jsonEncode(data)}');*/
 
-   
+ // var r = await db.select().from('pessoas').fieldRaw('1').limit(1).exec();
+ // var r = await db.raw('select 1').exec();
+ // print(r);
 
   /*await db.transaction((ctx) async {
 

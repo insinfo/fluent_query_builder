@@ -14,7 +14,6 @@ import 'order_by_block.dart';
 import 'string_block.dart';
 import 'query_builder.dart';
 import 'query_builder_options.dart';
-
 import 'join_type.dart';
 import 'expression.dart';
 
@@ -44,8 +43,7 @@ class Select extends QueryBuilder {
             OrderByBlock(options), // 7
             LimitBlock(options), // 8
             OffsetBlock(options), // 9
-            UnionBlock(options), // 10
-            //OrWhereBlock(options) // 11
+            UnionBlock(options), // 10         
           ],
           execFunc: execFunc,
           firstAsMapFuncWithMeta: firstAsMapFuncWithMeta,
@@ -115,6 +113,12 @@ class Select extends QueryBuilder {
     block.setFieldRaw(setFieldRawSql);
     return this;
   }
+
+ /* QueryBuilder raw(String rawSql) {
+     final block = mBlocks[2] as GetFieldBlock;
+    block.setFieldRaw(setFieldRawSql);
+    return this;
+  }*/
 
   @override
   QueryBuilder group(String field) {

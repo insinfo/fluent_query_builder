@@ -230,6 +230,10 @@ abstract class QueryBuilder {
     throw UnsupportedOperationException('`deleteSingle` not implemented');
   }
 
+ /* QueryBuilder raw(String rawSql) {
+    throw UnsupportedOperationException('`raw` not implemented');
+  }*/
+
   //
   // DISTINCT
   //

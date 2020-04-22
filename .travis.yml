@@ -22,8 +22,8 @@ before_script:
   - pub get
 dart_task:
   - test: --run-skipped -r expanded -j 1
-  - dartfmt
-  - dartanalyzer: --fatal-infos --fatal-warnings .
+#  - dartfmt -w ./
+#  - dartanalyzer: --fatal-infos --fatal-warnings .
 
 #after_success: bash ci/after_script.sh
 branches:
@@ -31,4 +31,3 @@ branches:
     - master
     
 
-    

@@ -6,7 +6,6 @@ export 'src/query_executors/postgre_sql_executor.dart';
 export 'src/db_layer.dart';
 export 'src/connection_info.dart';
 
-
 export 'src/fluent_model_base.dart';
 
 //models

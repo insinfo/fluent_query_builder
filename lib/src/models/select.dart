@@ -23,12 +23,15 @@ class Select extends QueryBuilder {
     QueryBuilderOptions options, {
     Future<List<List>> Function() execFunc,
     Future<Map<String, Map<String, dynamic>>> Function() firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String, dynamic>>>> Function() getAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String, dynamic>>>> Function()
+        getAsMapFuncWithMeta,
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
-    Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory]) fetchAllFunc,
-    Future<T> Function<T>([T Function(Map<String, dynamic>) factory]) fetchSingleFunc,
+    Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory])
+        fetchAllFunc,
+    Future<T> Function<T>([T Function(Map<String, dynamic>) factory])
+        fetchSingleFunc,
     Future<int> Function() countFunc,
   }) : super(
           options,
@@ -43,7 +46,7 @@ class Select extends QueryBuilder {
             OrderByBlock(options), // 7
             LimitBlock(options), // 8
             OffsetBlock(options), // 9
-            UnionBlock(options), // 10         
+            UnionBlock(options), // 10
           ],
           execFunc: execFunc,
           firstAsMapFuncWithMeta: firstAsMapFuncWithMeta,
@@ -114,7 +117,7 @@ class Select extends QueryBuilder {
     return this;
   }
 
- /* QueryBuilder raw(String rawSql) {
+  /* QueryBuilder raw(String rawSql) {
      final block = mBlocks[2] as GetFieldBlock;
     block.setFieldRaw(setFieldRawSql);
     return this;
@@ -145,21 +148,24 @@ class Select extends QueryBuilder {
   // JOIN
   //
   @override
-  QueryBuilder join(String joinTableName, String condition, {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder join(String joinTableName, String condition,
+      {String alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks[4] as JoinBlock;
     block.setJoin(joinTableName, alias, condition, type);
     return this;
   }
 
   @override
-  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition, {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition,
+      {String alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks[4] as JoinBlock;
     block.setJoinWithSubQuery(table, alias, condition, type);
     return this;
   }
 
   @override
-  QueryBuilder joinWithExpression(String table, Expression condition, {String alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithExpression(String table, Expression condition,
+      {String alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks[4] as JoinBlock;
     block.setJoinWithExpression(table, alias, condition, type);
     return this;
@@ -185,7 +191,8 @@ class Select extends QueryBuilder {
   }
 
   @override
-  QueryBuilder whereExpr(Expression condition, [Object param, String andOr = 'AND']) {
+  QueryBuilder whereExpr(Expression condition,
+      [Object param, String andOr = 'AND']) {
     final block = mBlocks[5] as WhereBlock;
     block.setWhereWithExpression(condition, param);
     return this;

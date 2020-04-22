@@ -20,7 +20,7 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
     final values = Util.join(', ', buildFieldValuesForSubstitution(mFields));
 
     var sql = '($fields) VALUES ($values)';
-  
+
     return sql;
   }
 
@@ -35,7 +35,7 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
       var v = Validator.formatValue(item.value, mOptions);
       result.addAll({'${item.field}': v});
     }
-   
+
     return result;
   }
 

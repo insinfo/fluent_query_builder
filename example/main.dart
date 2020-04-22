@@ -109,9 +109,9 @@ void main() async {
 
   print('pgsql select \r\n ${jsonEncode(data)}');*/
 
- // var r = await db.select().from('pessoas').fieldRaw('1').limit(1).exec();
- // var r = await db.raw('select 1').exec();
- // print(r);
+  // var r = await db.select().from('pessoas').fieldRaw('1').limit(1).exec();
+  // var r = await db.raw('select 1').exec();
+  // print(r);
 
   /*await db.transaction((ctx) async {
 

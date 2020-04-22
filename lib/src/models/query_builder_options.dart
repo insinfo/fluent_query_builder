@@ -66,7 +66,8 @@ class QueryBuilderOptions {
       'singleQuoteReplacement': singleQuoteReplacement,
       'doubleQuoteReplacement': doubleQuoteReplacement,
       'separator': separator,
-      'quoteStringWithFieldsTablesSeparator': quoteStringWithFieldsTablesSeparator,
+      'quoteStringWithFieldsTablesSeparator':
+          quoteStringWithFieldsTablesSeparator,
       'fieldsTablesSeparator': fieldsTablesSeparator,
       'allowAliasInFields': allowAliasInFields,
       'valueQuoteCharacter': valueQuoteCharacter

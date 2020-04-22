@@ -165,7 +165,8 @@ class DbLayer {
       throw Exception('Is nessesary query');
     }
 
-    final rows = await executor.query(currentQuery.toSql(), currentQuery.buildSubstitutionValues());
+    final rows = await executor.query(
+        currentQuery.toSql(), currentQuery.buildSubstitutionValues());
     return rows;
   }
 
@@ -186,7 +187,8 @@ class DbLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@first Is nessesary query');
     }
-    final rows = await executor.query(currentQuery.toSql(isFirst: true), currentQuery.buildSubstitutionValues());
+    final rows = await executor.query(currentQuery.toSql(isFirst: true),
+        currentQuery.buildSubstitutionValues());
 
     if (rows != null) {
       if (rows.isNotEmpty) {
@@ -204,7 +206,8 @@ class DbLayer {
       throw Exception('Is nessesary query');
     }
 
-    final rows = await executor.query(currentQuery.toSql(isCount: true), currentQuery.buildSubstitutionValues());
+    final rows = await executor.query(currentQuery.toSql(isCount: true),
+        currentQuery.buildSubstitutionValues());
     //total_records
     if (rows != null) {
       if (rows.isNotEmpty) {
@@ -236,8 +239,8 @@ class DbLayer {
       throw Exception('Dblayer@getAsMap Is nessesary query');
     }
 
-    final rows =
-        await executor.getAsMap(currentQuery.toSql(), substitutionValues: currentQuery.buildSubstitutionValues());
+    final rows = await executor.getAsMap(currentQuery.toSql(),
+        substitutionValues: currentQuery.buildSubstitutionValues());
     return rows;
   }
 
@@ -272,12 +275,14 @@ class DbLayer {
     });
   }
 
-  Future transaction2(Future Function(dynamic) queryBlock, {int commitTimeoutInSeconds}) {
+  Future transaction2(Future Function(dynamic) queryBlock,
+      {int commitTimeoutInSeconds}) {
     return executor.transaction2(queryBlock);
   }
 
   //
-  Future<List<T>> _fetchAll<T>([T Function(Map<String, dynamic>) factory]) async {
+  Future<List<T>> _fetchAll<T>(
+      [T Function(Map<String, dynamic>) factory]) async {
     var records = await getAsMap();
 
     Function fac;

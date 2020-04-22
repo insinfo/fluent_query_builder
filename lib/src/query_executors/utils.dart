@@ -1,5 +1,6 @@
 class Utils {
-  static List<Object> substitutionMapToList(Map<String, dynamic> substitutionValues) {
+  static List<Object> substitutionMapToList(
+      Map<String, dynamic> substitutionValues) {
     var values = <Object>[];
     if (substitutionValues != null) {
       if (substitutionValues.values.isNotEmpty) {

@@ -7,7 +7,9 @@ abstract class QueryExecutor {
   const QueryExecutor();
 
   /// Executes a single query.
-  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]);
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]);
 
   /// Enters a database transaction, performing the actions within,
   /// and returning the results of [f].
@@ -24,7 +26,8 @@ abstract class QueryExecutor {
   Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
       {Map<String, dynamic> substitutionValues});
 
-  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues});
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
+      {Map<String, dynamic> substitutionValues});
 
   Future close();
 }

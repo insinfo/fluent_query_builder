@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   //PostgreSQL connection information
   final pgsqlCom = DBConnectionInfo(
-    host: '192.168.133.13',
+    host: 'localhost',
     database: 'banco_teste',
     driver: ConnectionDriver.pgsql,
     port: 5432,
@@ -47,7 +47,9 @@ void main() {
       await db?.close();
     });
 
-    test('Issuing multiple queries and awaiting between each one successfully returns the right value', () async {
+    test(
+        'Issuing multiple queries and awaiting between each one successfully returns the right value',
+        () async {
       expect(
           await await db.select().from('pessoas').fieldRaw('1').limit(1).exec(),
           equals([

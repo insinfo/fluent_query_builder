@@ -52,7 +52,8 @@ class WhereBlock extends Block {
     mWheres.add(WhereNode(field, value, operator: operator, andOr: 'OR'));
   }
 
-  void setWhereWithExpression(Expression condition, param, [String andOr = 'AND']) {
+  void setWhereWithExpression(Expression condition, param,
+      [String andOr = 'AND']) {
     assert(condition != null);
     doSetWhere(condition.toString(), param, andOr);
   }
@@ -93,7 +94,8 @@ class WhereBlock extends Block {
         }*/
 
         if (where.operator == null) {
-          sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
+          sb.write(where.text
+              .replaceAll('?', Validator.formatValue(where.param, mOptions)));
         } else {
           sb.write('${where.text}');
           sb.write(' ${where.operator} ');

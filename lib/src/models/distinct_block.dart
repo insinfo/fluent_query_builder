@@ -14,9 +14,4 @@ class DistinctBlock extends Block {
   String buildStr(QueryBuilder queryBuilder) {
     return mIsDistinct ? 'DISTINCT' : '';
   }
-
- 
-
-  
-
 }

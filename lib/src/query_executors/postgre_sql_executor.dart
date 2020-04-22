@@ -27,7 +27,9 @@ class PostgreSqlExecutor implements QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]) {
     if (returningFields != null) {
       var fields = returningFields.join(', ');
       var returning = 'RETURNING $fields';
@@ -43,10 +45,12 @@ class PostgreSqlExecutor implements QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
+      {Map<String, dynamic> substitutionValues}) async {
     //print('PostgreSqlExecutor@getAsMap query $query');
     //print('PostgreSqlExecutor@getAsMap substitutionValues $substitutionValues');
-    var rows = await getAsMapWithMeta(query, substitutionValues: substitutionValues);
+    var rows =
+        await getAsMapWithMeta(query, substitutionValues: substitutionValues);
 
     final result = <Map<String, dynamic>>[];
     if (rows != null || rows.isNotEmpty) {
@@ -69,12 +73,14 @@ class PostgreSqlExecutor implements QueryExecutor {
       {Map<String, dynamic> substitutionValues}) {
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
-    return _connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
+    return _connection.mappedResultsQuery(query,
+        substitutionValues: substitutionValues);
   }
 
   //Use generic function type syntax for parameters.
   //Future<dynamic> f(QueryExecutor connection)
-  Future<dynamic> simpleTransaction(Future<dynamic> Function(QueryExecutor) f) async {
+  Future<dynamic> simpleTransaction(
+      Future<dynamic> Function(QueryExecutor) f) async {
     logger?.fine('Entering simpleTransaction');
     if (_connection is! PostgreSQLConnection) {
       return await f(this);
@@ -100,7 +106,8 @@ class PostgreSqlExecutor implements QueryExecutor {
       if (txResult.reason == null) {
         throw StateError('The transaction was cancelled.');
       } else {
-        throw StateError('The transaction was cancelled with reason "${txResult.reason}".');
+        throw StateError(
+            'The transaction was cancelled with reason "${txResult.reason}".');
       }
     } else {
       return returnValue;
@@ -131,7 +138,8 @@ class PostgreSqlExecutor implements QueryExecutor {
       if (txResult.reason == null) {
         throw StateError('The transaction was cancelled.');
       } else {
-        throw StateError('The transaction was cancelled with reason "${txResult.reason}".');
+        throw StateError(
+            'The transaction was cancelled with reason "${txResult.reason}".');
       }
     } else {
       return returnValue;
@@ -141,7 +149,8 @@ class PostgreSqlExecutor implements QueryExecutor {
   @override
   Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) {
     var conn = _connection as PostgreSQLConnection;
-    return conn.transaction(queryBlock, commitTimeoutInSeconds: commitTimeoutInSeconds);
+    return conn.transaction(queryBlock,
+        commitTimeoutInSeconds: commitTimeoutInSeconds);
   }
 }
 
@@ -163,7 +172,9 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   final Pool _pool, _connMutex = Pool(1);
   List<String> schemes = ['public'];
 
-  PostgreSqlExecutorPool(this.size, this.connectionFactory, {this.logger, this.schemes}) : _pool = Pool(size) {
+  PostgreSqlExecutorPool(this.size, this.connectionFactory,
+      {this.logger, this.schemes})
+      : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
 
@@ -182,7 +193,9 @@ class PostgreSqlExecutorPool implements QueryExecutor {
           logger?.fine('Spawning connections...');
           final conn = connectionFactory();
 
-          final executor = await conn.open().then((_) => PostgreSqlExecutor(conn, logger: logger));
+          final executor = await conn
+              .open()
+              .then((_) => PostgreSqlExecutor(conn, logger: logger));
 
           //isso executa uma query para definir os esquemas
           if (schemes != null && schemes.isNotEmpty) {
@@ -210,12 +223,14 @@ class PostgreSqlExecutorPool implements QueryExecutor {
       {Map<String, dynamic> substitutionValues}) {
     return _pool.withResource(() async {
       final executor = await _next();
-      return executor.getAsMapWithMeta(query, substitutionValues: substitutionValues);
+      return executor.getAsMapWithMeta(query,
+          substitutionValues: substitutionValues);
     });
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
+      {Map<String, dynamic> substitutionValues}) async {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.getAsMap(query, substitutionValues: substitutionValues);
@@ -230,7 +245,9 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]) {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.query(query, substitutionValues, returningFields);
@@ -248,6 +265,7 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   @override
   Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
     var executor = await _next();
-    return executor.transaction2(queryBlock, commitTimeoutInSeconds: commitTimeoutInSeconds);
+    return executor.transaction2(queryBlock,
+        commitTimeoutInSeconds: commitTimeoutInSeconds);
   }
 }

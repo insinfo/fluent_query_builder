@@ -36,7 +36,9 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]) {
     // Change @id -> ?
     for (var name in substitutionValues.keys) {
       query = query.replaceAll('@$name', '?');
@@ -99,7 +101,8 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
+      {Map<String, dynamic> substitutionValues}) async {
     //print('MySqlExecutor@getAsMap query $query');
     //print('MySqlExecutor@getAsMap substitutionValues $substitutionValues');
     var results = <Map<String, dynamic>>[];
@@ -107,7 +110,8 @@ class MySqlExecutor extends QueryExecutor {
     for (var name in substitutionValues.keys) {
       query = query.replaceAll('@$name', '?');
     }
-    var rows = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));
+    var rows = await _connection.prepared(
+        query, Utils.substitutionMapToList(substitutionValues));
 
     var fields = rows.fields;
     await rows.forEach((Row row) {
@@ -155,7 +159,8 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   int _index = 0;
   final Pool _pool, _connMutex = Pool(1);
 
-  MySqlExecutorExecutorPool(this.size, this.connectionFactory, {this.logger}) : _pool = Pool(size) {
+  MySqlExecutorExecutorPool(this.size, this.connectionFactory, {this.logger})
+      : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
 
@@ -202,14 +207,16 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
+      {Map<String, dynamic> substitutionValues}) async {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.getAsMap(query, substitutionValues: substitutionValues);
     });
   }
 
-  Future<List<List>> execute(String query, {Map<String, dynamic> substitutionValues}) {
+  Future<List<List>> execute(String query,
+      {Map<String, dynamic> substitutionValues}) {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.query(query, substitutionValues);
@@ -217,7 +224,9 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]) {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.query(query, substitutionValues, returningFields);

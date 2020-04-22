@@ -7,7 +7,7 @@ void main() {
     host: 'localhost',
     database: 'banco_teste',
     driver: ConnectionDriver.pgsql,
-    port: 5432,
+    port: 5434,//32
     username: 'sisadmin',
     password: 's1sadm1n',
     charset: 'utf8',

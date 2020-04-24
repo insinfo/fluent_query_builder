@@ -146,12 +146,12 @@ class PostgreSqlExecutor implements QueryExecutor {
     }
   }
 
-  @override
+  /*@override
   Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) {
     var conn = _connection as PostgreSQLConnection;
     return conn.transaction(queryBlock,
         commitTimeoutInSeconds: commitTimeoutInSeconds);
-  }
+  }*/
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
@@ -262,10 +262,10 @@ class PostgreSqlExecutorPool implements QueryExecutor {
     });
   }
 
-  @override
+ /* @override
   Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
     var executor = await _next();
     return executor.transaction2(queryBlock,
         commitTimeoutInSeconds: commitTimeoutInSeconds);
-  }
+  }*/
 }

@@ -26,6 +26,18 @@ void main() async {
     password: 's1sadm1n',
     charset: 'utf8',
   );
+  DbLayer().connect(mysqlCom).then((db) {
+    //mysql select
+    db
+        .select()
+        //.fields(['login', 'idSistema', 's.sigla'])
+        //.fieldRaw('SELECT COUNT(*)')
+        .from('pessoas')
+        .whereSafe('nome', 'like', '%Sant\'Ana%')
+        //.limit(1)
+        .firstAsMap()
+        .then((result) => print('mysql select $result'));
+  });
 
   /*DbLayer().connect(mysqlCom).then((db) {
     //mysql insert
@@ -95,7 +107,7 @@ void main() async {
         .count()
         .then((result) => print('pgsql count $result'));*/
 
-  /*var data = await db
+  var data = await db
       .select()
       .from('pessoas')
       // .whereSafe('nome', 'ilike', '%Sant\'Ana%')
@@ -107,7 +119,7 @@ void main() async {
 
   data = await db.getRelationFromMaps(data, 'usuarios', 'idPessoa', 'id');
 
-  print('pgsql select \r\n ${jsonEncode(data)}');*/
+  print('pgsql select \r\n ${jsonEncode(data)}');
 
   // var r = await db.select().from('pessoas').fieldRaw('1').limit(1).exec();
   // var r = await db.raw('select 1').exec();

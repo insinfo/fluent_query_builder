@@ -275,10 +275,10 @@ class DbLayer {
     });
   }
 
-  Future transaction2(Future Function(dynamic) queryBlock,
+  /*Future transaction2(Future Function(dynamic) queryBlock,
       {int commitTimeoutInSeconds}) {
     return executor.transaction2(queryBlock);
-  }
+  }*/
 
   //
   Future<List<T>> _fetchAll<T>(

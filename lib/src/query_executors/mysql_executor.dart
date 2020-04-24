@@ -160,10 +160,10 @@ class MySqlExecutor extends QueryExecutor {
     return result;
   }
 
-  @override
+  /*@override
   Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) {
     return _connection.transaction(queryBlock);
-  }
+  }*/
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
@@ -265,9 +265,9 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
     });
   }
 
-  @override
+  /*@override
   Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
     var executor = await _next();
     return executor.transaction(queryBlock);
-  }
+  }*/
 }

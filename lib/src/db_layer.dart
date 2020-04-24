@@ -1,7 +1,16 @@
 import 'dart:async';
+import 'dart:io';
+
 import 'package:postgres/postgres.dart';
+
+//import 'package:mysql1/mysql1.dart';
+import 'package:sqljocky5/sqljocky.dart';
+
 import 'connection_info.dart';
+import 'models/raw.dart';
 import 'query_executors/postgre_sql_executor.dart';
+//import 'query_executors/mysql_executor.dart';
+import 'query_executors/mysql_executor_sqljocky5.dart';
 import 'query_executors/query_executor.dart';
 import 'models/query_builder.dart';
 
@@ -13,58 +22,73 @@ import 'models/update.dart';
 import 'models/insert.dart';
 import 'models/delete.dart';
 
-class DBLayer {
-  PostgreSqlExecutorPool executor;
-  QueryBuilder currentQuery;
+import 'fluent_model_base.dart';
 
-  DBLayer() {
+class DbLayer {
+  QueryExecutor executor;
+  QueryBuilder currentQuery;
+  final List<Map<Type, Function>> factories; // = <Type, Function>{};
+  //ex: DiskCache<Agenda>(factories: {Agenda: (x) => Agenda.fromJson(x)});
+  //{this.factory}
+  DbLayer({this.factories}) {
     //currentQuery = Select(QueryBuilderOptions());
   }
-  //Platform.numberOfProcessors
+  QueryBuilderOptions options;
+  DBConnectionInfo connectionInfo;
+  static const dynamic DEFAULT_NULL = [];
 
-  Future<DBLayer> connect(DBConnectionInfo connectionInfo) async {
-    executor = PostgreSqlExecutorPool(
-      1,
-      () {
-        return PostgreSQLConnection(
-          connectionInfo.host,
-          connectionInfo.port,
-          connectionInfo.database,
-          username: connectionInfo.username,
-          password: connectionInfo.password,
-        );
-      },
-      schemes: connectionInfo.schemes,
-    );
+  Future<DbLayer> connect(DBConnectionInfo connInfo) async {
+    options = connInfo.getQueryOptions();
+    connectionInfo = connInfo.getSettings();
+    var nOfProces = connectionInfo.setNumberOfProcessorsFromPlatform
+        ? Platform.numberOfProcessors
+        : connectionInfo.numberOfProcessors;
 
-    //In order to specify the default schema you should set the search_path instead.
-    //$Conn->exec('SET search_path TO accountschema');
-    //You can also set the default search_path per database user
-    //and in that case the above statement becomes redundant.
-    //ALTER USER user SET search_path TO accountschema;
-    //Not sure what you mean with 1. ALTER USER username SET search_path TO schema1, schema2,
-    //schema3 or ALTER ROLL some_role SET search_path or even
-    //ALTER DATABASE start SET search_path TO schema1,schema2 on the PG server directly allows you to do that
-    //set squema
-    /*if (connectionInfo.schema != null && connectionInfo.schema.isNotEmpty) {
-      final schemas = connectionInfo.schema.map((i) => '"$i"').toList().join(', ');
-      await executor.query('users', 'set search_path to $schemas;', {});
-    }*/
+    //Todo implementar
+    //se connectionInfo.driver for pgsql chama PostgreSqlExecutorPool
+    //se for mysql chama  MySqlExecutor
+    if (connectionInfo.driver == ConnectionDriver.pgsql) {
+      executor = PostgreSqlExecutorPool(
+        nOfProces,
+        () {
+          return PostgreSQLConnection(
+            connectionInfo.host,
+            connectionInfo.port,
+            connectionInfo.database,
+            username: connectionInfo.username,
+            password: connectionInfo.password,
+          );
+        },
+        schemes: connectionInfo.schemes,
+      );
+    } else {
+      executor = MySqlExecutor(
+        await MySqlConnection.connect(
+          ConnectionSettings(
+            host: connectionInfo.host,
+            port: connectionInfo.port,
+            db: connectionInfo.database,
+            user: connectionInfo.username,
+            password: connectionInfo.password,
+          ),
+        ),
+      );
+    }
 
-    return DBLayer();
+    return this;
   }
 
   /// Starts a new expression with the provided options.
   /// @param options Options to use for expression generation.
   /// @return Expression
-  Expression expression({QueryBuilderOptions options}) {
+  Expression expression() {
     return Expression(options);
   }
 
   /// Starts the SELECT-query chain with the provided options
   /// @param options Options to use for query generation.
   /// @return QueryBuilder
-  QueryBuilder select({QueryBuilderOptions options}) {
+  QueryBuilder select() {
     return currentQuery = Select(
       options,
       execFunc: exec,
@@ -73,13 +97,15 @@ class DBLayer {
       getAsMapFuncWithMeta: getAsMapWithMeta,
       getAsMapFunc: getAsMap,
       firstAsMapFunc: firstAsMap,
+      fetchAllFunc: _fetchAll,
+      fetchSingleFunc: _fetchSingle,
+      countFunc: _count,
     );
   }
 
   /// Starts the UPDATE-query.
-  /// @param options Options to use for query generation.
   /// @return QueryBuilder
-  QueryBuilder update({QueryBuilderOptions options}) {
+  QueryBuilder update() {
     return currentQuery = Update(
       options,
       execFunc: exec,
@@ -88,28 +114,26 @@ class DBLayer {
       getAsMapFuncWithMeta: getAsMapWithMeta,
       getAsMapFunc: getAsMap,
       firstAsMapFunc: firstAsMap,
+      updateSingleFunc: _updateSingle,
     );
   }
 
   /// Starts the INSERT-query with the provided options.
-  /// @param options Options to use for query generation.
   /// @return QueryBuilder
-  QueryBuilder insert({QueryBuilderOptions options}) {
-    return currentQuery = Insert(
-      options,
-      execFunc: exec,
-      firstFunc: first,
-      firstAsMapFuncWithMeta: firstAsMapWithMeta,
-      getAsMapFuncWithMeta: getAsMapWithMeta,
-      getAsMapFunc: getAsMap,
-      firstAsMapFunc: firstAsMap,
-    );
+  QueryBuilder insert() {
+    return currentQuery = Insert(options,
+        execFunc: exec,
+        firstFunc: first,
+        firstAsMapFuncWithMeta: firstAsMapWithMeta,
+        getAsMapFuncWithMeta: getAsMapWithMeta,
+        getAsMapFunc: getAsMap,
+        firstAsMapFunc: firstAsMap,
+        putSingleFunc: putSingle);
   }
 
   /// Starts the DELETE-query with the provided options.
-  /// @param options Options to use for query generation.
   /// @return QueryBuilder
-  QueryBuilder delete(QueryBuilderOptions options) {
+  QueryBuilder delete() {
     return currentQuery = Delete(
       options,
       execFunc: exec,
@@ -118,6 +142,21 @@ class DBLayer {
       getAsMapFuncWithMeta: getAsMapWithMeta,
       getAsMapFunc: getAsMap,
       firstAsMapFunc: firstAsMap,
+      deleteSingleFunc: _deleteSingle,
+    );
+  }
+
+  QueryBuilder raw(String rawQueryString) {
+    return currentQuery = Raw(
+      rawQueryString,
+      options: options,
+      execFunc: exec,
+      firstFunc: first,
+      firstAsMapFuncWithMeta: firstAsMapWithMeta,
+      getAsMapFuncWithMeta: getAsMapWithMeta,
+      getAsMapFunc: getAsMap,
+      firstAsMapFunc: firstAsMap,
+      countFunc: _count,
     );
   }
 
@@ -125,7 +164,9 @@ class DBLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
-    final rows = await executor.query('users', currentQuery.toSql(), {});
+
+    final rows = await executor.query(
+        currentQuery.toSql(), currentQuery.buildSubstitutionValues());
     return rows;
   }
 
@@ -135,17 +176,19 @@ class DBLayer {
 
   Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta() async {
     if (!currentQuery.isQuery()) {
-      throw Exception('Is nessesary query');
+      throw Exception('Dblayer@getAsMapWithMeta Is nessesary query');
     }
-    final rows = await executor.mappedResultsQuery(currentQuery.toSql(), substitutionValues: {});
+    final rows = await executor.getAsMapWithMeta(currentQuery.toSql(),
+        substitutionValues: currentQuery.buildSubstitutionValues());
     return rows;
   }
 
   Future<List> first() async {
     if (!currentQuery.isQuery()) {
-      throw Exception('Is nessesary query');
+      throw Exception('Dblayer@first Is nessesary query');
     }
-    final rows = await get();
+    final rows = await executor.query(currentQuery.toSql(isFirst: true),
+        currentQuery.buildSubstitutionValues());
 
     if (rows != null) {
       if (rows.isNotEmpty) {
@@ -158,9 +201,26 @@ class DBLayer {
     }
   }
 
-  Future<Map<String, Map<String, dynamic>>> firstAsMapWithMeta() async {
+  Future<int> _count() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
+    }
+
+    final rows = await executor.query(currentQuery.toSql(isCount: true),
+        currentQuery.buildSubstitutionValues());
+    //total_records
+    if (rows != null) {
+      if (rows.isNotEmpty) {
+        return rows[0][0];
+      }
+    }
+
+    return 0;
+  }
+
+  Future<Map<String, Map<String, dynamic>>> firstAsMapWithMeta() async {
+    if (!currentQuery.isQuery()) {
+      throw Exception('Dblayer@firstAsMapWithMeta Is nessesary query');
     }
     final rows = await getAsMapWithMeta();
     if (rows != null) {
@@ -176,27 +236,22 @@ class DBLayer {
 
   Future<List<Map<String, dynamic>>> getAsMap() async {
     if (!currentQuery.isQuery()) {
-      throw Exception('Is nessesary query');
+      throw Exception('Dblayer@getAsMap Is nessesary query');
     }
-    final rows = await getAsMapWithMeta();
-    final result = <Map<String, dynamic>>[];
-    if (rows != null || rows.isNotEmpty) {
-      for (var item in rows) {
-        //Combine/merge multiple maps into 1 map
-        result.add(item.values.reduce((map1, map2) => map1..addAll(map2)));
-      }
-      return result;
-    } else {
-      return null;
-    }
+
+    final rows = await executor.getAsMap(currentQuery.toSql(),
+        substitutionValues: currentQuery.buildSubstitutionValues());
+    return rows;
   }
 
   Future<Map<String, dynamic>> firstAsMap() async {
     if (!currentQuery.isQuery()) {
-      throw Exception('Is nessesary query');
+      throw Exception('Dblayer@firstAsMap Is nessesary query');
     }
-    //final List<Map<String, dynamic>> rows = await getAsMap();
-    final rows = await getAsMap();
+
+    final rows = await executor.getAsMap(currentQuery.toSql(isFirst: true),
+        substitutionValues: currentQuery.buildSubstitutionValues());
+
     if (rows != null) {
       if (rows.isNotEmpty) {
         return rows[0];
@@ -212,7 +267,243 @@ class DBLayer {
     await executor.close();
   }
 
-  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) {
-    return executor.transaction<T>(f);
+  Future<T> transaction<T>(FutureOr<T> Function(DbLayer) f) {
+    return executor.transaction<T>((queryEcecutor) async {
+      var db = await DbLayer(factories: factories);
+      db.executor = queryEcecutor;
+      return f(db);
+    });
+  }
+
+  Future transaction2(Future Function(dynamic) queryBlock,
+      {int commitTimeoutInSeconds}) {
+    return executor.transaction2(queryBlock);
+  }
+
+  //
+  Future<List<T>> _fetchAll<T>(
+      [T Function(Map<String, dynamic>) factory]) async {
+    var records = await getAsMap();
+
+    Function fac;
+    if (factories != null) {
+      for (var item in factories) {
+        if (item.containsKey(T)) {
+          fac = item[T];
+        }
+      }
+    }
+
+    fac ??= factory;
+
+    if (fac == null) {
+      throw Exception('Dblayer@fetchAll factory not defined');
+    }
+
+    final list = <T>[];
+    if (records != null) {
+      if (records.isNotEmpty) {
+        for (var item in records) {
+          list.add(fac(item));
+        }
+      }
+    }
+    return list;
+  }
+
+  Future<T> _fetchSingle<T>([T Function(Map<String, dynamic>) factory]) async {
+    Function fac;
+    if (factories != null) {
+      for (var item in factories) {
+        if (item.containsKey(T)) {
+          fac = item[T];
+        }
+      }
+    }
+
+    fac ??= factory;
+
+    if (fac == null) {
+      throw Exception('Dblayer@fetchAll factory not defined');
+    }
+    final record = await firstAsMap();
+
+    if (record != null) {
+      return factory(record);
+    }
+    return null;
+  }
+
+  Future putSingle<T>(T entity) async {
+    if (entity == null) {
+      throw Exception('Dblayer@putSingle entity not defined');
+    }
+    if (entity != null) {
+      var db = insert();
+      var model = entity as FluentModelBase;
+      var map = model.toMap();
+
+      map.forEach((key, value) {
+        db.set(key, value);
+      });
+
+      db.into(model.tableName);
+      await db.exec();
+    }
+  }
+
+  Future _updateSingle<T>(T entity, [QueryBuilder queryBuilder]) async {
+    if (entity == null) {
+      throw Exception('Dblayer@updateSingle entity not defined');
+    }
+    if (queryBuilder == null) {
+      throw Exception('Dblayer@updateSingle queryBuilder not defined');
+    }
+    var model = entity as FluentModelBase;
+    queryBuilder.table(model.tableName);
+    var map = model.toMap();
+    map.forEach((key, value) {
+      queryBuilder.set(key, value);
+    });
+    await queryBuilder.exec();
+  }
+
+  Future _deleteSingle<T>(T entity, [QueryBuilder queryBuilder]) async {
+    if (entity == null) {
+      throw Exception('Dblayer@_deleteSingle entity not defined');
+    }
+    if (queryBuilder == null) {
+      throw Exception('Dblayer@_deleteSingle queryBuilder not defined');
+    }
+    var model = entity as FluentModelBase;
+    queryBuilder.from(model.tableName);
+    queryBuilder.where('${model.primaryKey}=?', model.primaryKeyVal);
+    await exec();
+  }
+
+  ///
+  /// @param data
+  /// @param tableName nome da tabela relacionada
+  /// @param localKey key id da tabela relacionada
+  /// @param foreignKey id contido nos dados passados pelo parametro data para comparar com o key id da tabela relacionada
+  /// @param relationName nome da chave no map que estara com o resultado
+  /// @param defaultNull valor padrão para a chave no map caso não tenha resultado List | null
+  ///
+  /// @param null callback_fields
+  /// Este parametro deve ser uma função anonima com um parametro que é o campo
+  /// utilizada para alterar as informações de um determinado campo vindo do banco
+  /// Exemplo:
+  /// (field) {
+  ///  field['description'] = strip_tags(field['description']);
+  /// }
+  ///
+  /// @param null $callback_query
+  /// Este parametro deve ser uma função com um parametro. Neste parametro você
+  /// receberá a query utilizada na consulta, possibilitando
+  /// realizar operações de querys extras para esta ação.
+  ///
+  /// Exemplo:
+  /// (query) {
+  ///  query.orderBy('field_name', 'asc');
+  /// }
+  ///
+  /// @param bool isSingle
+  ///
+  ///
+  Future<List<Map<String, dynamic>>> getRelationFromMaps(
+    List<Map<String, dynamic>> data,
+    String tableName,
+    String localKey,
+    String foreignKey, {
+    String relationName,
+    dynamic defaultNull = DEFAULT_NULL,
+    Function(Map<String, dynamic>) callback_fields,
+    Function(QueryBuilder) callback_query,
+    isSingle = false,
+  }) async {
+    if (data == null) {
+      //throw Exception('data cannot be null');
+      return data;
+    }
+
+    if (tableName == null) {
+      throw Exception('tableName cannot be null');
+    }
+
+    if (localKey == null) {
+      throw Exception('localKey cannot be null');
+    }
+
+    if (foreignKey == null) {
+      throw Exception('foreignKey cannot be null');
+    }
+
+    //1º obtem os ids
+    var itens_id = <int>[];
+    for (var item2 in data) {
+      var itemId = item2.containsKey(foreignKey) ? item2[foreignKey] : null;
+      //não adiciona se for nulo ou vazio ou diferente de int
+      if (itemId != null) {
+        itens_id.add(itemId);
+      }
+    }
+    //instancia o objeto query builder
+    var query = select().from(tableName);
+    //checa se foi passado callback_query para mudar a query
+    if (callback_query != null) {
+      callback_query(query);
+    }
+
+    List<Map<String, dynamic>> queryResult;
+    //se ouver itens a serem pegos no banco
+    if (itens_id.isNotEmpty) {
+      //prepara a query where in e executa
+      query.whereRaw('"$tableName"."$localKey" in (${itens_id.join(",")})');
+      queryResult = await query.getAsMap();
+    } else {
+      queryResult = null;
+    }
+
+    //verifica se foi passado um nome para o node de resultados
+    if (relationName != null) {
+      relationName = relationName + '';
+    } else {
+      relationName = tableName;
+    }
+    if (isSingle) {
+      defaultNull = null;
+    }
+
+    //var result = <Map<String, dynamic>>[];
+    //intera sobre a lista de dados passados
+    for (var item in data) {
+      //result.add({relationName: defaultNull});
+      item[relationName] = defaultNull;
+      var conjunto = [];
+      //faz o loop sobre os resultados da query
+      if (queryResult != null) {
+        for (var value in queryResult) {
+          //verifica se o item corrente tem relação com algum filho trazido pela query
+          if (item[foreignKey] == value[localKey]) {
+            //checa se foi passado callback_fields
+            if (callback_fields != null) {
+              value = callback_fields(value);
+            }
+            //verifica se é para trazer um filho ou varios
+            if (isSingle) {
+              item[relationName] = value ?? defaultNull;
+              break;
+            } else {
+              conjunto.add(value ?? defaultNull);
+            }
+
+            item[relationName] = conjunto;
+          }
+        }
+      }
+    }
+
+    //fim
+    return data;
   }
 }

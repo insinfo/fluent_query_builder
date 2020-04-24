@@ -1,6 +1,5 @@
 import 'block.dart';
 import 'query_builder_options.dart';
-import 'validator.dart';
 
 class SetNode {
   SetNode(this.field, this.value);
@@ -18,8 +17,7 @@ abstract class SetFieldBlockBase extends Block {
   /// @param value Value to set.
   /// @param <T> Type of the Value.
   void setFieldValue(String field, value) {
-    mFields ??= [];
-    final fld = Validator.sanitizeField(field, mOptions);
-    mFields.add(SetNode(fld, value));
+    mFields ??= <SetNode>[];
+    mFields.add(SetNode(field, value));
   }
 }

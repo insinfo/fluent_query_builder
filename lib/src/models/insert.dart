@@ -16,6 +16,7 @@ class Insert extends QueryBuilder {
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
+    Future Function<T>(T entity) putSingleFunc,
   }) : super(
           options,
           [
@@ -30,6 +31,7 @@ class Insert extends QueryBuilder {
           firstFunc: firstFunc,
           firstAsMapFunc: firstAsMapFunc,
           getAsMapFunc: getAsMapFunc,
+          putSingleFunc: putSingleFunc,
         );
 
   @override

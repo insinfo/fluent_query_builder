@@ -4,7 +4,7 @@ import 'expression.dart';
 import 'join_type.dart';
 import 'query_builder.dart';
 import 'query_builder_options.dart';
-import 'string_block.dart';
+import 'delete_block.dart';
 import 'from_table_block.dart';
 import 'join_block.dart';
 import 'where_block.dart';
@@ -22,10 +22,11 @@ class Delete extends QueryBuilder {
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
+    this.deleteSingleFunc,
   }) : super(
           options,
           [
-            StringBlock(options, 'DELETE'),
+            DeleteBlock(options),
             FromTableBlock(options), // 1
             JoinBlock(options), // 2
             WhereBlock(options), // 3
@@ -39,6 +40,14 @@ class Delete extends QueryBuilder {
           firstAsMapFunc: firstAsMapFunc,
           getAsMapFunc: getAsMapFunc,
         );
+
+  Future Function<T>(T entity, [QueryBuilder queryBuilder]) deleteSingleFunc;
+
+  @override
+  Future deleteSingle<T>(T entity, [QueryBuilder queryBuilder]) {
+    return deleteSingleFunc(entity, this);
+  }
+
   @override
   QueryBuilder from(String table, {String alias}) {
     final block = mBlocks[1] as FromTableBlock;
@@ -47,16 +56,38 @@ class Delete extends QueryBuilder {
   }
 
   @override
-  QueryBuilder where(String condition, [Object param]) {
+  QueryBuilder where(String condition, [Object param, String andOr = 'AND']) {
     final block = mBlocks[3] as WhereBlock;
-    block.setWhere(condition, param);
+    block.setWhere(condition, param, andOr);
     return this;
   }
 
   @override
-  QueryBuilder whereExpr(Expression condition, [Object param]) {
+  QueryBuilder whereExpr(Expression condition,
+      [Object param, String andOr = 'AND']) {
     final block = mBlocks[3] as WhereBlock;
     block.setWhereWithExpression(condition, param);
+    return this;
+  }
+
+  @override
+  QueryBuilder whereRaw(String whereRawSql, [String andOr = 'AND']) {
+    final block = mBlocks[3] as WhereBlock;
+    block.setWhereRaw(whereRawSql, andOr);
+    return this;
+  }
+
+  @override
+  QueryBuilder whereSafe(String field, String operator, value) {
+    final block = mBlocks[3] as WhereBlock;
+    block.setWhereSafe(field, operator, value);
+    return this;
+  }
+
+  @override
+  QueryBuilder orWhereSafe(String field, String operator, value) {
+    final block = mBlocks[3] as WhereBlock;
+    block.setOrWhereSafe(field, operator, value);
     return this;
   }
 

@@ -8,7 +8,7 @@ abstract class QueryExecutor {
 
   /// Executes a single query.
   Future<List<List>> query(
-      String tableName, String query, Map<String, dynamic> substitutionValues,
+      String query, Map<String, dynamic> substitutionValues,
       [List<String> returningFields]);
 
   /// Enters a database transaction, performing the actions within,
@@ -20,4 +20,14 @@ abstract class QueryExecutor {
   /// Whether nested transactions are supported depends on the
   /// underlying driver.
   Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f);
+
+  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds});
+
+  Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
+      {Map<String, dynamic> substitutionValues});
+
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
+      {Map<String, dynamic> substitutionValues});
+
+  Future close();
 }

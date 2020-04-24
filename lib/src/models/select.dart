@@ -1,3 +1,4 @@
+import '../../fluent_query_builder.dart';
 import 'distinct_block.dart';
 import 'from_table_block.dart';
 import 'get_field_block.dart';
@@ -13,7 +14,6 @@ import 'order_by_block.dart';
 import 'string_block.dart';
 import 'query_builder.dart';
 import 'query_builder_options.dart';
-
 import 'join_type.dart';
 import 'expression.dart';
 
@@ -28,6 +28,11 @@ class Select extends QueryBuilder {
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
+    Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory])
+        fetchAllFunc,
+    Future<T> Function<T>([T Function(Map<String, dynamic>) factory])
+        fetchSingleFunc,
+    Future<int> Function() countFunc,
   }) : super(
           options,
           [
@@ -41,7 +46,7 @@ class Select extends QueryBuilder {
             OrderByBlock(options), // 7
             LimitBlock(options), // 8
             OffsetBlock(options), // 9
-            UnionBlock(options) // 10
+            UnionBlock(options), // 10
           ],
           execFunc: execFunc,
           firstAsMapFuncWithMeta: firstAsMapFuncWithMeta,
@@ -49,6 +54,9 @@ class Select extends QueryBuilder {
           firstFunc: firstFunc,
           firstAsMapFunc: firstAsMapFunc,
           getAsMapFunc: getAsMapFunc,
+          fetchAllFunc: fetchAllFunc,
+          fetchSingleFunc: fetchSingleFunc,
+          countFunc: countFunc,
         );
 
   //
@@ -109,6 +117,12 @@ class Select extends QueryBuilder {
     return this;
   }
 
+  /* QueryBuilder raw(String rawSql) {
+     final block = mBlocks[2] as GetFieldBlock;
+    block.setFieldRaw(setFieldRawSql);
+    return this;
+  }*/
+
   @override
   QueryBuilder group(String field) {
     final block = mBlocks[6] as GroupByBlock;
@@ -165,25 +179,70 @@ class Select extends QueryBuilder {
     return this;
   }
 
+  //
+  // WHERE
+  //
+
   @override
-  QueryBuilder where(String condition, [Object param]) {
+  QueryBuilder where(String condition, [Object param, String andOr = 'AND']) {
     final block = mBlocks[5] as WhereBlock;
-    block.setWhere(condition, param);
+    block.setWhere(condition, param, andOr);
     return this;
   }
 
   @override
-  QueryBuilder whereExpr(Expression condition, [Object param]) {
+  QueryBuilder whereExpr(Expression condition,
+      [Object param, String andOr = 'AND']) {
     final block = mBlocks[5] as WhereBlock;
     block.setWhereWithExpression(condition, param);
     return this;
   }
 
   @override
-  QueryBuilder whereRaw(String whereRawSql) {
+  QueryBuilder whereRaw(String whereRawSql, [String andOr = 'AND']) {
     final block = mBlocks[5] as WhereBlock;
-    block.setWhereRaw(whereRawSql);
+    block.setWhereRaw(whereRawSql, andOr);
     return this;
+  }
+
+  @override
+  QueryBuilder whereSafe(String field, String operator, value) {
+    final block = mBlocks[5] as WhereBlock;
+    block.setWhereSafe(field, operator, value);
+    return this;
+  }
+
+  @override
+  QueryBuilder orWhereSafe(String field, String operator, value) {
+    final block = mBlocks[5] as WhereBlock;
+    block.setOrWhereSafe(field, operator, value);
+    return this;
+  }
+
+  @override
+  QueryBuilder whereGroup(Function(QueryBuilder) function) {
+    if (function == null) {
+      throw Exception('function cannot be null');
+    }
+
+    final block = mBlocks[5] as WhereBlock;
+    block.setStartGroup();
+    var r = function(this);
+    block.setEndGroup();
+    return r;
+  }
+
+  @override
+  QueryBuilder orWhereGroup(Function(QueryBuilder) function) {
+    if (function == null) {
+      throw Exception('function cannot be null');
+    }
+
+    final block = mBlocks[5] as WhereBlock;
+    block.setStartGroup();
+    var r = function(this);
+    block.setEndGroup();
+    return r;
   }
 
   //

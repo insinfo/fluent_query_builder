@@ -12,16 +12,32 @@ class SetFieldBlock extends SetFieldBlockBase {
     assert(mFields != null && mFields.isNotEmpty);
 
     final sb = StringBuffer();
-    for (var n in mFields) {
+    for (var item in mFields) {
       if (sb.length > 0) {
         sb.write(', ');
       }
 
-      sb.write(n.field);
+      var field = Validator.sanitizeField(item.field, mOptions);
+
+      sb.write(field);
       sb.write(' = ');
-      sb.write(Validator.formatValue(n.value, mOptions));
+      sb.write('@${item.field}');
     }
 
     return 'SET $sb';
+  }
+
+  @override
+  Map<String, dynamic> buildSubstitutionValues() {
+    final result = <String, dynamic>{};
+    if (mFields == null || mFields.isEmpty) {
+      return result;
+    }
+
+    for (var item in mFields) {
+      var v = Validator.formatValue(item.value, mOptions);
+      result.addAll({'${item.field}': v});
+    }
+    return result;
   }
 }

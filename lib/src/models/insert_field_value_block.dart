@@ -16,21 +16,50 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
     }
 
     final fields = Util.join(', ', buildFieldNames(mFields));
-    final values = Util.join(', ', buildFieldValues(mFields));
 
-    return '($fields) VALUES ($values)';
+    final values = Util.join(', ', buildFieldValuesForSubstitution(mFields));
+
+    var sql = '($fields) VALUES ($values)';
+
+    return sql;
+  }
+
+  @override
+  Map<String, dynamic> buildSubstitutionValues() {
+    final result = <String, dynamic>{};
+    if (mFields == null || mFields.isEmpty) {
+      return result;
+    }
+
+    for (var item in mFields) {
+      var v = Validator.formatValue(item.value, mOptions);
+      result.addAll({'${item.field}': v});
+    }
+
+    return result;
+  }
+
+  List<String> buildFieldValuesForSubstitution(List<SetNode> nodes) {
+    final values = <String>[];
+    for (var item in nodes) {
+      values.add('@${item.field}');
+    }
+    return values;
   }
 
   List<String> buildFieldNames(List<SetNode> nodes) {
-    final names = [];
-    for (var n in nodes) {
-      names.add(n.field);
+    final names = <String>[];
+    for (var item in nodes) {
+      var field = Validator.sanitizeField(item.field, mOptions);
+
+      names.add(field);
     }
+
     return names;
   }
 
   List<String> buildFieldValues(List<SetNode> nodes) {
-    final values = [];
+    final values = <String>[];
     for (var n in nodes) {
       values.add(Validator.formatValue(n.value, mOptions));
     }

@@ -42,9 +42,9 @@ void main() async {
         .insertGetId()
         .into('pessoas')
         .setAll({
-          'nome': 'Jon Doe',
-          'telefone': '171171171',
-        })
+      'nome': 'Jon Doe',
+      'telefone': '171171171',
+    })
         .exec()
         .then((result) => print('mysql insertGetId $result'));
 
@@ -54,20 +54,20 @@ void main() async {
         .whereSafe('id', '=', 13)
         .table('pessoas')
         .setAll({
-          'nome': 'Jon Doe',
-          'telefone': '171171171',
-        })
+      'nome': 'Jon Doe',
+      'telefone': '171171171',
+    })
         .exec()
         .then((result) => print('mysql update $result'));
 
     //mysql select
     db
         .select()
-        //.fields(['login', 'idSistema', 's.sigla'])
-        //.fieldRaw('SELECT COUNT(*)')
+    //.fields(['login', 'idSistema', 's.sigla'])
+    //.fieldRaw('SELECT COUNT(*)')
         .from('pessoas')
         .whereSafe('nome', 'like', '%Sant\'Ana%')
-        //.limit(1)
+    //.limit(1)
         .getAsMap()
         .then((result) => print('mysql select $result'));
   });
@@ -109,7 +109,7 @@ void main() async {
         .then((result) => print('mysql select $result'));
 
     //mysql raw query SELECT * FROM `pessoas` or SELECT COUNT(*) FROM pessoas
-    db  
+    db
         .raw("SELECT * FROM `pessoas`")
         .firstAsMap()
         .then((result) => print('mysql raw $result'));

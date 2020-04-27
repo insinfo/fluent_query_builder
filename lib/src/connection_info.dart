@@ -1,8 +1,27 @@
+import 'package:fluent_query_builder/src/builders/QBOptionBuilder.dart';
+import 'package:fluent_query_builder/src/exceptions/null_pointer_exception.dart';
+
 import 'models/query_builder_options.dart';
 
 enum ConnectionDriver { mysql, pgsql }
 
 class DBConnectionInfo {
+
+  String prefix = '';
+  String sslmode = 'prefer';
+  ConnectionDriver driver = ConnectionDriver.pgsql;
+  String host = 'loalhost';
+  int port;
+  String database = 'postgres';
+  String username = '';
+  String password = '';
+  String charset = 'utf8';
+  List<String> schemes = ['public'];
+  int numberOfProcessors = 1;
+  bool setNumberOfProcessorsFromPlatform = false;
+  QueryBuilderOptions options;
+
+
   DBConnectionInfo({
     this.driver,
     this.host,
@@ -17,18 +36,7 @@ class DBConnectionInfo {
     this.numberOfProcessors = 1,
     this.setNumberOfProcessorsFromPlatform = false,
   });
-  String prefix = '';
-  String sslmode = 'prefer';
-  ConnectionDriver driver = ConnectionDriver.pgsql;
-  String host = 'loalhost';
-  int port;
-  String database = 'postgres';
-  String username = '';
-  String password = '';
-  String charset = 'utf8';
-  List<String> schemes = ['public'];
-  int numberOfProcessors = 1;
-  bool setNumberOfProcessorsFromPlatform = false;
+
 
   DBConnectionInfo clone() {
     return DBConnectionInfo(
@@ -50,72 +58,45 @@ class DBConnectionInfo {
   DBConnectionInfo getSettings() {
     var settings = clone();
     switch (driver) {
-      case ConnectionDriver.pgsql:
-        {
-          settings.port ??= 5432;
-          return settings;
-        }
-        break;
-      case ConnectionDriver.mysql:
-        {
-          settings.port ??= 3306;
-          return settings;
-        }
-        break;
-      default:
-        {
-          return settings;
-        }
-    }
+    case ConnectionDriver.pgsql:
+      {
+        settings.port ??= 5432;
+        return settings;
+      }
+      break;
+    case ConnectionDriver.mysql:
+      {
+        settings.port ??= 3306;
+        return settings;
+      }
+      break;
+    default:
+      {
+        throw NullPointerException('Database Drive not selected');
+      }
+  }
+    
   }
 
   QueryBuilderOptions getQueryOptions() {
-    var options = QueryBuilderOptions();
-    options.autoQuoteTableNames = true;
-    options.autoQuoteFieldNames = true;
-    options.autoQuoteAliasNames = true;
-    options.replaceSingleQuotes = false;
-    options.replaceDoubleQuotes = false;
-    options.ignorePeriodsForFieldNameQuotes = false;
-    options.dontQuote = true;
-    options.nameQuoteCharacter = '"';
-    options.tableAliasQuoteCharacter = '"';
-    options.fieldAliasQuoteCharacter = '"';
-    options.singleQuoteReplacement = "''";
-    options.doubleQuoteReplacement = '""';
-    options.separator = ' ';
-    options.quoteStringWithFieldsTablesSeparator = true;
-    options.fieldsTablesSeparator = '.';
-    options.allowAliasInFields = true;
-    options.valueQuoteCharacter = "'";
-
-    switch (driver) {
-      case ConnectionDriver.pgsql:
-        {
-          return options;
-        }
-        break;
-      case ConnectionDriver.mysql:
-        {
-          options.autoQuoteTableNames = false;
-          options.autoQuoteFieldNames = false;
-          options.autoQuoteAliasNames = true;
-          options.replaceSingleQuotes = false;
-          options.ignorePeriodsForFieldNameQuotes = false;
-          options.dontQuote = false;
-          options.nameQuoteCharacter = '`';
-          options.tableAliasQuoteCharacter = '`';
-          options.fieldAliasQuoteCharacter = '"';
-          options.singleQuoteReplacement = "\'";
-          options.separator = ' ';
-          options.valueQuoteCharacter = '';
-          return options;
-        }
-        break;
-      default:
-        {
-          return options;
-        }
+    if (options == null) {
+      switch (driver) {
+        case ConnectionDriver.pgsql:
+          {
+            options = QbOptionBuilder.postgres().build();
+          }
+          break;
+        case ConnectionDriver.mysql:
+          {
+            options = QbOptionBuilder.mysql().build();
+          }
+          break;
+        default:
+          {
+            throw NullPointerException('Database drive not selected');
+          }
+      }
     }
+    return options;
   }
 }

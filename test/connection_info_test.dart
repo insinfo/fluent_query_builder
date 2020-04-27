@@ -1,0 +1,162 @@
+import 'package:fluent_query_builder/fluent_query_builder.dart';
+import 'package:fluent_query_builder/src/builders/QBOptionBuilder.dart';
+import 'package:fluent_query_builder/src/connection_info.dart';
+import 'package:fluent_query_builder/src/exceptions/null_pointer_exception.dart';
+import 'package:test/test.dart';
+
+import 'builders/connection-info-builder.dart';
+
+
+void main() {
+  group('get_settings_test', () {
+    
+    DBConnectionInfo _connection;
+    
+    setUp(() {
+      _connection = DBConnectionInfo();
+    });
+
+    tearDown(() async {
+      _connection = null;
+    });
+
+    test('Generation exception when not selecting the drive', () {
+        expect(
+            () => _connection.getSettings(),
+            throwsA(TypeMatcher<NullPointerException>())
+        );
+    });
+
+    test('Return PostgreSql Settings With Success', () {
+      _connection.driver = ConnectionDriver.pgsql;
+      expect(
+          _connection.getSettings().driver,
+          ConnectionDriver.pgsql
+      );
+    });
+
+    test('Default Port 5432 to Driver Postgre With Success', () {
+      _connection.driver = ConnectionDriver.pgsql;
+      expect(
+          _connection.getSettings().port,
+          5432
+      );
+    });
+
+    test('Return Mysql Settings With Success', () {
+      _connection.driver = ConnectionDriver.mysql;
+      expect(
+          _connection.getSettings().driver,
+          ConnectionDriver.mysql
+      );
+    });
+
+    test('Default Port 3306 to Mysql With Success', () {
+      _connection.driver = ConnectionDriver.mysql;
+      expect(
+          _connection.getSettings().port,
+          3306
+      );
+    });
+  });
+
+  group('clone_test', () {
+    DBConnectionInfo _connection;
+
+    setUp(() {
+      _connection = DBConnectionInfo();
+    });
+
+    tearDown(() async {
+      _connection = null;
+    });
+
+    test('Testa Retorno do Factory gerado pelo metodo', () {
+      _connection = DBConnectionInfoBuilder.init().build();
+      expect(_connection.clone().driver, _connection.driver);
+      expect(_connection.clone().host, _connection.host);
+      expect(_connection.clone().port, _connection.port);
+      expect(_connection.clone().database, _connection.database);
+      expect(_connection.clone().username, _connection.username);
+      expect(_connection.clone().password, _connection.password);
+      expect(_connection.clone().charset, _connection.charset);
+      expect(_connection.clone().schemes, _connection.schemes);
+      expect(_connection.clone().prefix, _connection.prefix);
+      expect(_connection.clone().sslmode, _connection.sslmode);
+      expect(_connection.clone().numberOfProcessors, _connection.numberOfProcessors);
+      expect(_connection.clone().setNumberOfProcessorsFromPlatform, _connection.setNumberOfProcessorsFromPlatform);
+    });
+  });
+
+  group('Get Query Builder Options', () {
+
+    DBConnectionInfo _connection;
+
+    setUp(() {
+      _connection = DBConnectionInfo();
+    });
+
+    tearDown(() {
+      _connection = null;
+    });
+
+    test('Exception Generetad ao pegar opções da Query Builder sem Drive Selecionado', () {
+      _connection.driver = null;
+      expect(
+          () => _connection.getQueryOptions(),
+          throwsA(TypeMatcher<NullPointerException>())
+      );
+    });
+
+    test('Get Options to PGSQL Drive', () {
+      _connection.driver = ConnectionDriver.pgsql;
+      var pgOptions = QbOptionBuilder.postgres().build();
+
+      var action = _connection.getQueryOptions();
+      expect(action.replaceDoubleQuotes, pgOptions.replaceDoubleQuotes);
+      expect(action.ignorePeriodsForFieldNameQuotes, pgOptions.ignorePeriodsForFieldNameQuotes);
+      expect(action.fieldAliasQuoteCharacter, pgOptions.fieldAliasQuoteCharacter);
+      expect(action.separator, pgOptions.separator);
+      expect(action.autoQuoteTableNames, pgOptions.autoQuoteTableNames);
+      expect(action.autoQuoteFieldNames, pgOptions.autoQuoteFieldNames);
+      expect(action.autoQuoteAliasNames, pgOptions.autoQuoteAliasNames);
+      expect(action.replaceSingleQuotes, pgOptions.replaceSingleQuotes);
+      expect(action.dontQuote, pgOptions.dontQuote);
+      expect(action.nameQuoteCharacter, pgOptions.nameQuoteCharacter);
+      expect(action.tableAliasQuoteCharacter, pgOptions.tableAliasQuoteCharacter);
+      expect(action.singleQuoteReplacement, pgOptions.singleQuoteReplacement);
+      expect(action.valueQuoteCharacter, pgOptions.valueQuoteCharacter);
+      expect(action.doubleQuoteReplacement, pgOptions.doubleQuoteReplacement);
+      expect(action.quoteStringWithFieldsTablesSeparator, pgOptions.quoteStringWithFieldsTablesSeparator);
+      expect(action.fieldsTablesSeparator, pgOptions.fieldsTablesSeparator);
+      expect(action.allowAliasInFields, pgOptions.allowAliasInFields);
+    });
+
+    test('Get Options to MySql Drive', () {
+      _connection.driver = ConnectionDriver.mysql;
+      var mysqlOptions = QbOptionBuilder.mysql().build();
+
+      var action = _connection.getQueryOptions();
+
+      expect(action.replaceDoubleQuotes, mysqlOptions.replaceDoubleQuotes);
+      expect(action.ignorePeriodsForFieldNameQuotes, mysqlOptions.ignorePeriodsForFieldNameQuotes);
+      expect(action.fieldAliasQuoteCharacter, mysqlOptions.fieldAliasQuoteCharacter);
+      expect(action.separator, mysqlOptions.separator);
+      expect(action.autoQuoteTableNames, mysqlOptions.autoQuoteTableNames);
+      expect(action.autoQuoteFieldNames, mysqlOptions.autoQuoteFieldNames);
+      expect(action.autoQuoteAliasNames, mysqlOptions.autoQuoteAliasNames);
+      expect(action.replaceSingleQuotes, mysqlOptions.replaceSingleQuotes);
+      expect(action.dontQuote, mysqlOptions.dontQuote);
+      expect(action.nameQuoteCharacter, mysqlOptions.nameQuoteCharacter);
+      expect(action.tableAliasQuoteCharacter, mysqlOptions.tableAliasQuoteCharacter);
+      expect(action.singleQuoteReplacement, mysqlOptions.singleQuoteReplacement);
+      expect(action.valueQuoteCharacter, mysqlOptions.valueQuoteCharacter);
+      expect(action.doubleQuoteReplacement, mysqlOptions.doubleQuoteReplacement);
+      expect(action.quoteStringWithFieldsTablesSeparator, mysqlOptions.quoteStringWithFieldsTablesSeparator);
+      expect(action.fieldsTablesSeparator, mysqlOptions.fieldsTablesSeparator);
+      expect(action.allowAliasInFields, mysqlOptions.allowAliasInFields);
+    });
+
+  });
+
+}

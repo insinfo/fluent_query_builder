@@ -39,7 +39,7 @@ void main() async {
         .then((result) => print('mysql select $result'));
   });
 
-  /*DbLayer().connect(mysqlCom).then((db) {
+  DbLayer().connect(mysqlCom).then((db) {
     //mysql insert
     db
         .insert()
@@ -89,23 +89,23 @@ void main() async {
         .orWhereSafe('id', '<', 20)
         .count()
         .then((result) => print('mysql select $result'));
-  });*/
+  });
 
   var db = await DbLayer().connect(pgsqlCom);
   //pgsql insert
-  /* db
+   db
       .insert()
       .into('usuarios')
       .set('username', 'isaque')
       .set('password', '123456')
       .exec()
-      .then((result) => print('pgsql insert $result'));*/
+      .then((result) => print('pgsql insert $result'));
 
-  /*   db
+     db
         .select()
         .from('pessoas')       
         .count()
-        .then((result) => print('pgsql count $result'));*/
+        .then((result) => print('pgsql count $result'));
 
   var data = await db
       .select()
@@ -121,11 +121,11 @@ void main() async {
 
   print('pgsql select \r\n ${jsonEncode(data)}');
 
-  // var r = await db.select().from('pessoas').fieldRaw('1').limit(1).exec();
-  // var r = await db.raw('select 1').exec();
-  // print(r);
+   var r = await db.select().from('pessoas').fieldRaw('1').limit(1).exec();
+   r = await db.raw('select 1').exec();
+   print(r);
 
-  /*await db.transaction((ctx) async {
+  await db.transaction((ctx) async {
 
     var result = await ctx.insert().into('usuarios')
     .set('username', 'isaque')
@@ -145,7 +145,7 @@ void main() async {
         .getAsMap();
 
     print('pgsql transaction $result');
-  });*/
+  });
 
   /*DbLayer().connect(pgsqlCom).then((db) {
     final query = db

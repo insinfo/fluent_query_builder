@@ -51,6 +51,17 @@ class Insert extends QueryBuilder {
   }
 
   @override
+  QueryBuilder setAll(Map<String, dynamic> fieldsAndValues) {
+    final block = mBlocks[2] as InsertFieldValueBlock;
+
+    fieldsAndValues?.forEach((field, value) {
+      block.setFieldValue(field, value);
+    });
+
+    return this;
+  }
+
+  @override
   QueryBuilder fromQuery(Iterable<String> fields, QueryBuilder query) {
     final block = mBlocks[3] as InsertFieldsFromQueryBlock;
     block.setFromQuery(fields, query);

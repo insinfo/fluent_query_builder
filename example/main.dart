@@ -29,13 +29,36 @@ void main() async {
 
   DbLayer().connect(mysqlCom).then((db) {
     //mysql insert
-    db
+    /*db
         .insertGetId()
         .into('pessoas')
         .set('nome', 'Isaque Neves Sant\'Ana')
         .set('telefone', '(22) 2771-6265')
         .exec()
-        .then((result) => print('mysql insert $result'));
+        .then((result) => print('mysql insert $result'));*/
+
+    //mysql insertGetId with setAll
+    db
+        .insertGetId()
+        .into('pessoas')
+        .setAll({
+          'nome': 'Jon Doe',
+          'telefone': '171171171',
+        })
+        .exec()
+        .then((result) => print('mysql insertGetId $result'));
+
+    //mysql update with setAll
+    db
+        .update()
+        .whereSafe('id', '=', 13)
+        .table('pessoas')
+        .setAll({
+          'nome': 'Jon Doe',
+          'telefone': '171171171',
+        })
+        .exec()
+        .then((result) => print('mysql update $result'));
 
     //mysql select
     db
@@ -103,7 +126,7 @@ void main() async {
 
   var db = await DbLayer().connect(pgsqlCom);
   //pgsql insertGetAll
- /* db
+  /* db
       .insertGetAll()
       .into('usuarios')
       .set('username', 'isaque')

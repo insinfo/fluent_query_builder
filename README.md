@@ -58,6 +58,18 @@ void main() {
         .exec()
         .then((result) => print('mysql update $result'));
 
+    //mysql update with setAll
+    db
+        .update()
+        .whereSafe('id', '=', 13)
+        .table('pessoas')
+        .setAll({
+          'nome': 'Jon Doe',
+          'telefone': '171171171',
+        })
+        .exec()
+        .then((result) => print('mysql update with setAll $result'));
+
     //mysql delete
     db.delete().from('pessoas')
     .where('id=?', 14)

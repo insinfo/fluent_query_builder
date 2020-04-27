@@ -1,16 +1,16 @@
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
-class QBOptionBuilder {
+class QbOptionBuilder {
   QueryBuilderOptions _options;
 
-  QBOptionBuilder() {
+  QbOptionBuilder() {
     _options.replaceDoubleQuotes = false;
     _options.ignorePeriodsForFieldNameQuotes = false;
     _options.fieldAliasQuoteCharacter = '"';
     _options.separator = ' ';
   }
 
-  QBOptionBuilder.postgres() {
+  QbOptionBuilder.postgres() {
     _options = QueryBuilderOptions();
     _options.autoQuoteTableNames = true;
     _options.autoQuoteFieldNames = true;
@@ -27,7 +27,7 @@ class QBOptionBuilder {
     _options.allowAliasInFields = true;
   }
 
-  QBOptionBuilder.mysql() {
+  QbOptionBuilder.mysql() {
     _options = QueryBuilderOptions();
     _options.autoQuoteTableNames = false;
     _options.autoQuoteFieldNames = false;

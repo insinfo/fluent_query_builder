@@ -19,6 +19,7 @@ class DBConnectionInfo {
   List<String> schemes = ['public'];
   int numberOfProcessors = 1;
   bool setNumberOfProcessorsFromPlatform = false;
+  QueryBuilderOptions options;
 
 
   DBConnectionInfo({
@@ -78,21 +79,24 @@ class DBConnectionInfo {
   }
 
   QueryBuilderOptions getQueryOptions() {
-    switch (driver) {
-      case ConnectionDriver.pgsql:
-        {
-          return QBOptionBuilder.postgres().build();
-        }
-        break;
-      case ConnectionDriver.mysql:
-        {
-          return QBOptionBuilder.mysql().build();
-        }
-        break;
-      default:
-        {
-          throw NullPointerException('Database drive not selected');
-        }
+    if (options == null) {
+      switch (driver) {
+        case ConnectionDriver.pgsql:
+          {
+            options = QbOptionBuilder.postgres().build();
+          }
+          break;
+        case ConnectionDriver.mysql:
+          {
+            options = QbOptionBuilder.mysql().build();
+          }
+          break;
+        default:
+          {
+            throw NullPointerException('Database drive not selected');
+          }
+      }
     }
+    return options;
   }
 }

@@ -26,20 +26,17 @@ void main() async {
     password: 's1sadm1n',
     charset: 'utf8',
   );
-  DbLayer().connect(mysqlCom).then((db) {
+  /*DbLayer().connect(mysqlCom).then((db) async {
     //mysql select
-    db
+    var result = await db
         .select()
-        //.fields(['login', 'idSistema', 's.sigla'])
-        //.fieldRaw('SELECT COUNT(*)')
         .from('pessoas')
-        .whereSafe('nome', 'like', '%Sant\'Ana%')
-        //.limit(1)
-        .firstAsMap()
-        .then((result) => print('mysql select $result'));
-  });
+        .whereSafe('nome', 'ilike', '%isaque%')
+        .get();
+    print(result);
+  });*/
 
-  DbLayer().connect(mysqlCom).then((db) {
+  /*DbLayer().connect(mysqlCom).then((db) {
     //mysql insert
     db
         .insert()
@@ -89,7 +86,7 @@ void main() async {
         .orWhereSafe('id', '<', 20)
         .count()
         .then((result) => print('mysql select $result'));
-  });
+  });*/
 
   var db = await DbLayer().connect(pgsqlCom);
   //pgsql insert
@@ -106,6 +103,16 @@ void main() async {
         .from('pessoas')       
         .count()
         .then((result) => print('pgsql count $result'));
+
+     db.select()
+      .from('pessoas')
+      .whereSafe('nome', 'ilike', '%isaque%')
+      .limit(1)
+      .get()
+      .then((result) {
+        print('Select From Pessoa');
+        print(result);
+      });
 
   var data = await db
       .select()

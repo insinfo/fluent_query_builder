@@ -26,7 +26,17 @@ void main() async {
     password: 's1sadm1n',
     charset: 'utf8',
   );
+
   DbLayer().connect(mysqlCom).then((db) {
+    //mysql insert
+    db
+        .insertGetId()
+        .into('pessoas')
+        .set('nome', 'Isaque Neves Sant\'Ana')
+        .set('telefone', '(22) 2771-6265')
+        .exec()
+        .then((result) => print('mysql insert $result'));
+
     //mysql select
     db
         .select()
@@ -35,7 +45,7 @@ void main() async {
         .from('pessoas')
         .whereSafe('nome', 'like', '%Sant\'Ana%')
         //.limit(1)
-        .firstAsMap()
+        .getAsMap()
         .then((result) => print('mysql select $result'));
   });
 
@@ -92,22 +102,20 @@ void main() async {
   });*/
 
   var db = await DbLayer().connect(pgsqlCom);
-  //pgsql insert
-  /* db
-      .insert()
+  //pgsql insertGetAll
+ /* db
+      .insertGetAll()
       .into('usuarios')
       .set('username', 'isaque')
       .set('password', '123456')
       .exec()
-      .then((result) => print('pgsql insert $result'));*/
+      .then((result) => print('pgsql insertGetAll $result'));
 
-  /*   db
-        .select()
-        .from('pessoas')       
-        .count()
-        .then((result) => print('pgsql count $result'));*/
+  db.select().from('usuarios')
+  .count()
+  .then((result) => print('pgsql count $result'));*/
 
-  var data = await db
+  /*var data = await db
       .select()
       .from('pessoas')
       // .whereSafe('nome', 'ilike', '%Sant\'Ana%')
@@ -119,7 +127,7 @@ void main() async {
 
   data = await db.getRelationFromMaps(data, 'usuarios', 'idPessoa', 'id');
 
-  print('pgsql select \r\n ${jsonEncode(data)}');
+  print('pgsql select \r\n ${jsonEncode(data)}');*/
 
   // var r = await db.select().from('pessoas').fieldRaw('1').limit(1).exec();
   // var r = await db.raw('select 1').exec();

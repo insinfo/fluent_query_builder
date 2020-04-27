@@ -14,4 +14,8 @@ abstract class Block {
     //throw Exception('Block@buildSubstitutionValues not implemented exception');
     return {};
   }
+
+  List<String> buildReturningFields() {
+    return [];
+  }
 }

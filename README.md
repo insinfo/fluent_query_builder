@@ -101,6 +101,24 @@ void main() {
         .exec()
         .then((result) => print('pgsql insert $result'));
 
+  //pgsql insertGetAll
+  db
+      .insertGetAll()
+      .into('usuarios')
+      .set('username', 'isaque')
+      .set('password', '123456')
+      .exec()
+      .then((result) => print('pgsql insertGetAll $result'));
+
+ //pgsql insertGetId
+  db
+      .insertGetId()
+      .into('usuarios')
+      .set('username', 'isaque')
+      .set('password', '123456')
+      .exec()
+      .then((result) => print('pgsql insertGetId $result'));
+
     //pgsql count records
          db
         .select()

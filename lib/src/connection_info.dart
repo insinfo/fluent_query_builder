@@ -1,3 +1,5 @@
+import 'package:fluent_query_builder/src/exceptions/null_pointer_exception.dart';
+
 import 'models/query_builder_options.dart';
 
 enum ConnectionDriver { mysql, pgsql }
@@ -50,23 +52,24 @@ class DBConnectionInfo {
   DBConnectionInfo getSettings() {
     var settings = clone();
     switch (driver) {
-      case ConnectionDriver.pgsql:
-        {
-          settings.port ??= 5432;
-          return settings;
-        }
-        break;
-      case ConnectionDriver.mysql:
-        {
-          settings.port ??= 3306;
-          return settings;
-        }
-        break;
-      default:
-        {
-          return settings;
-        }
-    }
+    case ConnectionDriver.pgsql:
+      {
+        settings.port ??= 5432;
+        return settings;
+      }
+      break;
+    case ConnectionDriver.mysql:
+      {
+        settings.port ??= 3306;
+        return settings;
+      }
+      break;
+    default:
+      {
+        throw NullPointerException('Database Drive not selected');
+      }
+  }
+    
   }
 
   QueryBuilderOptions getQueryOptions() {

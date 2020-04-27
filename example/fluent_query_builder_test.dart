@@ -1,6 +1,5 @@
-import 'package:fluent_query_builder/fluent_query_builder.dart';
-import 'package:test/test.dart';
 
+/*
 void main() {
   //PostgreSQL connection information
   final pgsqlCom = DBConnectionInfo(
@@ -79,3 +78,4 @@ void main() {
   });
   //end queries over time test
 }
+*/

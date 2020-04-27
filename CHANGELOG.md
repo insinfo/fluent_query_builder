@@ -33,3 +33,7 @@
 ## 1.1.2
 
 - add orWhereGroup and whereGroup method for grouping conditions
+
+## 1.1.8
+
+- implemented insertGetId and insertGetAll methods for returning id and row post inserted

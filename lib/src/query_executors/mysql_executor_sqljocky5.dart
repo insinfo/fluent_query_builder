@@ -35,10 +35,10 @@ class MySqlExecutor extends QueryExecutor {
     }
   }
 
+  ///this method execute query on MySQL or MariaDB DataBase
+  ///
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String> returningFields]) {
+  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
     // Change @id -> ?
     for (var name in substitutionValues.keys) {
       query = query.replaceAll('@$name', '?');
@@ -46,22 +46,42 @@ class MySqlExecutor extends QueryExecutor {
 
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
-    //print('Query: $query');
-    //print('Values: $substitutionValues');
+    print('Query: $query');
+    print('Values: $substitutionValues');
+    print('Fields: $returningFields');
 
-    //if (returningFields?.isNotEmpty != true) {
-    return _connection
-        .prepared(query, Utils.substitutionMapToList(substitutionValues))
-        .then((results) => results.map((r) => r.toList()).toList());
-    /*} else {
+    /*
+    for MariaDB 10.5 only
+    if (returningFields != null) {
+      var fields = returningFields.join(', ');
+      var returning = 'RETURNING $fields';
+      query = '$query $returning';
+    }*/
+
+    if (returningFields?.isNotEmpty != true) {
+      return _connection
+          .prepared(query, Utils.substitutionMapToList(substitutionValues))
+          .then((results) => results.map((r) => r.toList()).toList());
+    } else {
       return Future(() async {
         var tx = await _startTransaction();
         try {
-          var writeResults = await tx.prepared(query, substitutionValues.values);
+          var tableName = '';
+          /*          
+          INSERT INTO `pessoas` (nome,telefone)  VALUES ('Dog','2771-2898') ;
+          SELECT id,nome from `pessoas` WHERE id=LAST_INSERT_ID();
+          */
+          var indexOfInsert = query.toUpperCase().indexOf('INTO');
+          var indexOfEnd = query.indexOf('(');
+          tableName = query.substring(indexOfInsert + 4, indexOfEnd);
+          print('tableName $tableName');
+          var writeResults = await tx.prepared(query, Utils.substitutionMapToList(substitutionValues));
           var fieldSet = returningFields.map((s) => '`$s`').join(',');
           var fetchSql = 'select $fieldSet from $tableName where id = ?;';
+
           logger?.fine(fetchSql);
           var readResults = await tx.prepared(fetchSql, [writeResults.insertId]);
+          // print('fetchSql $fetchSql');
           var mapped = readResults.map((r) => r.toList()).toList();
           await tx.commit();
           return mapped;
@@ -70,7 +90,7 @@ class MySqlExecutor extends QueryExecutor {
           rethrow;
         }
       });
-    }*/
+    }
   }
 
   @override
@@ -101,8 +121,7 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAsMap(String query,
-      {Map<String, dynamic> substitutionValues}) async {
+  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
     //print('MySqlExecutor@getAsMap query $query');
     //print('MySqlExecutor@getAsMap substitutionValues $substitutionValues');
     var results = <Map<String, dynamic>>[];
@@ -110,8 +129,7 @@ class MySqlExecutor extends QueryExecutor {
     for (var name in substitutionValues.keys) {
       query = query.replaceAll('@$name', '?');
     }
-    var rows = await _connection.prepared(
-        query, Utils.substitutionMapToList(substitutionValues));
+    var rows = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));
 
     var fields = rows.fields;
     await rows.forEach((Row row) {
@@ -125,21 +143,6 @@ class MySqlExecutor extends QueryExecutor {
     //print('MySqlExecutor@getAsMap results ${results}');
     return results;
   }
-
-  /*@override
-  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
-    Transaction tx;
-    try {
-      tx = await _startTransaction();
-      var executor = MySqlExecutor(tx, logger: logger);
-      var result = await queryBlock(executor);
-      await tx.commit();
-      return result;
-    } catch (_) {
-      await tx?.rollback();
-      rethrow;
-    }
-  }*/
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
@@ -159,8 +162,7 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   int _index = 0;
   final Pool _pool, _connMutex = Pool(1);
 
-  MySqlExecutorExecutorPool(this.size, this.connectionFactory, {this.logger})
-      : _pool = Pool(size) {
+  MySqlExecutorExecutorPool(this.size, this.connectionFactory, {this.logger}) : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
 
@@ -207,16 +209,14 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAsMap(String query,
-      {Map<String, dynamic> substitutionValues}) async {
+  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.getAsMap(query, substitutionValues: substitutionValues);
     });
   }
 
-  Future<List<List>> execute(String query,
-      {Map<String, dynamic> substitutionValues}) {
+  Future<List<List>> execute(String query, {Map<String, dynamic> substitutionValues}) {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.query(query, substitutionValues);
@@ -224,9 +224,7 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String> returningFields]) {
+  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.query(query, substitutionValues, returningFields);
@@ -240,12 +238,4 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
       return executor.transaction(f);
     });
   }
-
- /* @override
-  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
-    return _pool.withResource(() async {
-      var executor = await _next();
-      return executor.transaction(queryBlock);
-    });
-  }*/
 }

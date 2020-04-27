@@ -9,10 +9,10 @@ import 'insert_fields_from_query_block.dart';
 class Insert extends QueryBuilder {
   Insert(
     QueryBuilderOptions options, {
+    List<String> returningFields,
     Future<List<List>> Function() execFunc,
     Future<Map<String, Map<String, dynamic>>> Function() firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String, dynamic>>>> Function()
-        getAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String, dynamic>>>> Function() getAsMapFuncWithMeta,
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
@@ -20,7 +20,7 @@ class Insert extends QueryBuilder {
   }) : super(
           options,
           [
-            StringBlock(options, 'INSERT'),
+            StringBlock(options, 'INSERT', returningFields: returningFields),
             IntoTableBlock(options), // 1
             InsertFieldValueBlock(options), // 2
             InsertFieldsFromQueryBlock(options) // 3
@@ -32,7 +32,9 @@ class Insert extends QueryBuilder {
           firstAsMapFunc: firstAsMapFunc,
           getAsMapFunc: getAsMapFunc,
           putSingleFunc: putSingleFunc,
-        );
+        ) {
+    ;
+  }
 
   @override
   QueryBuilder into(String table) {
@@ -45,6 +47,17 @@ class Insert extends QueryBuilder {
   QueryBuilder set(String field, value) {
     final block = mBlocks[2] as InsertFieldValueBlock;
     block.setFieldValue(field, value);
+    return this;
+  }
+
+  @override
+  QueryBuilder setAll(Map<String, dynamic> fieldsAndValues) {
+    final block = mBlocks[2] as InsertFieldValueBlock;
+
+    fieldsAndValues?.forEach((field, value) {
+      block.setFieldValue(field, value);
+    });
+
     return this;
   }
 

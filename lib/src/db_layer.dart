@@ -131,6 +131,34 @@ class DbLayer {
         putSingleFunc: putSingle);
   }
 
+  /// Starts the INSERT-query with the provided options and return id
+  /// @return QueryBuilder
+  QueryBuilder insertGetId({String defaultIdColName = 'id'}) {
+    return currentQuery = Insert(options,
+        returningFields: [defaultIdColName],
+        execFunc: exec,
+        firstFunc: first,
+        firstAsMapFuncWithMeta: firstAsMapWithMeta,
+        getAsMapFuncWithMeta: getAsMapWithMeta,
+        getAsMapFunc: getAsMap,
+        firstAsMapFunc: firstAsMap,
+        putSingleFunc: putSingle);
+  }
+
+  /// Starts the INSERT-query with the provided options and return * or returningFields
+  /// @return QueryBuilder
+  QueryBuilder insertGetAll({List<String> returningFields}) {
+    return currentQuery = Insert(options,
+        returningFields: returningFields = returningFields ?? ['*'],
+        execFunc: exec,
+        firstFunc: first,
+        firstAsMapFuncWithMeta: firstAsMapWithMeta,
+        getAsMapFuncWithMeta: getAsMapWithMeta,
+        getAsMapFunc: getAsMap,
+        firstAsMapFunc: firstAsMap,
+        putSingleFunc: putSingle);
+  }
+
   /// Starts the DELETE-query with the provided options.
   /// @return QueryBuilder
   QueryBuilder delete() {
@@ -146,6 +174,7 @@ class DbLayer {
     );
   }
 
+  ///function to execute query from raw SQL String
   QueryBuilder raw(String rawQueryString) {
     return currentQuery = Raw(
       rawQueryString,
@@ -160,16 +189,21 @@ class DbLayer {
     );
   }
 
+  ///this method to execute current query and get results as List
   Future<List<List>> exec() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
 
     final rows = await executor.query(
-        currentQuery.toSql(), currentQuery.buildSubstitutionValues());
+      currentQuery.toSql(),
+      currentQuery.buildSubstitutionValues(),
+      currentQuery.buildReturningFields(),
+    );
     return rows;
   }
 
+  //alias for exec o execute current query and get results as List
   Future<List<List>> get() async {
     return exec();
   }
@@ -187,8 +221,7 @@ class DbLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@first Is nessesary query');
     }
-    final rows = await executor.query(currentQuery.toSql(isFirst: true),
-        currentQuery.buildSubstitutionValues());
+    final rows = await executor.query(currentQuery.toSql(isFirst: true), currentQuery.buildSubstitutionValues());
 
     if (rows != null) {
       if (rows.isNotEmpty) {
@@ -206,8 +239,7 @@ class DbLayer {
       throw Exception('Is nessesary query');
     }
 
-    final rows = await executor.query(currentQuery.toSql(isCount: true),
-        currentQuery.buildSubstitutionValues());
+    final rows = await executor.query(currentQuery.toSql(isCount: true), currentQuery.buildSubstitutionValues());
     //total_records
     if (rows != null) {
       if (rows.isNotEmpty) {
@@ -239,8 +271,8 @@ class DbLayer {
       throw Exception('Dblayer@getAsMap Is nessesary query');
     }
 
-    final rows = await executor.getAsMap(currentQuery.toSql(),
-        substitutionValues: currentQuery.buildSubstitutionValues());
+    final rows =
+        await executor.getAsMap(currentQuery.toSql(), substitutionValues: currentQuery.buildSubstitutionValues());
     return rows;
   }
 
@@ -275,14 +307,8 @@ class DbLayer {
     });
   }
 
-  /*Future transaction2(Future Function(dynamic) queryBlock,
-      {int commitTimeoutInSeconds}) {
-    return executor.transaction2(queryBlock);
-  }*/
-
   //
-  Future<List<T>> _fetchAll<T>(
-      [T Function(Map<String, dynamic>) factory]) async {
+  Future<List<T>> _fetchAll<T>([T Function(Map<String, dynamic>) factory]) async {
     var records = await getAsMap();
 
     Function fac;

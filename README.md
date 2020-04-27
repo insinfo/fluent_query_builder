@@ -58,6 +58,18 @@ void main() {
         .exec()
         .then((result) => print('mysql update $result'));
 
+    //mysql update with setAll
+    db
+        .update()
+        .whereSafe('id', '=', 13)
+        .table('pessoas')
+        .setAll({
+          'nome': 'Jon Doe',
+          'telefone': '171171171',
+        })
+        .exec()
+        .then((result) => print('mysql update with setAll $result'));
+
     //mysql delete
     db.delete().from('pessoas')
     .where('id=?', 14)
@@ -100,6 +112,24 @@ void main() {
         .set('password', '123456')
         .exec()
         .then((result) => print('pgsql insert $result'));
+
+  //pgsql insertGetAll
+  db
+      .insertGetAll()
+      .into('usuarios')
+      .set('username', 'isaque')
+      .set('password', '123456')
+      .exec()
+      .then((result) => print('pgsql insertGetAll $result'));
+
+ //pgsql insertGetId
+  db
+      .insertGetId()
+      .into('usuarios')
+      .set('username', 'isaque')
+      .set('password', '123456')
+      .exec()
+      .then((result) => print('pgsql insertGetId $result'));
 
     //pgsql count records
          db

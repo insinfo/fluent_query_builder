@@ -19,8 +19,7 @@ class Update extends QueryBuilder {
     QueryBuilderOptions options, {
     Future<List<List>> Function() execFunc,
     Future<Map<String, Map<String, dynamic>>> Function() firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String, dynamic>>>> Function()
-        getAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String, dynamic>>>> Function() getAsMapFuncWithMeta,
     Future<List> Function() firstFunc,
     Future<Map<String, dynamic>> Function() firstAsMapFunc,
     Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
@@ -66,6 +65,17 @@ class Update extends QueryBuilder {
   }
 
   @override
+  QueryBuilder setAll(Map<String, dynamic> fieldsAndValues) {
+    final block = mBlocks[2] as SetFieldBlock;
+
+    fieldsAndValues?.forEach((field, value) {
+      block.setFieldValue(field, value);
+    });
+
+    return this;
+  }
+
+  @override
   QueryBuilder where(String condition, [Object param, String andOr = 'AND']) {
     final block = mBlocks[3] as WhereBlock;
     block.setWhere(condition, param, andOr);
@@ -73,8 +83,7 @@ class Update extends QueryBuilder {
   }
 
   @override
-  QueryBuilder whereExpr(Expression condition,
-      [Object param, String andOr = 'AND']) {
+  QueryBuilder whereExpr(Expression condition, [Object param, String andOr = 'AND']) {
     final block = mBlocks[3] as WhereBlock;
     block.setWhereWithExpression(condition, param);
     return this;

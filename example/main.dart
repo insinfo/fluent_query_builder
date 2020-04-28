@@ -70,7 +70,13 @@ void main() async {
     //.limit(1)
         .getAsMap()
         .then((result) => print('mysql select $result'));
+
+
+
   });
+
+
+
 
   /*DbLayer().connect(mysqlCom).then((db) {
     //mysql insert
@@ -125,6 +131,37 @@ void main() async {
   });*/
 
   var db = await DbLayer().connect(pgsqlCom);
+
+  db.select()
+      .from('pessoas')
+      .where('nome ilike ?', "'%darth%'")
+      .get()
+      .then((res) {
+        print('Ilike simple select');
+        print(res);
+      });
+
+  db.select()
+      .from('pessoas')
+      .where('nome ilike ?', "'%darth%'")
+      .get()
+      .then((res) {
+    print('Ilike simple select');
+    print(res);
+  });
+
+  var res = db.select()
+      .from('pessoas')
+      .orWhereGroup((QueryBuilder qb) {
+        return qb
+            .orWhereSafe('nome', 'ilike' ,"%dart%")
+            .orWhereSafe('telefone', '=', '123123123');
+      })
+  .whereSafe('id', '>', 0)
+      .toSql();
+  print('TOSQL');
+  print(res);
+
   //pgsql insertGetAll
   /* db
       .insertGetAll()

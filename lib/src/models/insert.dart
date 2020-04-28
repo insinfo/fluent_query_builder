@@ -53,11 +53,9 @@ class Insert extends QueryBuilder {
   @override
   QueryBuilder setAll(Map<String, dynamic> fieldsAndValues) {
     final block = mBlocks[2] as InsertFieldValueBlock;
-
     fieldsAndValues?.forEach((field, value) {
       block.setFieldValue(field, value);
     });
-
     return this;
   }
 

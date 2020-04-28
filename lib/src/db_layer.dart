@@ -7,6 +7,8 @@ import 'package:postgres/postgres.dart';
 import 'package:sqljocky5/sqljocky.dart';
 
 import 'connection_info.dart';
+import 'exceptions/illegal_argument_exception.dart';
+import 'exceptions/not_implemented_exception.dart';
 import 'models/raw.dart';
 import 'query_executors/postgre_sql_executor.dart';
 //import 'query_executors/mysql_executor.dart';
@@ -309,8 +311,6 @@ class DbLayer {
 
   //
   Future<List<T>> _fetchAll<T>([T Function(Map<String, dynamic>) factory]) async {
-    var records = await getAsMap();
-
     Function fac;
     if (factories != null) {
       for (var item in factories) {
@@ -323,8 +323,10 @@ class DbLayer {
     fac ??= factory;
 
     if (fac == null) {
-      throw Exception('Dblayer@fetchAll factory not defined');
+      throw IllegalArgumentException('Dblayer@fetchAll factory not defined');
     }
+
+    var records = await getAsMap();
 
     final list = <T>[];
     if (records != null) {
@@ -332,8 +334,26 @@ class DbLayer {
         for (var item in records) {
           list.add(fac(item));
         }
+
+        //get relations data
+        var ormDefinitions = _validateModel(fac(records[0]));
+        var len = ormDefinitions.relations.length;
+        for (var i = 0; i < len; i++) {
+          var relation = ormDefinitions.relations[i];
+          if (ormDefinitions.isRelations()) {
+            records = await getRelationFromMaps(
+              records,
+              relation.tableRelation,
+              relation.localKey,
+              relation.foreignKey,
+              defaultNull: null,
+            );
+          }
+        }
+        print('records $records');
       }
     }
+
     return list;
   }
 
@@ -350,7 +370,7 @@ class DbLayer {
     fac ??= factory;
 
     if (fac == null) {
-      throw Exception('Dblayer@fetchAll factory not defined');
+      throw IllegalArgumentException('Dblayer@fetchAll factory not defined');
     }
     final record = await firstAsMap();
 
@@ -362,49 +382,160 @@ class DbLayer {
 
   Future putSingle<T>(T entity) async {
     if (entity == null) {
-      throw Exception('Dblayer@putSingle entity not defined');
+      throw IllegalArgumentException('Dblayer@putSingle entity not defined');
     }
-    if (entity != null) {
-      var db = insert();
-      var model = entity as FluentModelBase;
-      var map = model.toMap();
 
-      map.forEach((key, value) {
-        db.set(key, value);
-      });
+    var ormDefinitions = _validateModel(entity);
+    var query = insert();
+    query.setAll(ormDefinitions.data);
+    query.into(ormDefinitions.tableName);
+    return query.exec();
+  }
 
-      db.into(model.tableName);
-      await db.exec();
+  Future putSingleGetId<T>(T entity) async {
+    if (entity == null) {
+      throw IllegalArgumentException('Dblayer@putSingle entity not defined');
     }
+
+    var ormDefinitions = _validateModel(entity);
+
+    var id, query;
+    var mainInsertData = ormDefinitions.data;
+
+    if (ormDefinitions.isRelations()) {
+      var len = ormDefinitions.relations.length;
+      for (var i = 0; i < len; i++) {
+        var relation = ormDefinitions.relations[i];
+
+        if (relation.data != null) {
+          query = insertGetId(defaultIdColName: relation.localKey).setAll(relation.data).into(relation.tableRelation);
+          id = (await query.exec())[0][0];
+          mainInsertData[relation.foreignKey] = id;
+        }
+      }
+
+      query = insertGetId(defaultIdColName: ormDefinitions.primaryKey)
+          .setAll(mainInsertData)
+          .into(ormDefinitions.tableName);
+
+      id = (await query.exec())[0][0];
+    } else {
+      var query = insertGetId(defaultIdColName: ormDefinitions.primaryKey)
+          .setAll(mainInsertData)
+          .into(ormDefinitions.tableName);
+      id = (await query.exec())[0][0];
+    }
+
+    return id;
   }
 
   Future _updateSingle<T>(T entity, [QueryBuilder queryBuilder]) async {
-    if (entity == null) {
-      throw Exception('Dblayer@updateSingle entity not defined');
-    }
     if (queryBuilder == null) {
-      throw Exception('Dblayer@updateSingle queryBuilder not defined');
+      throw IllegalArgumentException('Dblayer@updateSingle queryBuilder not defined');
     }
-    var model = entity as FluentModelBase;
-    queryBuilder.table(model.tableName);
-    var map = model.toMap();
-    map.forEach((key, value) {
-      queryBuilder.set(key, value);
-    });
+
+    var ormDefinitions = _validateModel(entity);
+    queryBuilder.table(ormDefinitions.tableName);
+    queryBuilder.setAll(ormDefinitions.data);
     await queryBuilder.exec();
+
+    if (ormDefinitions.isRelations()) {}
   }
 
   Future _deleteSingle<T>(T entity, [QueryBuilder queryBuilder]) async {
-    if (entity == null) {
-      throw Exception('Dblayer@_deleteSingle entity not defined');
-    }
     if (queryBuilder == null) {
-      throw Exception('Dblayer@_deleteSingle queryBuilder not defined');
+      throw IllegalArgumentException('Dblayer@_deleteSingle queryBuilder not defined');
     }
-    var model = entity as FluentModelBase;
-    queryBuilder.from(model.tableName);
-    queryBuilder.where('${model.primaryKey}=?', model.primaryKeyVal);
+
+    var ormDefinitions = _validateModel(entity);
+    queryBuilder.from(ormDefinitions.tableName);
+    queryBuilder.whereSafe('${ormDefinitions.primaryKey}', '=', ormDefinitions.primaryKeyVal);
     await exec();
+  }
+
+  ///this method validate and ch model
+  OrmDefinitions _validateModel(entity) {
+    if (entity == null) {
+      throw Exception('Dblayer@_validateModel cannot be null');
+    }
+    try {
+      var model = entity as FluentModelBase;
+    } catch (e) {
+      throw NotImplementedException('entity has not implemented the FluentModelBase interface');
+    }
+
+    var model = entity as FluentModelBase;
+    var tableName = model.ormDefinitions.tableName;
+
+    if (tableName == null || tableName == '') {
+      throw IllegalArgumentException('table name cannot be null');
+    }
+
+    var primaryKey = model.ormDefinitions.primaryKey;
+
+    if (primaryKey == null || primaryKey == '') {
+      throw IllegalArgumentException('primaryKey not defined');
+    }
+
+    var data = model.toMap();
+
+    if (data == null) {
+      throw IllegalArgumentException('toMap() cannot return null');
+    }
+
+    var primaryKeyVal;
+    data.forEach((key, val) {
+      if (key == primaryKey) {
+        primaryKeyVal = val;
+      }
+    });
+
+    if (model.ormDefinitions.fillable?.isNotEmpty == true && model.ormDefinitions.guarded?.isNotEmpty == true) {
+      throw IllegalArgumentException('Importantly, you should use either fillable or guarded - not both.');
+    }
+
+    var newData = <String, dynamic>{};
+
+    if (model.ormDefinitions.fillable?.isNotEmpty == true) {
+      data.forEach((key, val) {
+        model.ormDefinitions.fillable.forEach((item) {
+          if (key == item) {
+            newData[key] = val;
+          }
+        });
+      });
+      data = newData;
+    }
+
+    if (model.ormDefinitions.guarded?.isNotEmpty == true) {
+      data.forEach((key, val) {
+        model.ormDefinitions.guarded.forEach((item) {
+          if (key != item) {
+            newData[key] = val;
+          }
+        });
+      });
+      data = newData;
+    }
+
+    var newRelations = <OrmRelation>[];
+    //seta os dados da relação e remove dos dados do insert principal
+    if (model.ormDefinitions.isRelations()) {
+      var len = model.ormDefinitions.relations.length;
+      for (var i = 0; i < len; i++) {
+        var relation = model.ormDefinitions.relations[i];
+        relation.data = data[relation.relationName];
+        newRelations.add(relation);
+        data.remove(relation.relationName);
+      }
+    }
+
+    var ormDefinitions = model.ormDefinitions.clone();
+    ormDefinitions.data = data;
+    ormDefinitions.primaryKeyVal = primaryKeyVal;
+    ormDefinitions.relations = newRelations;
+
+    return ormDefinitions;
   }
 
   ///

@@ -1,4 +1,11 @@
 class NotFoundException implements Exception {
-  String _cause;
-  NotFoundException(this._cause);
+  final message;
+
+  NotFoundException([this.message]);
+
+  @override
+  String toString() {
+    if (message == null) return 'NotFoundException';
+    return 'NotFoundException: $message';
+  }
 }

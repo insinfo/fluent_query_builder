@@ -1,4 +1,11 @@
 class NullPointerException implements Exception {
-  String _cause;
-  NullPointerException(this._cause);
+  final message;
+
+  NullPointerException([this.message]);
+
+  @override
+  String toString() {
+    if (message == null) return 'NullPointerException';
+    return 'NullPointerException: $message';
+  }
 }

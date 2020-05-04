@@ -1,4 +1,4 @@
-import 'dart:convert';
+
 
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
@@ -26,6 +26,7 @@ void main() async {
     password: 's1sadm1n',
     charset: 'utf8',
   );
+  print(mysqlCom);
 
   var pgsql = await DbLayer().connect(pgsqlCom);
 

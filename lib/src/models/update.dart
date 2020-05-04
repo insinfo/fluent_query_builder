@@ -111,6 +111,32 @@ class Update extends QueryBuilder {
   }
 
   @override
+  QueryBuilder whereGroup(QueryBuilder Function(QueryBuilder) function) {
+    if (function == null) {
+      throw Exception('function cannot be null');
+    }
+
+    final block = mBlocks[5] as WhereBlock;
+    block.setStartGroup();
+    var r = function(this);
+    block.setEndGroup();
+    return r;
+  }
+
+  @override
+  QueryBuilder orWhereGroup(QueryBuilder Function(QueryBuilder) function) {
+    if (function == null) {
+      throw Exception('function cannot be null');
+    }
+
+    final block = mBlocks[5] as WhereBlock;
+    block.setStartGroup();
+    var r = function(this);
+    block.setEndGroup();
+    return r;
+  }
+
+  @override
   QueryBuilder order(String field, {SortOrder dir = SortOrder.ASC}) {
     final block = mBlocks[4] as OrderByBlock;
     block.setOrder(field, dir);

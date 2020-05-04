@@ -140,19 +140,22 @@ void main() async {
   .count()
   .then((result) => print('pgsql count $result'));*/
 
-  /*var data = await db
+  var data = await pgsql
       .select()
       .from('pessoas')
       // .whereSafe('nome', 'ilike', '%Sant\'Ana%')
       .orWhereGroup((query) {
         return query.orWhereSafe('nome', 'ilike', '%5%').orWhereSafe('cpf', 'ilike', '%5%');
       })
-      .whereSafe('id', '>', 0)
+     // .whereSafe('id', '>', 0)
+     // .where('id>?', '0')
       .getAsMap();
 
-  data = await db.getRelationFromMaps(data, 'usuarios', 'idPessoa', 'id');
+  print('pgsql select \r\n ${data}');
 
-  print('pgsql select \r\n ${jsonEncode(data)}');*/
+  /*data = await db.getRelationFromMaps(data, 'usuarios', 'idPessoa', 'id');
+
+  
 
   // var r = await db.select().from('pessoas').fieldRaw('1').limit(1).exec();
   // var r = await db.raw('select 1').exec();
@@ -201,7 +204,7 @@ void main() async {
       print(onValue);
     });
   });*/
-
+/*
   //example
   var db = await DbLayer(factories: [
     {Usuario: (x) => Usuario.fromMap(x)},
@@ -217,14 +220,16 @@ void main() async {
 
   print('insert Usuario $result');
   //update Usuario
-  /*await db.update().where('id=?', 20).updateSingle<Usuario>(Usuario(username: 'jon.doe', password: '987'));
+  //await db.update().where('id=?', 20).updateSingle<Usuario>(Usuario(username: 'jon.doe', password: '987'));
   //select Usuario
  
   //delete Usuario
-  await db.delete().deleteSingle<Usuario>(Usuario(id: 20, username: 'jon.doe', password: '123456'));*/
+  //await db.delete().deleteSingle<Usuario>(Usuario(id: 20, username: 'jon.doe', password: '123456'));
 
   print('end execution');
-  // exit(0);
+  // exit(0);*/
+}
+*/
 }
 
 class Usuario implements FluentModelBase {

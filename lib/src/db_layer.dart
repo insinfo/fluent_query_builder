@@ -334,13 +334,14 @@ class DbLayer {
         for (var item in records) {
           list.add(fac(item));
         }
-
+        // if is Relations
         //get relations data
         var ormDefinitions = _validateModel(fac(records[0]));
-        var len = ormDefinitions.relations.length;
-        for (var i = 0; i < len; i++) {
-          var relation = ormDefinitions.relations[i];
-          if (ormDefinitions.isRelations()) {
+        if (ormDefinitions.isRelations()) {
+          var len = ormDefinitions.relations.length;
+          for (var i = 0; i < len; i++) {
+            var relation = ormDefinitions.relations[i];
+
             records = await getRelationFromMaps(
               records,
               relation.tableRelation,
@@ -401,7 +402,7 @@ class DbLayer {
 
     var id, query;
     var mainInsertData = ormDefinitions.data;
-
+    // if is Relations
     if (ormDefinitions.isRelations()) {
       var len = ormDefinitions.relations.length;
       for (var i = 0; i < len; i++) {

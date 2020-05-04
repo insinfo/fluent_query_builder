@@ -52,8 +52,7 @@ class WhereBlock extends Block {
     mWheres.add(WhereNode(field, value, operator: operator, andOr: 'OR'));
   }
 
-  void setWhereWithExpression(Expression condition, param,
-      [String andOr = 'AND']) {
+  void setWhereWithExpression(Expression condition, param, [String andOr = 'AND']) {
     assert(condition != null);
     doSetWhere(condition.toString(), param, andOr);
   }
@@ -78,6 +77,7 @@ class WhereBlock extends Block {
     }
 
     var length = mWheres.length;
+
     for (var i = 0; i < length; i++) {
       var where = mWheres[i];
 
@@ -94,8 +94,7 @@ class WhereBlock extends Block {
         }*/
 
         if (where.operator == null) {
-          sb.write(where.text
-              .replaceAll('?', Validator.formatValue(where.param, mOptions)));
+          sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
         } else {
           sb.write('${where.text}');
           sb.write(' ${where.operator} ');
@@ -105,20 +104,28 @@ class WhereBlock extends Block {
         if (i < length - 1) {
           sb.write(' ${where.andOr} ');
         }
+        //quando tiver grupo
       } else {
-        sb.write(' ${where.groupDivider} ');
         if (where.groupDivider == ')') {
           var str = sb.toString();
-          //print('WhereBlock@buildStr $str');
+          //print('WhereBlock@buildStr 1 $str');
           str = str.substring(0, str.lastIndexOf('OR'));
+          //str = str.substring(0, str.lastIndexOf('AND'));
+          //print('WhereBlock@buildStr 2 $str');
           sb.clear();
-          sb.write(' ${str} ) ${where.andOr} ');
-          //print('WhereBlock@buildStr $sb');
+          var andOr = where.andOr;
+          if (i  == length-1 ) {             
+              andOr = '';
+          }
+          sb.write(' ${str} ) ${andOr} ');
+        } else {
+          sb.write(' ${where.groupDivider} ');
         }
       }
     }
 
     // return 'WHERE ($sb)';
+    //print('WhereBlock@buildStr 3 $sb');
     return 'WHERE $sb';
   }
 

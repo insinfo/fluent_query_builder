@@ -359,11 +359,11 @@ abstract class QueryBuilder {
   }
 
   //Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory])
-  QueryBuilder whereGroup(Function(QueryBuilder) function) {
+  QueryBuilder whereGroup(QueryBuilder Function(QueryBuilder) function) {
     throw UnsupportedOperationException('`whereGroup` not implemented');
   }
 
-  QueryBuilder orWhereGroup(Function(QueryBuilder) function) {
+  QueryBuilder orWhereGroup(QueryBuilder Function(QueryBuilder) function) {
     throw UnsupportedOperationException('`orWhereGroup` not implemented');
   }
 

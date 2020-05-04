@@ -41,3 +41,7 @@
 ## 1.1.9
 
 - implemented setAll method for insert and update
+
+## 1.1.10
+
+- fix bug on conbine of orWhereGroup and where

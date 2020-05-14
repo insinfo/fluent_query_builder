@@ -45,3 +45,7 @@
 ## 1.1.10
 
 - fix bug on conbine of orWhereGroup and where
+
+## 1.1.11
+
+- fix bug on orderBy

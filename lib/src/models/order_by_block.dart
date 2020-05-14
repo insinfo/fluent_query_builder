@@ -20,6 +20,7 @@ class OrderByBlock extends Block {
   /// @param dir Order
   void setOrder(String field, SortOrder dir) {
     mOrders ??= [];
+
     final fld = Validator.sanitizeField(field, mOptions);
     mOrders.add(OrderNode(fld, dir));
   }
@@ -38,7 +39,7 @@ class OrderByBlock extends Block {
 
       sb.write(o.field);
       sb.write(' ');
-      sb.write(o.dir.toString());
+      sb.write(o.dir == SortOrder.ASC ? 'asc' : 'desc');
     }
 
     return 'ORDER BY $sb';

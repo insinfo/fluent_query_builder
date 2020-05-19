@@ -1,11 +1,11 @@
-
+import 'dart:async';
 
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
 void main() async {
   print('start execution');
   //PostgreSQL connection information
-  final pgsqlCom = DBConnectionInfo(
+  final pgsqlComInfo = DBConnectionInfo(
     host: '192.168.133.13',
     database: 'banco_teste',
     driver: ConnectionDriver.pgsql,
@@ -17,18 +17,60 @@ void main() async {
   );
 
   //MySQL connection information
-  final mysqlCom = DBConnectionInfo(
-    host: '10.0.0.22',
-    database: 'banco_teste',
+  final mysqlComInfo = DBConnectionInfo(
+    host: 'localhost', //10.0.0.22
+    database: 'banco_teste', //banco_teste
     driver: ConnectionDriver.mysql,
-    port: 3306,
+    port: 3307,
     username: 'sisadmin',
     password: 's1sadm1n',
     charset: 'utf8',
   );
-  print(mysqlCom);
 
-  var pgsql = await DbLayer().connect(pgsqlCom);
+  var pgsql;
+  try {
+    print('try connect');
+    pgsql = await DbLayer().connect(pgsqlComInfo);
+  } catch (e, s) {
+    print('catch connect $e');
+  }
+
+  Timer.periodic(Duration(milliseconds: 3000), (timer) async {
+    try {
+      print('Print after 3 seconds');
+      await pgsql
+          .select()
+          .from('pessoas')
+        //  .whereSafe('nome', 'ilike', '%Sant\'Ana%')
+          .getAsMap()
+          .then((result) => print('pgsql select $result'));
+    } catch (e, s) {
+      print('catch select $e s $s');
+    }
+  });
+
+  //var pgsql = await DbLayer().connect(pgsqlComInfo);
+  /* var mysql;
+  try {
+    print('try connect');
+    mysql = await DbLayer().connect(mysqlComInfo);
+  } catch (e, s) {
+    print('catch connect $e');
+  }
+
+  Timer.periodic(Duration(milliseconds: 600), (timer) async {
+    try {
+      print('Print after 3 seconds');
+      await mysql
+          .select()
+          .from('pessoas')
+          .whereSafe('nome', 'like', '%Sant\'Ana%')
+          .getAsMap()
+          .then((result) => print('mysql select $result'));
+    } catch (e, s) {
+      print('catch select $e');
+    }
+  });*/
 
   /*DbLayer().connect(mysqlCom).then((db) {
     //mysql insert
@@ -141,7 +183,7 @@ void main() async {
   .count()
   .then((result) => print('pgsql count $result'));*/
 
-  var data = await pgsql
+  /* var data = await pgsql
       .select()
       .from('pessoas')
       // .whereSafe('nome', 'ilike', '%Sant\'Ana%')
@@ -152,7 +194,7 @@ void main() async {
      // .where('id>?', '0')
       .getAsMap();
 
-  print('pgsql select \r\n ${data}');
+  print('pgsql select \r\n ${data}');*/
 
   /*data = await db.getRelationFromMaps(data, 'usuarios', 'idPessoa', 'id');
 

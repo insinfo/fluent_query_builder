@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:pool/pool.dart';
 import 'package:sqljocky5/connection/connection.dart';
 import 'package:sqljocky5/sqljocky.dart';
+import '../../fluent_query_builder.dart';
 import '../models/exceptions.dart';
 import 'query_executor.dart';
 import 'package:logging/logging.dart';
@@ -11,10 +12,22 @@ import 'utils.dart';
 class MySqlExecutor extends QueryExecutor {
   /// An optional [Logger] to write to.
   final Logger logger;
+  Querier _connection;
+  DBConnectionInfo connectionInfo;
 
-  final Querier _connection;
+  MySqlExecutor(this._connection, {this.logger, this.connectionInfo});
 
-  MySqlExecutor(this._connection, {this.logger});
+  Future<void> reconnect() async {
+    _connection = await MySqlConnection.connect(
+      ConnectionSettings(
+        host: connectionInfo.host,
+        port: connectionInfo.port,
+        db: connectionInfo.database,
+        user: connectionInfo.username,
+        password: connectionInfo.password,
+      ),
+    );
+  }
 
   @override
   Future<void> close() {
@@ -36,19 +49,19 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   ///this method execute query on MySQL or MariaDB DataBase
-  ///
   @override
-  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
+  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]) async {
     // Change @id -> ?
     for (var name in substitutionValues.keys) {
       query = query.replaceAll('@$name', '?');
     }
 
-    logger?.fine('Query: $query');
-    logger?.fine('Values: $substitutionValues');
-    print('Query: $query');
-    print('Values: $substitutionValues');
-    print('Fields: $returningFields');
+    logger?.fine('MySqlExecutor@query Query: $query');
+    logger?.fine('MySqlExecutor@query Values: $substitutionValues');
+    // print('MySqlExecutor@query Query: $query');
+    //  print('MySqlExecutor@query Values: $substitutionValues');
+    //  print('MySqlExecutor@query Fields: $returningFields');
 
     /*
     for MariaDB 10.5 only
@@ -59,9 +72,27 @@ class MySqlExecutor extends QueryExecutor {
     }*/
 
     if (returningFields?.isNotEmpty != true) {
-      return _connection
-          .prepared(query, Utils.substitutionMapToList(substitutionValues))
-          .then((results) => results.map((r) => r.toList()).toList());
+      var results;
+      try {
+        results = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));
+      } catch (e) {
+        //reconnect in Error
+        //MySQL Client Error: Connection cannot process a request for Instance of 'PrepareHandler' while a request is already in progress for Instance of 'PrepareHandler'
+        if ('$e'.contains('PrepareHandler')) {
+          //print('MySqlExecutor@query reconnect in Error');
+          await reconnect();
+          results = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));
+        } else {
+          rethrow;
+        }
+      }
+      var list = <List>[];
+      await for (var item in results) {
+        list.add(item);
+      }
+      //print('results ${results.map((r) => r.toList())}');
+      // return results.map((r) => r.toList()).toList();
+      return list;
     } else {
       return Future(() async {
         var tx = await _startTransaction();
@@ -74,13 +105,41 @@ class MySqlExecutor extends QueryExecutor {
           var indexOfInsert = query.toUpperCase().indexOf('INTO');
           var indexOfEnd = query.indexOf('(');
           tableName = query.substring(indexOfInsert + 4, indexOfEnd);
-          print('tableName $tableName');
-          var writeResults = await tx.prepared(query, Utils.substitutionMapToList(substitutionValues));
+
+          var writeResults;
+          try {
+            writeResults = await tx.prepared(query, Utils.substitutionMapToList(substitutionValues));
+          } catch (e) {
+            //reconnect in Error
+            //MySQL Client Error: Connection cannot process a request for Instance of 'PrepareHandler' while a request is already in progress for Instance of 'PrepareHandler'
+            if ('$e'.contains('PrepareHandler')) {
+              //print('MySqlExecutor@query reconnect in Error');
+              await reconnect();
+              writeResults = await tx.prepared(query, Utils.substitutionMapToList(substitutionValues));
+            } else {
+              rethrow;
+            }
+          }
+
           var fieldSet = returningFields.map((s) => '`$s`').join(',');
           var fetchSql = 'select $fieldSet from $tableName where id = ?;';
 
           logger?.fine(fetchSql);
-          var readResults = await tx.prepared(fetchSql, [writeResults.insertId]);
+          var readResults;
+
+          try {
+            readResults = await tx.prepared(fetchSql, [writeResults.insertId]);
+          } catch (e) {
+            //reconnect in Error
+            //MySQL Client Error: Connection cannot process a request for Instance of 'PrepareHandler' while a request is already in progress for Instance of 'PrepareHandler'
+            if ('$e'.contains('PrepareHandler')) {
+              //print('MySqlExecutor@query reconnect in Error');
+              await reconnect();
+              readResults = await tx.prepared(fetchSql, [writeResults.insertId]);
+            } else {
+              rethrow;
+            }
+          }
           // print('fetchSql $fetchSql');
           var mapped = readResults.map((r) => r.toList()).toList();
           await tx.commit();
@@ -102,7 +161,7 @@ class MySqlExecutor extends QueryExecutor {
     Transaction tx;
     try {
       tx = await _startTransaction();
-      var executor = MySqlExecutor(tx, logger: logger);
+      var executor = MySqlExecutor(tx, logger: logger, connectionInfo: connectionInfo);
       var result = await f(executor);
       await tx.commit();
       return result;
@@ -129,7 +188,20 @@ class MySqlExecutor extends QueryExecutor {
     for (var name in substitutionValues.keys) {
       query = query.replaceAll('@$name', '?');
     }
-    var rows = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));
+    var rows;
+    try {
+      rows = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));
+    } catch (e) {
+      //reconnect in Error
+      //MySQL Client Error: Connection cannot process a request for Instance of 'PrepareHandler' while a request is already in progress for Instance of 'PrepareHandler'
+      if ('$e'.contains('PrepareHandler')) {
+        //print('MySqlExecutor@getAsMap reconnect in Error');
+        await reconnect();
+        rows = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));
+      } else {
+        rethrow;
+      }
+    }
 
     var fields = rows.fields;
     await rows.forEach((Row row) {
@@ -146,14 +218,15 @@ class MySqlExecutor extends QueryExecutor {
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
-class MySqlExecutorExecutorPool implements QueryExecutor {
+class MySqlExecutorPool implements QueryExecutor {
   /// The maximum amount of concurrent connections.
   final int size;
 
   /// Creates a new [PostgreSQLConnection], on demand.
   ///
   /// The created connection should **not** be open.
-  final Querier Function() connectionFactory;
+  //final Querier Function() connectionFactory;
+  final Future<Querier> Function() connectionFactory;
 
   /// An optional [Logger] to print information to.
   final Logger logger;
@@ -161,8 +234,10 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   final List<MySqlExecutor> _connections = [];
   int _index = 0;
   final Pool _pool, _connMutex = Pool(1);
+  DBConnectionInfo connectionInfo;
 
-  MySqlExecutorExecutorPool(this.size, this.connectionFactory, {this.logger}) : _pool = Pool(size) {
+  MySqlExecutorPool(this.size, this.connectionFactory, {this.logger, this.connectionInfo})
+      : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
 
@@ -179,9 +254,9 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
       final listCon = await Future.wait(
         List.generate(size, (_) async {
           logger?.fine('Spawning connections...');
-          final conn = connectionFactory();
+          final conn = await connectionFactory();
 
-          final executor = await MySqlExecutor(conn, logger: logger);
+          final executor = await MySqlExecutor(conn, logger: logger, connectionInfo: connectionInfo);
 
           return executor;
         }),

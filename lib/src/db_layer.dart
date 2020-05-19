@@ -62,10 +62,23 @@ class DbLayer {
           );
         },
         schemes: connectionInfo.schemes,
+        connectionInfo: connectionInfo,
       );
     } else {
-      executor = MySqlExecutor(
-        await MySqlConnection.connect(
+      /* executor = MySqlExecutor(
+          await MySqlConnection.connect(
+            ConnectionSettings(
+              host: connectionInfo.host,
+              port: connectionInfo.port,
+              db: connectionInfo.database,
+              user: connectionInfo.username,
+              password: connectionInfo.password,
+            ),
+          ),
+          connectionInfo: connectionInfo);
+    */
+      executor = MySqlExecutorPool(nOfProces, () async {
+        return await MySqlConnection.connect(
           ConnectionSettings(
             host: connectionInfo.host,
             port: connectionInfo.port,
@@ -73,8 +86,8 @@ class DbLayer {
             user: connectionInfo.username,
             password: connectionInfo.password,
           ),
-        ),
-      );
+        );
+      }, connectionInfo: connectionInfo);
     }
 
     return this;

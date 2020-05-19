@@ -136,8 +136,7 @@ void main() {
       expect(result.length > 1, equals(true));
     });
 
-    /**
-     * TODO Resolver problema com multiplos wheres.
+    /**     * 
      * Importante enviar uma mensagem regnérica para o desenvolvedor usar apenas um tipo de wehere.
      */
     test('Select Get Function With Where And OrWhereSafe', () async {

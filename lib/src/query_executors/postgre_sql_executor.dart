@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../fluent_query_builder.dart';
 import 'query_executor.dart';
 import 'package:logging/logging.dart';
 import 'package:pool/pool.dart';
@@ -6,30 +7,51 @@ import 'package:postgres/postgres.dart';
 
 /// A [QueryExecutor] that queries a PostgreSQL database.
 class PostgreSqlExecutor implements QueryExecutor {
-  final PostgreSQLExecutionContext _connection;
+  PostgreSQLExecutionContext _connection;
 
   /// An optional [Logger] to print information to.
   final Logger logger;
+  DBConnectionInfo connectionInfo;
 
-  PostgreSqlExecutor(this._connection, {this.logger});
+  PostgreSqlExecutor(this._connection, {this.logger, this.connectionInfo});
+
+  Future<void> reconnect() async {
+    _connection = PostgreSQLConnection(
+      connectionInfo.host,
+      connectionInfo.port,
+      connectionInfo.database,
+      username: connectionInfo.username,
+      password: connectionInfo.password,
+    );
+    await open();
+  }
 
   /// The underlying connection.
   PostgreSQLExecutionContext get connection => _connection;
+
+  Future<void> open() {
+    if (_connection is PostgreSQLConnection) {
+      return (_connection as PostgreSQLConnection)?.open();
+    } else {
+      return Future.value();
+    }
+  }
 
   /// Closes the connection.
   @override
   Future close() {
     if (_connection is PostgreSQLConnection) {
-      return (_connection as PostgreSQLConnection).close();
+      return (_connection as PostgreSQLConnection)?.close();
     } else {
       return Future.value();
     }
   }
 
   @override
-  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
+  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues,
+      [List<String> returningFields]) async {
     if (returningFields?.isNotEmpty == true) {
-    //if (returningFields != null) {
+      //if (returningFields != null) {
       var fields = returningFields.join(', ');
       var returning = 'RETURNING $fields';
       query = '$query $returning';
@@ -40,8 +62,25 @@ class PostgreSqlExecutor implements QueryExecutor {
     //print('Query: $query');
     //print('Values: $substitutionValues');
     //print('Fields: $returningFields');
+    var results;
+    //return _connection.query(query, substitutionValues: substitutionValues);
 
-    return _connection.query(query, substitutionValues: substitutionValues);
+    try {
+      results = await _connection.query(query, substitutionValues: substitutionValues);
+    } catch (e) {
+     
+      //reconnect in Error
+      //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
+      if ('$e'.contains('connection is not open')) {
+       // print('PostgreSqlExecutor@query reconnect in Error');
+        await reconnect();
+        results = await _connection.query(query, substitutionValues: substitutionValues);
+      } else {
+        rethrow;
+      }
+    }
+
+    return results;
   }
 
   @override
@@ -60,18 +99,51 @@ class PostgreSqlExecutor implements QueryExecutor {
     return result;
   }
 
-  Future<int> execute(String query, {Map<String, dynamic> substitutionValues}) {
+  Future<int> execute(String query, {Map<String, dynamic> substitutionValues}) async {
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
-    return _connection.execute(query, substitutionValues: substitutionValues);
+
+    var results;
+    try {
+      results = await _connection.execute(query, substitutionValues: substitutionValues);
+    } catch (e) {
+      //reconnect in Error
+      //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
+      if ('$e'.contains('connection is not open')) {
+        //print('PostgreSqlExecutor@execute reconnect in Error');
+        await reconnect();
+        results = await _connection.query(query, substitutionValues: substitutionValues);
+      } else {
+        rethrow;
+      }
+    }
+
+    return results;
   }
 
   @override
   Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
-      {Map<String, dynamic> substitutionValues}) {
+      {Map<String, dynamic> substitutionValues}) async {
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
-    return _connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
+    //return _connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
+
+    var results;
+    try {
+      results = await _connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
+    } catch (e) {
+     // print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error  $e');
+      //reconnect in Error
+      //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
+      if ('$e'.contains('connection is not open')) {
+        //print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error');
+        await reconnect();
+        results = await _connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
+      } else {
+        rethrow;
+      }
+    }
+    return results;
   }
 
   //Use generic function type syntax for parameters.
@@ -88,7 +160,7 @@ class PostgreSqlExecutor implements QueryExecutor {
     var txResult = await conn.transaction((ctx) async {
       try {
         logger?.fine('Entering transaction');
-        var tx = PostgreSqlExecutor(ctx, logger: logger);
+        var tx = PostgreSqlExecutor(ctx, logger: logger, connectionInfo: connectionInfo);
         returnValue = await f(tx);
       } catch (e) {
         ctx.cancelTransaction(reason: e.toString());
@@ -119,7 +191,7 @@ class PostgreSqlExecutor implements QueryExecutor {
     var txResult = await conn.transaction((ctx) async {
       try {
         logger?.fine('Entering transaction');
-        var tx = PostgreSqlExecutor(ctx, logger: logger);
+        var tx = PostgreSqlExecutor(ctx, logger: logger, connectionInfo: connectionInfo);
         returnValue = await f(tx);
       } catch (e) {
         ctx.cancelTransaction(reason: e.toString());
@@ -158,8 +230,10 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   int _index = 0;
   final Pool _pool, _connMutex = Pool(1);
   List<String> schemes = ['public'];
+  DBConnectionInfo connectionInfo;
 
-  PostgreSqlExecutorPool(this.size, this.connectionFactory, {this.logger, this.schemes}) : _pool = Pool(size) {
+  PostgreSqlExecutorPool(this.size, this.connectionFactory, {this.logger, this.schemes, this.connectionInfo})
+      : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
 
@@ -178,7 +252,8 @@ class PostgreSqlExecutorPool implements QueryExecutor {
           logger?.fine('Spawning connections...');
           final conn = connectionFactory();
 
-          final executor = await conn.open().then((_) => PostgreSqlExecutor(conn, logger: logger));
+          final executor =
+              await conn.open().then((_) => PostgreSqlExecutor(conn, logger: logger, connectionInfo: connectionInfo));
 
           //isso executa uma query para definir os esquemas
           if (schemes != null && schemes.isNotEmpty) {

@@ -78,7 +78,7 @@ class MySqlExecutor extends QueryExecutor {
       } catch (e) {
         //reconnect in Error
         //MySQL Client Error: Connection cannot process a request for Instance of 'PrepareHandler' while a request is already in progress for Instance of 'PrepareHandler'
-        if ('$e'.contains('PrepareHandler')) {
+     if ('$e'.contains('PrepareHandler') || '$e'.contains('Cannot write to socket, it is closed')) {
           //print('MySqlExecutor@query reconnect in Error');
           await reconnect();
           results = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));
@@ -112,7 +112,7 @@ class MySqlExecutor extends QueryExecutor {
           } catch (e) {
             //reconnect in Error
             //MySQL Client Error: Connection cannot process a request for Instance of 'PrepareHandler' while a request is already in progress for Instance of 'PrepareHandler'
-            if ('$e'.contains('PrepareHandler')) {
+            if ('$e'.contains('PrepareHandler') || '$e'.contains('Cannot write to socket, it is closed')) {
               //print('MySqlExecutor@query reconnect in Error');
               await reconnect();
               writeResults = await tx.prepared(query, Utils.substitutionMapToList(substitutionValues));
@@ -132,7 +132,7 @@ class MySqlExecutor extends QueryExecutor {
           } catch (e) {
             //reconnect in Error
             //MySQL Client Error: Connection cannot process a request for Instance of 'PrepareHandler' while a request is already in progress for Instance of 'PrepareHandler'
-            if ('$e'.contains('PrepareHandler')) {
+            if ('$e'.contains('PrepareHandler') || '$e'.contains('Cannot write to socket, it is closed')) {
               //print('MySqlExecutor@query reconnect in Error');
               await reconnect();
               readResults = await tx.prepared(fetchSql, [writeResults.insertId]);
@@ -194,7 +194,9 @@ class MySqlExecutor extends QueryExecutor {
     } catch (e) {
       //reconnect in Error
       //MySQL Client Error: Connection cannot process a request for Instance of 'PrepareHandler' while a request is already in progress for Instance of 'PrepareHandler'
-      if ('$e'.contains('PrepareHandler')) {
+      //Bad state: Cannot write to socket, it is closed
+      //print('MySqlExecutor@getAsMap reconnect in Error $e');
+      if ('$e'.contains('PrepareHandler') || '$e'.contains('Cannot write to socket, it is closed')) {
         //print('MySqlExecutor@getAsMap reconnect in Error');
         await reconnect();
         rows = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));

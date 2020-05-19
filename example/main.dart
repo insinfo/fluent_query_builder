@@ -27,7 +27,7 @@ void main() async {
     charset: 'utf8',
   );
 
-  var pgsql;
+  /*var pgsql;
   try {
     print('try connect');
     pgsql = await DbLayer().connect(pgsqlComInfo);
@@ -47,10 +47,10 @@ void main() async {
     } catch (e, s) {
       print('catch select $e s $s');
     }
-  });
+  });*/
 
-  //var pgsql = await DbLayer().connect(pgsqlComInfo);
-  /* var mysql;
+  
+   var mysql;
   try {
     print('try connect');
     mysql = await DbLayer().connect(mysqlComInfo);
@@ -70,7 +70,7 @@ void main() async {
     } catch (e, s) {
       print('catch select $e');
     }
-  });*/
+  });
 
   /*DbLayer().connect(mysqlCom).then((db) {
     //mysql insert

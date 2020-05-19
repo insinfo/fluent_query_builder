@@ -12,8 +12,9 @@ class PostgreSqlExecutor implements QueryExecutor {
   /// An optional [Logger] to print information to.
   final Logger logger;
   DBConnectionInfo connectionInfo;
+  List<String> schemes = ['public'];
 
-  PostgreSqlExecutor(this._connection, {this.logger, this.connectionInfo});
+  PostgreSqlExecutor(this._connection, {this.logger, this.connectionInfo, this.schemes});
 
   Future<void> reconnect() async {
     _connection = PostgreSQLConnection(
@@ -29,9 +30,15 @@ class PostgreSqlExecutor implements QueryExecutor {
   /// The underlying connection.
   PostgreSQLExecutionContext get connection => _connection;
 
-  Future<void> open() {
+  Future open() async {
     if (_connection is PostgreSQLConnection) {
-      return (_connection as PostgreSQLConnection)?.open();
+      var r = (_connection as PostgreSQLConnection)?.open();
+      //isso executa uma query para definir os esquemas
+      if (schemes != null && schemes.isNotEmpty) {
+        final schs = schemes.map((i) => '"$i"').toList().join(', ');
+        await query('set search_path to $schs;', {});
+      }
+      return r;
     } else {
       return Future.value();
     }
@@ -68,11 +75,10 @@ class PostgreSqlExecutor implements QueryExecutor {
     try {
       results = await _connection.query(query, substitutionValues: substitutionValues);
     } catch (e) {
-     
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
       if ('$e'.contains('connection is not open')) {
-       // print('PostgreSqlExecutor@query reconnect in Error');
+        // print('PostgreSqlExecutor@query reconnect in Error');
         await reconnect();
         results = await _connection.query(query, substitutionValues: substitutionValues);
       } else {
@@ -132,7 +138,7 @@ class PostgreSqlExecutor implements QueryExecutor {
     try {
       results = await _connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
     } catch (e) {
-     // print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error  $e');
+      // print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error  $e');
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
       if ('$e'.contains('connection is not open')) {
@@ -160,7 +166,7 @@ class PostgreSqlExecutor implements QueryExecutor {
     var txResult = await conn.transaction((ctx) async {
       try {
         logger?.fine('Entering transaction');
-        var tx = PostgreSqlExecutor(ctx, logger: logger, connectionInfo: connectionInfo);
+        var tx = PostgreSqlExecutor(ctx, logger: logger, connectionInfo: connectionInfo, schemes: schemes);
         returnValue = await f(tx);
       } catch (e) {
         ctx.cancelTransaction(reason: e.toString());
@@ -191,7 +197,7 @@ class PostgreSqlExecutor implements QueryExecutor {
     var txResult = await conn.transaction((ctx) async {
       try {
         logger?.fine('Entering transaction');
-        var tx = PostgreSqlExecutor(ctx, logger: logger, connectionInfo: connectionInfo);
+        var tx = PostgreSqlExecutor(ctx, logger: logger, connectionInfo: connectionInfo, schemes: schemes);
         returnValue = await f(tx);
       } catch (e) {
         ctx.cancelTransaction(reason: e.toString());
@@ -252,8 +258,13 @@ class PostgreSqlExecutorPool implements QueryExecutor {
           logger?.fine('Spawning connections...');
           final conn = connectionFactory();
 
-          final executor =
-              await conn.open().then((_) => PostgreSqlExecutor(conn, logger: logger, connectionInfo: connectionInfo));
+          final executor = await conn.open().then(
+                (_) => PostgreSqlExecutor(
+                  conn,
+                  logger: logger,
+                  connectionInfo: connectionInfo,
+                ),
+              );
 
           //isso executa uma query para definir os esquemas
           if (schemes != null && schemes.isNotEmpty) {

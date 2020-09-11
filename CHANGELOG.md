@@ -53,3 +53,7 @@
 ## 1.1.12
 
 - a reconnection method was implemented in MySqlExecutor, so that the application is more resilient in case MySQL or MariaDB or PostgreSQL is restarted
+
+## 1.1.14
+
+- fix bug on where safe, failure on coted col name

@@ -49,8 +49,7 @@ void main() async {
     }
   });*/
 
-  
-   var mysql;
+  var mysql;
   try {
     print('try connect');
     mysql = await DbLayer().connect(mysqlComInfo);

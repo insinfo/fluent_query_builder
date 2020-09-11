@@ -96,9 +96,17 @@ class WhereBlock extends Block {
         if (where.operator == null) {
           sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
         } else {
+          //text = collunm
+
           sb.write('${where.text}');
           sb.write(' ${where.operator} ');
-          sb.write('@${where.text}');
+
+          var substitutionValue = where.text;
+          if (where?.text?.startsWith('"') == true) {
+            substitutionValue = substitutionValue.substring(1).substring(0, substitutionValue.length - 2);
+          }
+
+          sb.write('@$substitutionValue');
         }
 
         if (i < length - 1) {
@@ -114,8 +122,8 @@ class WhereBlock extends Block {
           //print('WhereBlock@buildStr 2 $str');
           sb.clear();
           var andOr = where.andOr;
-          if (i  == length-1 ) {             
-              andOr = '';
+          if (i == length - 1) {
+            andOr = '';
           }
           sb.write(' ${str} ) ${andOr} ');
         } else {
@@ -139,7 +147,13 @@ class WhereBlock extends Block {
     for (var item in mWheres) {
       if (item.operator != null) {
         var v = Validator.formatValue(item.param, mOptions);
-        result.addAll({'${item.text}': v});
+
+        var substitutionValue = item.text;
+        if (item?.text?.startsWith('"') == true) {
+          substitutionValue = substitutionValue.substring(1).substring(0, substitutionValue.length - 2);
+        }
+
+        result.addAll({'$substitutionValue': v});
       }
     }
 

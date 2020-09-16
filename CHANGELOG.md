@@ -57,3 +57,7 @@
 ## 1.1.14
 
 - fix bug on where safe, failure on coted col name
+
+## 1.1.16
+
+- fix bug on where 

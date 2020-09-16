@@ -117,7 +117,8 @@ class WhereBlock extends Block {
         if (where.groupDivider == ')') {
           var str = sb.toString();
           //print('WhereBlock@buildStr 1 $str');
-          str = str.substring(0, str.lastIndexOf('OR'));
+          var lastIndexOf = str.contains('OR') ? str.lastIndexOf('OR') : str.lastIndexOf('or');
+          str = str.substring(0, lastIndexOf);
           //str = str.substring(0, str.lastIndexOf('AND'));
           //print('WhereBlock@buildStr 2 $str');
           sb.clear();

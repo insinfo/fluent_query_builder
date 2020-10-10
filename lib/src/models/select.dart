@@ -83,6 +83,13 @@ class Select extends QueryBuilder {
     return this;
   }
 
+  @override
+  QueryBuilder fromRaw(String fromRawSqlString) {
+    final block = mBlocks[3] as FromTableBlock;
+    block.setFromRaw(fromRawSqlString);
+    return this;
+  }
+
   //
   // GET
   //

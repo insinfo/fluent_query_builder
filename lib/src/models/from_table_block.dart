@@ -15,6 +15,11 @@ class FromTableBlock extends TableBlockBase {
   }
 
   @override
+  void setFromRaw(String fromRawSqlString) {
+    super.setFromRaw(fromRawSqlString);
+  }
+
+  @override
   String buildStr(QueryBuilder queryBuilder) {
     assert(mTables != null && mTables.isNotEmpty);
     final tables = super.buildStr(queryBuilder);

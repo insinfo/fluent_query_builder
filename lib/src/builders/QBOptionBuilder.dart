@@ -15,7 +15,7 @@ class QbOptionBuilder {
     _options.autoQuoteTableNames = true;
     _options.autoQuoteFieldNames = true;
     _options.autoQuoteAliasNames = true;
-    _options.replaceSingleQuotes = false;
+    _options.replaceSingleQuotes = true;
     _options.dontQuote = true;
     _options.nameQuoteCharacter = '"';
     _options.tableAliasQuoteCharacter = '"';
@@ -43,6 +43,4 @@ class QbOptionBuilder {
   QueryBuilderOptions build() {
     return _options;
   }
-
-
 }

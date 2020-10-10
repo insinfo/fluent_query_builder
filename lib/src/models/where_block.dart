@@ -82,17 +82,6 @@ class WhereBlock extends Block {
       var where = mWheres[i];
 
       if (where.groupDivider == null) {
-        /*if (sb.length > 0) {
-          //sb.write(') OR (');
-          if (isDividerAdded) {
-            if (sb.length > 1) {
-              sb.write(' ${where.andOr} ');
-            }
-          } else {
-            sb.write(' ${where.andOr} ');
-          }
-        }*/
-
         if (where.operator == null) {
           sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
         } else {
@@ -101,11 +90,11 @@ class WhereBlock extends Block {
           sb.write('${where.text}');
           sb.write(' ${where.operator} ');
 
-          var substitutionValue = where.text;
+          /* var substitutionValue = where.text;
           if (where?.text?.startsWith('"') == true) {
             substitutionValue = substitutionValue.substring(1).substring(0, substitutionValue.length - 2);
-          }
-
+          }*/
+          var substitutionValue = _getSubstitutionValue(where.text);
           sb.write('@$substitutionValue');
         }
 
@@ -138,6 +127,18 @@ class WhereBlock extends Block {
     return 'WHERE $sb';
   }
 
+  String _getSubstitutionValue(String text) {
+    var substitutionValue = text;
+    if (text?.contains('.') == true) {
+      var parts = text.split('.');
+      substitutionValue = parts[1];
+    }
+    if (text?.startsWith('"') == true && text?.endsWith('"') == true) {
+      substitutionValue = substitutionValue.substring(1, substitutionValue.length - 1);
+    }
+    return substitutionValue;
+  }
+
   @override
   Map<String, dynamic> buildSubstitutionValues() {
     final result = <String, dynamic>{};
@@ -149,10 +150,11 @@ class WhereBlock extends Block {
       if (item.operator != null) {
         var v = Validator.formatValue(item.param, mOptions);
 
-        var substitutionValue = item.text;
+        /* var substitutionValue = item.text;
         if (item?.text?.startsWith('"') == true) {
           substitutionValue = substitutionValue.substring(1).substring(0, substitutionValue.length - 2);
-        }
+        }*/
+        var substitutionValue = _getSubstitutionValue(item.text);
 
         result.addAll({'$substitutionValue': v});
       }

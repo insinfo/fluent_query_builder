@@ -259,6 +259,10 @@ abstract class QueryBuilder {
     throw UnsupportedOperationException('`from` not implemented');
   }
 
+  QueryBuilder fromRaw(String fromRawSqlString) {
+    throw UnsupportedOperationException('`fromRaw` not implemented');
+  }
+
   QueryBuilder fromSubQuery(QueryBuilder table, {String alias}) {
     throw UnsupportedOperationException('`fromSubQuery` not implemented');
   }

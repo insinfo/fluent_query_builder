@@ -4,9 +4,10 @@ import 'query_builder.dart';
 import 'validator.dart';
 
 class TableNode {
-  TableNode(this.table, this.alias);
+  TableNode(this.table, this.alias, {this.fromRawSql});
   final Object table; // String | QueryBuilder
   final String alias;
+  String fromRawSql;
 }
 
 /// Table base class
@@ -26,27 +27,38 @@ abstract class TableBlockBase extends Block {
     doSetTable(table, als);
   }
 
+  void setFromRaw(String fromRawSqlString) {
+    //fromRawSQL = fromRawSqlString;
+    mTables ??= [];
+    mTables.add(TableNode(null, null, fromRawSql: fromRawSqlString));
+  }
+
   @override
   String buildStr(QueryBuilder queryBuilder) {
     assert(mTables != null && mTables.isNotEmpty);
 
     final sb = StringBuffer();
     for (var tab in mTables) {
-      if (sb.length > 0) {
-        sb.write(', ');
-      }
+      if (tab.fromRawSql == null) {
+        if (sb.length > 0) {
+          sb.write(', ');
+        }
 
-      if (tab.table is String) {
-        sb.write(tab.table.toString());
+        if (tab.table is String) {
+          sb.write(tab.table.toString());
+        } else {
+          sb.write('(');
+          sb.write(tab.table.toString());
+          sb.write(')');
+        }
+
+        if (tab.alias != null) {
+          sb.write(' ');
+          sb.write(tab.alias);
+        }
       } else {
-        sb.write('(');
-        sb.write(tab.table.toString());
-        sb.write(')');
-      }
-
-      if (tab.alias != null) {
         sb.write(' ');
-        sb.write(tab.alias);
+        sb.write(tab.fromRawSql);
       }
     }
 

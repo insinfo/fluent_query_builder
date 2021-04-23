@@ -1,19 +1,22 @@
 import 'dart:async';
-
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
 void main() async {
   print('start execution');
   //PostgreSQL connection information
   final pgsqlComInfo = DBConnectionInfo(
+    enablePsqlAutoSetSearchPath: true,
+    reconnectIfConnectionIsNotOpen: true,
     host: '192.168.133.13',
-    database: 'banco_teste',
+    database: 'sistemas',
     driver: ConnectionDriver.pgsql,
     port: 5432,
     username: 'sisadmin',
     password: 's1sadm1n',
     charset: 'utf8',
-    schemes: ['public'],
+    schemes: ['jubarte'],
+    setNumberOfProcessorsFromPlatform: false,
+    numberOfProcessors: 8,
   );
 
   //MySQL connection information
@@ -27,7 +30,7 @@ void main() async {
     charset: 'utf8',
   );
 
-  /*var pgsql;
+  var pgsql;
   try {
     print('try connect');
     pgsql = await DbLayer().connect(pgsqlComInfo);
@@ -40,16 +43,17 @@ void main() async {
       print('Print after 3 seconds');
       await pgsql
           .select()
-          .from('pessoas')
-        //  .whereSafe('nome', 'ilike', '%Sant\'Ana%')
+          .from('usuarios')
+          .whereSafe('login', '=', 'isaque.neves')
+          .whereSafe('"idSistema"', '=', '1')
           .getAsMap()
           .then((result) => print('pgsql select $result'));
     } catch (e, s) {
       print('catch select $e s $s');
     }
-  });*/
+  });
 
-  var mysql;
+  /* var mysql;
   try {
     print('try connect');
     mysql = await DbLayer().connect(mysqlComInfo);
@@ -69,7 +73,7 @@ void main() async {
     } catch (e, s) {
       print('catch select $e');
     }
-  });
+  });*/
 
   /*DbLayer().connect(mysqlCom).then((db) {
     //mysql insert

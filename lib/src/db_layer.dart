@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:postgres/postgres.dart';
-
 //import 'package:mysql1/mysql1.dart';
 import 'package:sqljocky5/sqljocky.dart';
 
@@ -50,20 +48,7 @@ class DbLayer {
     //se connectionInfo.driver for pgsql chama PostgreSqlExecutorPool
     //se for mysql chama  MySqlExecutor
     if (connectionInfo.driver == ConnectionDriver.pgsql) {
-      executor = PostgreSqlExecutorPool(
-        nOfProces,
-        () {
-          return PostgreSQLConnection(
-            connectionInfo.host,
-            connectionInfo.port,
-            connectionInfo.database,
-            username: connectionInfo.username,
-            password: connectionInfo.password,
-          );
-        },
-        schemes: connectionInfo.schemes,
-        connectionInfo: connectionInfo,
-      );
+      executor = PostgreSqlExecutorPool(nOfProces, connectionInfo);
     } else {
       /* executor = MySqlExecutor(
           await MySqlConnection.connect(

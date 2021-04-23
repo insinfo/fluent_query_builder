@@ -4,6 +4,7 @@ version: 1.0.0
 homepage: 
 authors: 
   - Isaque Neves <insinfo2008@gmail.com> 
+publish_to: none
 
 environment:
   sdk: '>=2.7.0 <3.0.0'

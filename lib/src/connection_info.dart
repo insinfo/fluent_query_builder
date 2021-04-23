@@ -6,6 +6,12 @@ import 'models/query_builder_options.dart';
 enum ConnectionDriver { mysql, pgsql }
 
 class DBConnectionInfo {
+  ///enable execution of query 'set search_path to schemes' on open connection
+  bool enablePsqlAutoSetSearchPath = true;
+
+  /// reconnect if connection is not open
+  ///PostgreSQLSeverity.error : Attempting to execute query, but connection is not open
+  bool reconnectIfConnectionIsNotOpen = true;
 
   String prefix = '';
   String sslmode = 'prefer';
@@ -21,7 +27,6 @@ class DBConnectionInfo {
   bool setNumberOfProcessorsFromPlatform = false;
   QueryBuilderOptions options;
 
-
   DBConnectionInfo({
     this.driver,
     this.host,
@@ -35,8 +40,9 @@ class DBConnectionInfo {
     this.sslmode,
     this.numberOfProcessors = 1,
     this.setNumberOfProcessorsFromPlatform = false,
+    this.reconnectIfConnectionIsNotOpen = true,
+    this.enablePsqlAutoSetSearchPath = true,
   });
-
 
   DBConnectionInfo clone() {
     return DBConnectionInfo(
@@ -58,24 +64,23 @@ class DBConnectionInfo {
   DBConnectionInfo getSettings() {
     var settings = clone();
     switch (driver) {
-    case ConnectionDriver.pgsql:
-      {
-        settings.port ??= 5432;
-        return settings;
-      }
-      break;
-    case ConnectionDriver.mysql:
-      {
-        settings.port ??= 3306;
-        return settings;
-      }
-      break;
-    default:
-      {
-        throw NullPointerException('Database Drive not selected');
-      }
-  }
-    
+      case ConnectionDriver.pgsql:
+        {
+          settings.port ??= 5432;
+          return settings;
+        }
+        break;
+      case ConnectionDriver.mysql:
+        {
+          settings.port ??= 3306;
+          return settings;
+        }
+        break;
+      default:
+        {
+          throw NullPointerException('Database Drive not selected');
+        }
+    }
   }
 
   QueryBuilderOptions getQueryOptions() {

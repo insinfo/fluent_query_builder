@@ -7,50 +7,66 @@ import 'package:postgres/postgres.dart';
 
 /// A [QueryExecutor] that queries a PostgreSQL database.
 class PostgreSqlExecutor implements QueryExecutor {
-  PostgreSQLExecutionContext _connection;
+  PostgreSQLExecutionContext connection;
 
   /// An optional [Logger] to print information to.
   final Logger logger;
   DBConnectionInfo connectionInfo;
-  List<String> schemes = ['public'];
 
-  PostgreSqlExecutor(this._connection, {this.logger, this.connectionInfo, this.schemes});
+  PostgreSqlExecutor(this.connectionInfo, {this.logger, this.connection});
 
   Future<void> reconnect() async {
-    _connection = PostgreSQLConnection(
-      connectionInfo.host,
-      connectionInfo.port,
-      connectionInfo.database,
-      username: connectionInfo.username,
-      password: connectionInfo.password,
-    );
     await open();
   }
 
-  /// The underlying connection.
-  PostgreSQLExecutionContext get connection => _connection;
+  String get schemesString => connectionInfo.schemes.map((i) => '"$i"').toList().join(', ');
 
-  Future open() async {
-    if (_connection is PostgreSQLConnection) {
-      var r = (_connection as PostgreSQLConnection)?.open();
-      //isso executa uma query para definir os esquemas
-      if (schemes != null && schemes.isNotEmpty) {
-        final schs = schemes.map((i) => '"$i"').toList().join(', ');
-        await query('set search_path to $schs;', {});
+  Future<void> open() async {
+    if (connection is PostgreSQLConnection) {
+      PostgreSQLConnection com = connection;
+      if (com.isClosed) {
+        connection = PostgreSQLConnection(
+          connectionInfo.host,
+          connectionInfo.port,
+          connectionInfo.database,
+          username: connectionInfo.username,
+          password: connectionInfo.password,
+        );
+        com = connection;
+        await com.open();
+        //isso executa uma query para definir os esquemas
+        if (connectionInfo?.enablePsqlAutoSetSearchPath == true && connectionInfo?.schemes?.isNotEmpty == true) {
+          await query('set search_path to $schemesString;', {});
+        }
       }
-      return r;
+    } else if (connection == null) {
+      connection = PostgreSQLConnection(
+        connectionInfo.host,
+        connectionInfo.port,
+        connectionInfo.database,
+        username: connectionInfo.username,
+        password: connectionInfo.password,
+      );
+      var com = connection as PostgreSQLConnection;
+      await com.open();
+      //isso executa uma query para definir os esquemas
+      if (connectionInfo?.enablePsqlAutoSetSearchPath == true && connectionInfo?.schemes?.isNotEmpty == true) {
+        await query('set search_path to $schemesString;', {});
+      }
     } else {
-      return Future.value();
+      await Future.value();
     }
+
+    //print('PostgreSqlExecutor@open connection ${connection}');
   }
 
   /// Closes the connection.
   @override
-  Future close() {
-    if (_connection is PostgreSQLConnection) {
-      return (_connection as PostgreSQLConnection)?.close();
+  Future<void> close() async {
+    if (connection is PostgreSQLConnection) {
+      await (connection as PostgreSQLConnection)?.close();
     } else {
-      return Future.value();
+      await Future.value();
     }
   }
 
@@ -73,14 +89,14 @@ class PostgreSqlExecutor implements QueryExecutor {
     //return _connection.query(query, substitutionValues: substitutionValues);
 
     try {
-      results = await _connection.query(query, substitutionValues: substitutionValues);
+      results = await connection.query(query, substitutionValues: substitutionValues);
     } catch (e) {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
-      if ('$e'.contains('connection is not open')) {
+      if (connectionInfo?.reconnectIfConnectionIsNotOpen == true && '$e'.contains('connection is not open')) {
         // print('PostgreSqlExecutor@query reconnect in Error');
         await reconnect();
-        results = await _connection.query(query, substitutionValues: substitutionValues);
+        results = await connection.query(query, substitutionValues: substitutionValues);
       } else {
         rethrow;
       }
@@ -111,14 +127,14 @@ class PostgreSqlExecutor implements QueryExecutor {
 
     var results;
     try {
-      results = await _connection.execute(query, substitutionValues: substitutionValues);
+      results = await connection.execute(query, substitutionValues: substitutionValues);
     } catch (e) {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
-      if ('$e'.contains('connection is not open')) {
+      if (connectionInfo?.reconnectIfConnectionIsNotOpen == true && '$e'.contains('connection is not open')) {
         //print('PostgreSqlExecutor@execute reconnect in Error');
         await reconnect();
-        results = await _connection.query(query, substitutionValues: substitutionValues);
+        results = await connection.query(query, substitutionValues: substitutionValues);
       } else {
         rethrow;
       }
@@ -136,15 +152,15 @@ class PostgreSqlExecutor implements QueryExecutor {
 
     var results;
     try {
-      results = await _connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
+      results = await connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
     } catch (e) {
       // print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error  $e');
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
-      if ('$e'.contains('connection is not open')) {
+      if (connectionInfo?.reconnectIfConnectionIsNotOpen == true && '$e'.contains('connection is not open')) {
         //print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error');
         await reconnect();
-        results = await _connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
+        results = await connection.mappedResultsQuery(query, substitutionValues: substitutionValues);
       } else {
         rethrow;
       }
@@ -156,17 +172,17 @@ class PostgreSqlExecutor implements QueryExecutor {
   //Future<dynamic> f(QueryExecutor connection)
   Future<dynamic> simpleTransaction(Future<dynamic> Function(QueryExecutor) f) async {
     logger?.fine('Entering simpleTransaction');
-    if (_connection is! PostgreSQLConnection) {
+    if (connection is! PostgreSQLConnection) {
       return await f(this);
     }
 
-    final conn = _connection as PostgreSQLConnection;
+    final conn = connection as PostgreSQLConnection;
     var returnValue;
 
     var txResult = await conn.transaction((ctx) async {
       try {
         logger?.fine('Entering transaction');
-        var tx = PostgreSqlExecutor(ctx, logger: logger, connectionInfo: connectionInfo, schemes: schemes);
+        var tx = PostgreSqlExecutor(connectionInfo, logger: logger, connection: ctx);
         returnValue = await f(tx);
       } catch (e) {
         ctx.cancelTransaction(reason: e.toString());
@@ -189,15 +205,15 @@ class PostgreSqlExecutor implements QueryExecutor {
 
   @override
   Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
-    if (_connection is! PostgreSQLConnection) return await f(this);
+    if (connection is! PostgreSQLConnection) return await f(this);
 
-    var conn = _connection as PostgreSQLConnection;
+    var conn = connection as PostgreSQLConnection;
     T returnValue;
 
     var txResult = await conn.transaction((ctx) async {
       try {
         logger?.fine('Entering transaction');
-        var tx = PostgreSqlExecutor(ctx, logger: logger, connectionInfo: connectionInfo, schemes: schemes);
+        var tx = PostgreSqlExecutor(connectionInfo, logger: logger, connection: ctx);
         returnValue = await f(tx);
       } catch (e) {
         ctx.cancelTransaction(reason: e.toString());
@@ -227,7 +243,7 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   /// Creates a new [PostgreSQLConnection], on demand.
   ///
   /// The created connection should **not** be open.
-  final PostgreSQLConnection Function() connectionFactory;
+  // final PostgreSQLConnection Function() connectionFactory;
 
   /// An optional [Logger] to print information to.
   final Logger logger;
@@ -235,11 +251,10 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   final List<PostgreSqlExecutor> _connections = [];
   int _index = 0;
   final Pool _pool, _connMutex = Pool(1);
-  List<String> schemes = ['public'];
+
   DBConnectionInfo connectionInfo;
 
-  PostgreSqlExecutorPool(this.size, this.connectionFactory, {this.logger, this.schemes, this.connectionInfo})
-      : _pool = Pool(size) {
+  PostgreSqlExecutorPool(this.size, this.connectionInfo, {this.logger}) : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
 
@@ -256,21 +271,9 @@ class PostgreSqlExecutorPool implements QueryExecutor {
       final listCon = await Future.wait(
         List.generate(size, (_) async {
           logger?.fine('Spawning connections...');
-          final conn = connectionFactory();
 
-          final executor = await conn.open().then(
-                (_) => PostgreSqlExecutor(
-                  conn,
-                  logger: logger,
-                  connectionInfo: connectionInfo,
-                ),
-              );
-
-          //isso executa uma query para definir os esquemas
-          if (schemes != null && schemes.isNotEmpty) {
-            final schs = schemes.map((i) => '"$i"').toList().join(', ');
-            await executor.query('set search_path to $schs;', {});
-          }
+          final executor = PostgreSqlExecutor(connectionInfo, logger: logger);
+          await executor.open();
 
           return executor;
         }),
@@ -283,7 +286,9 @@ class PostgreSqlExecutorPool implements QueryExecutor {
     return _connMutex.withResource(() async {
       await _open();
       if (_index >= size) _index = 0;
-      return _connections[_index++];
+      var currentConnIdx = _index++;
+      //print('PostgreSqlExecutorPool currentConnIdx $currentConnIdx ');
+      return _connections[currentConnIdx];
     });
   }
 

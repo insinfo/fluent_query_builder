@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 //import 'package:mysql1/mysql1.dart';
-import 'package:sqljocky5/sqljocky.dart';
+import 'package:galileo_sqljocky5/sqljocky.dart';
 
 import 'connection_info.dart';
 import 'exceptions/illegal_argument_exception.dart';

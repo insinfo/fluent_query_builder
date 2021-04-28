@@ -7,10 +7,10 @@ authors:
 publish_to: none
 
 environment:
-  sdk: '>=2.7.0 <3.0.0'
+  sdk: '>=2.10.0 <3.0.0'
 
-dependencies:
-  postgres: ^2.1.1 
+dependencies:  
+  galileo_postgres: ^3.0.0
   fluent_query_builder: 
     path: ../
 

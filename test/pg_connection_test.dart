@@ -5,63 +5,65 @@ import 'package:test/test.dart';
 import 'builders/db_connection_builder.dart';
 
 void main() {
-
-  var _connectionInfo = DbConnectionBuilder().build();
+  var _connectionInfo = DBConnectionInfo(
+      host: 'localhost',
+      database: 'banco_teste',
+      driver: ConnectionDriver.pgsql,
+      port: 5434,
+      username: 'sisadmin',
+      password: 's1sadm1n',
+      charset: 'utf8',
+      schemes: ['public']);
   DbLayer _dbLayer;
 
   group('Test Connection', () {
-
     setUp(() {
       _dbLayer = DbLayer();
     });
 
-
     test('Test Connection Default Builder Params With Success', () async {
       var db = await _dbLayer.connect(_connectionInfo);
-      expect(await db.raw('select 1').exec(), equals([[1]]));
+      expect(
+          await db.raw('select 1').exec(),
+          equals([
+            [1]
+          ]));
     });
 
     test('Test Connection When Driver is Null', () async {
       var connectionInfo = DbConnectionBuilder().withNullDrive().build();
-      expect(
-        () async => await _dbLayer.connect(connectionInfo),
-        throwsA(TypeMatcher<NullPointerException>())
-      );
+      expect(() async => await _dbLayer.connect(connectionInfo), throwsA(TypeMatcher<NullPointerException>()));
     });
 
 //    test('Test Connection When Charset is Null', () async {
 //      var connectionInfo = DbConnectionBuilder().withNullCharset().build();
 //      fail('Falta implementar');
 //    });
-
   });
 
   group('Teste Select Query', () {
-
     setUp(() {
       _dbLayer = DbLayer();
     });
 
     test('Select Find All', () async {
       var db = await _dbLayer.connect(_connectionInfo);
-      var result = await db.select()
-          .from('pessoas')
-          .get();
+      await db.raw('CREATE TABLE IF NOT EXISTS  pessoas ( ID serial, nome VARCHAR ( 200 ) );').exec();
+      await db.insert().into('pessoas').setAll({'nome': 'Isaque'}).exec();
+      var result = await db.select().from('pessoas').get();
 
       var expectedValue = true;
 
-      expect(result.length > 1, equals(expectedValue));
+      expect(result.length == 1, equals(expectedValue));
     });
 
     test('Select Get Function With Success', () async {
       var db = await _dbLayer.connect(_connectionInfo);
-      var result = await db.select()
-          .from('pessoas')
-          .whereSafe('nome', 'ilike', '%isaque%')
-          .limit(1)
-          .get();
+      var result = await db.select().from('pessoas').whereSafe('nome', 'ilike', '%isaque%').limit(1).get();
 
-      var expectedValue = [[3, 'Isaque Neves Sant Ana', '(22) 99701-5305', '54654']];
+      var expectedValue = [
+        [3, 'Isaque Neves Sant Ana', '(22) 99701-5305', '54654']
+      ];
 
       expect(result, equals(expectedValue));
     });
@@ -69,10 +71,7 @@ void main() {
     test('Select Get Function With Simple Where', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var result = await db.select()
-          .from('pessoas')
-          .where('nome ilike ?', "'%darth%'")
-          .get();
+      var result = await db.select().from('pessoas').where('nome ilike ?', "'%darth%'").get();
 
       expect(result.length > 1, equals(true));
     });
@@ -80,7 +79,8 @@ void main() {
     test('Select Get Function With Multiples Where', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var result = await db.select()
+      var result = await db
+          .select()
           .from('pessoas')
           .where('nome ilike ?', "'%darth%'")
           .where('telefone ilike ?', "'%123%'")
@@ -92,7 +92,8 @@ void main() {
     test('Select Get Function With OrWhere', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var result = await db.select()
+      var result = await db
+          .select()
           .from('pessoas')
           .where('nome ilike ?', "'%darth%'")
           .where('telefone ilike ?', "'%123%'", 'OR')
@@ -104,10 +105,7 @@ void main() {
     test('Select Get Function With WhereSafe', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var result = await db.select()
-          .from('pessoas')
-          .whereSafe('nome', 'ilike', '%dart%')
-          .get();
+      var result = await db.select().from('pessoas').whereSafe('nome', 'ilike', '%dart%').get();
 
       expect(result.length > 1, equals(true));
     });
@@ -115,7 +113,8 @@ void main() {
     test('Select Get Function With Multiples where Safes', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var result = await db.select()
+      var result = await db
+          .select()
           .from('pessoas')
           .whereSafe('nome', 'ilike', '%dart%')
           .whereSafe('telefone', 'ilike', '%123%')
@@ -127,7 +126,8 @@ void main() {
     test('Select Get Function With WhereSafe And OrWhereSafe', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var result = await db.select()
+      var result = await db
+          .select()
           .from('pessoas')
           .whereSafe('nome', 'ilike', '%dart%')
           .orWhereSafe('telefone', 'ilike', '%123%')
@@ -164,7 +164,6 @@ void main() {
 //          .get();
 
 //      expect(result.length > 1, equals(true));
-
     });
 
     /**
@@ -173,36 +172,23 @@ void main() {
     test('Select Get Function With WhereGroup', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var result = await db
-          .select()
-          .from('pessoas')
-          .whereGroup((QueryBuilder qb) {
-            return qb.where('nome ilike ?', "'%dart%'");
-          }).get();
+      var result = await db.select().from('pessoas').whereGroup((QueryBuilder qb) {
+        return qb.where('nome ilike ?', "'%dart%'");
+      }).get();
 
       expect(result.length > 1, equals(true));
-
     });
 
     test('Select Get Function With whereRaw', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-
-      var result = await db.select()
-          .from('pessoas')
-          .whereRaw("nome ilike '%dart%'")
-          .get();
+      var result = await db.select().from('pessoas').whereRaw("nome ilike '%dart%'").get();
 
       expect(result.length > 1, equals(true));
-
     });
-
-
-
   });
 
   group('Insert Queries', () {
-
     setUp(() {
       _dbLayer = DbLayer();
     });
@@ -214,31 +200,19 @@ void main() {
     test('Simple Insert', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var data = <String, dynamic>{
-        'nome': 'Darth Vader',
-        'telefone': '123123123'
-      };
+      var data = <String, dynamic>{'nome': 'Darth Vader', 'telefone': '123123123'};
 
       expect(() async {
-        await db.insert()
-          .into('pessoas')
-          .setAll(data)
-          .exec();
+        await db.insert().into('pessoas').setAll(data).exec();
       }, () => dynamic);
     });
 
     test('Insert Get Id', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var data = <String, dynamic>{
-        'nome': 'Darth Vader',
-        'telefone': '123123123'
-      };
+      var data = <String, dynamic>{'nome': 'Darth Vader', 'telefone': '123123123'};
 
-      var id = await db.insertGetId()
-          .into('pessoas')
-          .setAll(data)
-          .exec();
+      var id = await db.insertGetId().into('pessoas').setAll(data).exec();
 
       expect(id, equals(id));
     });
@@ -246,16 +220,13 @@ void main() {
     test('Insert Get All', () async {
       var db = await _dbLayer.connect(_connectionInfo);
 
-      var data = <String, dynamic>{
-        'nome': 'Darth Vader',
-        'telefone': '123123123'
-      };
+      var data = <String, dynamic>{'nome': 'Darth Vader', 'telefone': '123123123'};
 
-      var response = await db.insertGetAll(returningFields:[
-        'nome', 'telefone'
-      ]).into('pessoas').setAll(data).exec();
+      var response = await db.insertGetAll(returningFields: ['nome', 'telefone']).into('pessoas').setAll(data).exec();
 
-      var expectedValue = [['Darth Vader', '123123123']];
+      var expectedValue = [
+        ['Darth Vader', '123123123']
+      ];
 
       expect(response, equals(expectedValue));
     });

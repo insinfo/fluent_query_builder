@@ -3,7 +3,7 @@ import '../../fluent_query_builder.dart';
 import 'query_executor.dart';
 import 'package:logging/logging.dart';
 import 'package:pool/pool.dart';
-import 'package:postgres/postgres.dart';
+import 'package:galileo_postgres/galileo_postgres.dart';
 
 /// A [QueryExecutor] that queries a PostgreSQL database.
 class PostgreSqlExecutor implements QueryExecutor {

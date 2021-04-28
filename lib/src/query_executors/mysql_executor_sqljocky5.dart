@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'package:galileo_sqljocky5/public/connection/connection.dart';
 import 'package:pool/pool.dart';
-import 'package:sqljocky5/connection/connection.dart';
-import 'package:sqljocky5/sqljocky.dart';
+
+import 'package:galileo_sqljocky5/sqljocky.dart';
 import '../../fluent_query_builder.dart';
 import '../models/exceptions.dart';
 import 'query_executor.dart';
@@ -78,7 +79,7 @@ class MySqlExecutor extends QueryExecutor {
       } catch (e) {
         //reconnect in Error
         //MySQL Client Error: Connection cannot process a request for Instance of 'PrepareHandler' while a request is already in progress for Instance of 'PrepareHandler'
-     if ('$e'.contains('PrepareHandler') || '$e'.contains('Cannot write to socket, it is closed')) {
+        if ('$e'.contains('PrepareHandler') || '$e'.contains('Cannot write to socket, it is closed')) {
           //print('MySqlExecutor@query reconnect in Error');
           await reconnect();
           results = await _connection.prepared(query, Utils.substitutionMapToList(substitutionValues));
@@ -238,8 +239,7 @@ class MySqlExecutorPool implements QueryExecutor {
   final Pool _pool, _connMutex = Pool(1);
   DBConnectionInfo connectionInfo;
 
-  MySqlExecutorPool(this.size, this.connectionFactory, {this.logger, this.connectionInfo})
-      : _pool = Pool(size) {
+  MySqlExecutorPool(this.size, this.connectionFactory, {this.logger, this.connectionInfo}) : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
 

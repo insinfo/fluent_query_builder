@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:pool/pool.dart';
-import 'package:mysql1/mysql1.dart';
+import 'package:galileo_mysql/galileo_mysql.dart';
 import '../models/exceptions.dart';
 import 'query_executor.dart';
 import 'package:logging/logging.dart';
@@ -26,9 +26,7 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String> returningFields]) {
+  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
     // Change @id -> ?
     for (var name in substitutionValues.keys) {
       query = query.replaceAll('@$name', '?');
@@ -69,8 +67,7 @@ class MySqlExecutor extends QueryExecutor {
     //var rows = await this.query(query,substitutionValues);
   }
 
-  Future<dynamic> simpleTransaction(
-      Future<dynamic> Function(QueryExecutor) f) async {
+  Future<dynamic> simpleTransaction(Future<dynamic> Function(QueryExecutor) f) async {
     logger?.fine('Entering simpleTransaction');
     if (_connection is! MySqlConnection) {
       return await f(this);
@@ -96,8 +93,7 @@ class MySqlExecutor extends QueryExecutor {
       if (txResult.sqlState == null) {
         throw StateError('The transaction was cancelled.');
       } else {
-        throw StateError(
-            'The transaction was cancelled with reason "${txResult.message}".');
+        throw StateError('The transaction was cancelled with reason "${txResult.message}".');
       }
     } else {
       return returnValue;
@@ -128,8 +124,7 @@ class MySqlExecutor extends QueryExecutor {
       if (txResult.sqlState == null) {
         throw StateError('The transaction was cancelled.');
       } else {
-        throw StateError(
-            'The transaction was cancelled with reason "${txResult.message}".');
+        throw StateError('The transaction was cancelled with reason "${txResult.message}".');
       }
     } else {
       return returnValue;
@@ -137,13 +132,11 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAsMap(String query,
-      {Map<String, dynamic> substitutionValues}) async {
+  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
     print('MySqlExecutor@getAsMap query $query');
     print('MySqlExecutor@getAsMap substitutionValues $substitutionValues');
 
-    var rows = await _connection.query(
-        query, Utils.substitutionMapToList(substitutionValues));
+    var rows = await _connection.query(query, Utils.substitutionMapToList(substitutionValues));
     print(rows);
 
     final result = <Map<String, dynamic>>[];
@@ -183,8 +176,7 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   int _index = 0;
   final Pool _pool, _connMutex = Pool(1);
 
-  MySqlExecutorExecutorPool(this.size, this.connectionFactory, {this.logger})
-      : _pool = Pool(size) {
+  MySqlExecutorExecutorPool(this.size, this.connectionFactory, {this.logger}) : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
 
@@ -231,16 +223,14 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAsMap(String query,
-      {Map<String, dynamic> substitutionValues}) async {
+  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic> substitutionValues}) async {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.getAsMap(query, substitutionValues: substitutionValues);
     });
   }
 
-  Future<List<List>> execute(String query,
-      {Map<String, dynamic> substitutionValues}) {
+  Future<List<List>> execute(String query, {Map<String, dynamic> substitutionValues}) {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.query(query, substitutionValues);
@@ -248,9 +238,7 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String> returningFields]) {
+  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String> returningFields]) {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.query(query, substitutionValues, returningFields);

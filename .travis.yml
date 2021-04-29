@@ -2,19 +2,19 @@ language: dart
 sudo: required
 dart:
   - stable
-#addons:
-  #postgresql: "12"
 addons:
-  postgresql: '12'
-  apt:
-    packages:
-      - postgresql-12
-      - postgresql-client-12
-  env:
-    - TOXENV=py38
-    - PGVER=12
-    - PSYCOPG3_IMPL=ctypes
-    - PGPORT=5434
+  postgresql: "9.6"
+#addons:
+#  postgresql: '12'
+#  apt:
+#    packages:
+#      - postgresql-12
+#      - postgresql-client-12
+#  env:
+#    - TOXENV=py38
+#    - PGVER=12
+#    - PSYCOPG3_IMPL=ctypes
+#    - PGPORT=5434
 services:
   - postgresql
 before_script:
@@ -40,8 +40,8 @@ before_script:
   - psql -c "SHOW config_file" -U sisadmin -d banco_teste
   - psql -c "SELECT version();" -U sisadmin -d banco_teste
   #- sudo sed -i 's/^port.*/port = 5434/' /etc/postgresql/9.6/main/postgresql.conf 
-  - sudo sed -i 's/port = 5433/port = 5434/' /etc/postgresql/9.6/main/postgresql.conf
-  - sudo sed -i 's/port = 5432/port = 5434/' /etc/postgresql/9.6/main/postgresql.conf
+  #- sudo sed -i 's/port = 5433/port = 5434/' /etc/postgresql/9.6/main/postgresql.conf
+  #- sudo sed -i 's/port = 5432/port = 5434/' /etc/postgresql/9.6/main/postgresql.conf
   - cat /etc/postgresql/9.6/main/postgresql.conf
   - pub get
 dart_task:

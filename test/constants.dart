@@ -1,1 +1,1 @@
-const int dbPort = 5434;
+const int dbPort = 5432;

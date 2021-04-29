@@ -12,9 +12,9 @@ before_script:
 #psql.exe -h 127.0.0.1 -U postgres -p 5434 -w -d banco_teste -c "CREATE TABLE public.pessoas ( id serial NOT NULL , nome varchar(255), telefone varchar(255) , cpf varchar(255) , CONSTRAINT pessoas_pkey PRIMARY KEY (id) );"
   - sudo cp ci/pg_hba.conf /etc/postgresql/9.6/main/pg_hba.conf
   - sudo /etc/init.d/postgresql restart  
-  - psql -c 'CREATE ROLE sisadmin LOGIN SUPERUSER PASSWORD 's1sadm1n';' -U postgres
-  #- psql -c 'create user sisadmin with createdb;' -U postgres
- # - psql -c "alter user sisadmin with password 's1sadm1n';" -U postgres
+  #- psql -c 'CREATE ROLE sisadmin LOGIN SUPERUSER PASSWORD 's1sadm1n';' -U postgres
+  - psql -c 'create user sisadmin with SUPERUSER createdb;' -U postgres
+  - psql -c "alter user sisadmin with password 's1sadm1n';" -U postgres
   - psql -c 'create database banco_teste;' -U postgres
   - psql -c 'GRANT ALL PRIVILEGES ON DATABASE banco_teste TO sisadmin;' -U postgres
   - psql -c 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO sisadmin;' -U postgres -d banco_teste

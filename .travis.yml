@@ -28,7 +28,7 @@ before_script:
   - pub get
 dart_task:
 # - test: --run-skipped -r expanded -j 1
-  - test: run test --concurrency 1  --chain-stack-traces
+  - test: --concurrency 1  --chain-stack-traces
 #  - dartfmt -w ./
 #  - dartanalyzer: --fatal-infos --fatal-warnings .
 

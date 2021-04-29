@@ -25,6 +25,7 @@ before_script:
   - psql -c 'CREATE TABLE public.pessoas ( id serial NOT NULL , nome varchar(255), telefone varchar(255) , cep varchar(255) , CONSTRAINT pessoas_pkey PRIMARY KEY (id) );' -U sisadmin -d banco_teste
   - psql -c "INSERT INTO pessoas (nome,telefone,cep) VALUES ('Isaque', '99701-5305', '54654');" -U sisadmin -d banco_teste
   - psql -c "SELECT * FROM pessoas;" -U sisadmin -d banco_teste
+  - sudo sed -e 's/^port.*/port = 5434/' /etc/postgresql/12/main/postgresql.conf > postgresql.conf
   - pub get
 dart_task:
 # - test: --run-skipped -r expanded -j 1

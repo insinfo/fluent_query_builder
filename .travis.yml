@@ -31,6 +31,7 @@ before_script:
   #- sudo sed -i 's/^port.*/port = 5434/' /etc/postgresql/9.6/main/postgresql.conf 
   - sudo sed -i 's/port = 5433/port = 5434/' /etc/postgresql/9.6/main/postgresql.conf
   - sudo sed -i 's/port = 5432/port = 5434/' /etc/postgresql/9.6/main/postgresql.conf
+  - cat /etc/postgresql/9.6/main/postgresql.conf
   - pub get
 dart_task:
 # - test: --run-skipped -r expanded -j 1

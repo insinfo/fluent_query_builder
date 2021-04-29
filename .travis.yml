@@ -28,8 +28,8 @@ before_script:
   - psql -c "SELECT * FROM pessoas;" -U sisadmin -d banco_teste
   - psql -c "SHOW config_file" -U sisadmin -d banco_teste
   - psql -c "SELECT version();" -U sisadmin -d banco_teste
-  - sudo sed -i 's/^port.*/port = 5434/' /etc/postgresql/12/main/postgresql.conf 
-  #- sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf
+  - sudo sed -i 's/^port.*/port = 5434/' /etc/postgresql/9.6/main/postgresql.conf 
+  #- sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/9.6/main/postgresql.conf
   - pub get
 dart_task:
 # - test: --run-skipped -r expanded -j 1

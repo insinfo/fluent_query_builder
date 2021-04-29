@@ -10,38 +10,38 @@ class UnionNode {
   UnionNode.fromQuery(QueryBuilder table, this.unionType) {
     this.table = table;
   }
-  Object table; // String or QueryBuilder
+  Object? table; // String or QueryBuilder
   UnionType unionType;
 }
 
 /// UNION
 class UnionBlock extends Block {
-  UnionBlock(QueryBuilderOptions options) : super(options);
+  UnionBlock(QueryBuilderOptions? options) : super(options);
 
-  List<UnionNode> mUnions;
+  List<UnionNode>? mUnions;
 
   /// Add a UNION with the given table/query.
   /// @param table Name of the table or query to union with.
   /// @param unionType Type of the union.
   void setUnion(String table, UnionType unionType) {
-    final tbl = Validator.sanitizeTable(table, mOptions);
+    final tbl = Validator.sanitizeTable(table, mOptions!);
     ensureUnionsList();
-    mUnions.add(UnionNode(tbl, unionType));
+    mUnions!.add(UnionNode(tbl, unionType));
   }
 
   void setUnionSubQuery(QueryBuilder table, UnionType unionType) {
     ensureUnionsList();
-    mUnions.add(UnionNode(table, unionType));
+    mUnions!.add(UnionNode(table, unionType));
   }
 
   @override
   String buildStr(QueryBuilder queryBuilder) {
-    if (mUnions == null || mUnions.isEmpty) {
+    if (mUnions == null || mUnions!.isEmpty) {
       return '';
     }
 
     final sb = StringBuffer();
-    for (var j in mUnions) {
+    for (var j in mUnions!) {
       if (sb.length > 0) {
         sb.write(' ');
       }

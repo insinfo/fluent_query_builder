@@ -22,12 +22,13 @@ before_script:
   - psql -c 'grant all on database banco_teste to darttrust;' -U postgres
   - export PGPASSWORD='s1sadm1n'
   - echo $PGPASSWORD
-  - psql -c 'CREATE TABLE public.pessoas ( id serial NOT NULL , nome varchar(255), telefone varchar(255) , cpf varchar(255) , CONSTRAINT pessoas_pkey PRIMARY KEY (id) );' -U sisadmin -d banco_teste
-  - psql -c "INSERT INTO pessoas (nome,telefone,cpf) VALUES ('Isaque Neves Sant Ana', '(22) 99701-5305', '54654');" -U sisadmin -d banco_teste
+  - psql -c 'CREATE TABLE public.pessoas ( id serial NOT NULL , nome varchar(255), telefone varchar(255) , cep varchar(255) , CONSTRAINT pessoas_pkey PRIMARY KEY (id) );' -U sisadmin -d banco_teste
+  - psql -c "INSERT INTO pessoas (nome,telefone,cep) VALUES ('Isaque', '99701-5305', '54654');" -U sisadmin -d banco_teste
   - psql -c "SELECT * FROM pessoas;" -U sisadmin -d banco_teste
   - pub get
 dart_task:
-  - test: --run-skipped -r expanded -j 1
+# - test: --run-skipped -r expanded -j 1
+  - test: run test --concurrency 1  --chain-stack-traces
 #  - dartfmt -w ./
 #  - dartanalyzer: --fatal-infos --fatal-warnings .
 

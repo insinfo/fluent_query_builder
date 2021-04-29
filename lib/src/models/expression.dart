@@ -12,34 +12,34 @@ class ExpressionNode {
   ExpressionNode();
 
   ExpressionNode.fromTypeExprParam(
-      ExpressionType type, String expr, Object param) {
+      ExpressionType type, String expr, Object? param) {
     this.type = type;
     this.expr = expr;
     this.param = param;
   }
 
-  ExpressionNode.fromTypeParent(ExpressionType type, ExpressionNode parent) {
+  ExpressionNode.fromTypeParent(ExpressionType type, ExpressionNode? parent) {
     this.type = type;
     this.parent = parent;
   }
-  ExpressionType type;
-  String expr;
-  Object param;
-  ExpressionNode parent;
+  ExpressionType? type;
+  String? expr;
+  Object? param;
+  ExpressionNode? parent;
   List<ExpressionNode> nodes = [];
 }
 
 class Expression {
-  Expression(QueryBuilderOptions options) {
+  Expression(QueryBuilderOptions? options) {
     mOptions = options ?? QueryBuilderOptions();
     //mOptions = options != null ? options : QueryBuilderOptions();
     mTree = ExpressionNode();
     mCurrent = ExpressionNode();
   }
 
-  QueryBuilderOptions mOptions;
-  ExpressionNode mTree;
-  ExpressionNode mCurrent;
+  QueryBuilderOptions? mOptions;
+  late ExpressionNode mTree;
+  ExpressionNode? mCurrent;
 
   /// Begin AND nested expression.
   /// @return Expression
@@ -57,8 +57,8 @@ class Expression {
   /// @return Expression
   Expression end() {
     assert(mCurrent != null &&
-        mCurrent.parent != null); // "begin() needs to be called"
-    mCurrent = mCurrent.parent;
+        mCurrent!.parent != null); // "begin() needs to be called"
+    mCurrent = mCurrent!.parent;
     return this;
   }
 
@@ -77,7 +77,7 @@ class Expression {
   Expression andWithParam(String expr, param) {
     final newNode =
         ExpressionNode.fromTypeExprParam(ExpressionType.AND, expr, param);
-    mCurrent.nodes.add(newNode);
+    mCurrent!.nodes.add(newNode);
     return this;
   }
 
@@ -96,7 +96,7 @@ class Expression {
   Expression orFromExprParam(String expr, param) {
     final newNode =
         ExpressionNode.fromTypeExprParam(ExpressionType.OR, expr, param);
-    mCurrent.nodes.add(newNode);
+    mCurrent!.nodes.add(newNode);
     return this;
   }
 
@@ -105,7 +105,7 @@ class Expression {
   @override
   String toString() {
     assert(mCurrent != null &&
-        mCurrent.parent == null); // "end() needs to be called"
+        mCurrent!.parent == null); // "end() needs to be called"
     return doString(mTree);
   }
 
@@ -114,7 +114,7 @@ class Expression {
   /// @return Expression
   Expression doBegin(ExpressionType op) {
     final newTree = ExpressionNode.fromTypeParent(op, mCurrent);
-    mCurrent.nodes.add(newTree);
+    mCurrent!.nodes.add(newTree);
     mCurrent = newTree;
     return this;
   }
@@ -127,8 +127,8 @@ class Expression {
     String nodeStr;
     for (var child in node.nodes) {
       if (child.expr != null) {
-        nodeStr = child.expr
-            .replaceAll('?', Validator.formatValue(child.param, mOptions));
+        nodeStr = child.expr!
+            .replaceAll('?', Validator.formatValue(child.param, mOptions)!);
       } else {
         nodeStr = doString(child);
 

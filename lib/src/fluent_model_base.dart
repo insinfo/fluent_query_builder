@@ -44,19 +44,19 @@ class OrmDefinitions {
   }
 
   /// supports several different types of relationships
-  List<OrmRelation> relations;
+  List<OrmRelation>? relations;
 
-  Map<String, dynamic> data;
+  Map<String, dynamic>? data;
   dynamic primaryKeyVal;
 
   /// the data of model to insert or update on database
   //Map<String, dynamic> data;
 
   /// the table name of model
-  String tableName;
+  String? tableName;
 
   /// The primary key associated with the table.
-  String primaryKey;
+  String? primaryKey;
 
   /// Indicates if the IDs are auto-incrementing.
   bool idIncrementing = true;
@@ -72,7 +72,7 @@ class OrmDefinitions {
   /// The connection name for the model.
   /// connection = 'connection-name';
   /// The model's default values for attributes.
-  List<Map<String, dynamic>> attributes;
+  List<Map<String, dynamic>>? attributes;
 
   /// The attributes that are mass assignable.
   /// Example fillable = ['name'];
@@ -80,7 +80,7 @@ class OrmDefinitions {
   /// While $fillable serves as a "white list" of attributes that should be mass assignable
   /// Importantly, you should use either $fillable or $guarded - not both.
   /// In the example below, all attributes
-  List<String> fillable;
+  List<String>? fillable;
 
   /// The attributes that aren't mass assignable.
   /// you may also choose to use $guarded. The $guarded property should contain an array of
@@ -88,7 +88,7 @@ class OrmDefinitions {
   /// the array will be mass assignable. So, $guarded functions like a "black list".
   /// Importantly, you should use either $fillable or $guarded - not both.
   /// In the example below, all attributes
-  List<String> guarded;
+  List<String>? guarded;
 
   bool isRelations() {
     return relations?.isNotEmpty == true;
@@ -96,7 +96,7 @@ class OrmDefinitions {
 }
 
 /// Um a um | Um para muitos | Muitos para muitos
-enum OrmRelationType { oneToOne, belongsTo , oneToMany, manyToMany }
+enum OrmRelationType { oneToOne, belongsTo, oneToMany, manyToMany }
 
 /// @param tableRelation => the table name of related model example: pessoas
 /// @param foreignKey => foreign key example: idPessoa
@@ -119,8 +119,8 @@ class OrmRelation {
   /// different types of relationships one To One | one To Many | many To Many
   final OrmRelationType relationType;
 
-  Map<String, dynamic> _data = <String, dynamic>{};
+  Map<String, dynamic>? data = <String, dynamic>{};
 
-  Map<String, dynamic> get data => _data;
-  set data(Map<String, dynamic> d) => _data = d;
+  /*Map<String, dynamic> get data => _data;
+  set data(Map<String, dynamic> d) => _data = d;*/
 }

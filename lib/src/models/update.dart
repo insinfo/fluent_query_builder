@@ -16,13 +16,13 @@ import 'limit_block.dart';
 /// UPDATE query builder.
 class Update extends QueryBuilder {
   Update(
-    QueryBuilderOptions options, {
-    Future<List<List>> Function() execFunc,
-    Future<Map<String, Map<String, dynamic>>> Function() firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String, dynamic>>>> Function() getAsMapFuncWithMeta,
-    Future<List> Function() firstFunc,
-    Future<Map<String, dynamic>> Function() firstAsMapFunc,
-    Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
+    QueryBuilderOptions? options, {
+    Future<List<List?>?> Function()? execFunc,
+    Future<Map<String, Map<String?, dynamic>>?> Function()? firstAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String?, dynamic>>>> Function()? getAsMapFuncWithMeta,
+    Future<List?> Function()? firstFunc,
+    Future<Map<String?, dynamic>?> Function()? firstAsMapFunc,
+    Future<List<Map<String?, dynamic>>> Function()? getAsMapFunc,
     this.updateSingleFunc,
   }) : super(
           options,
@@ -43,30 +43,30 @@ class Update extends QueryBuilder {
           // updateSingleFunc: updateSingleFunc,
         );
 
-  Future Function<T>(T entity, [QueryBuilder queryBuilder]) updateSingleFunc;
+  Future Function<T>(T entity, [QueryBuilder? queryBuilder])? updateSingleFunc;
 
   @override
-  QueryBuilder table(String table, {String alias}) {
-    final block = mBlocks[1] as UpdateTableBlock;
+  QueryBuilder table(String? table, {String? alias}) {
+    final block = mBlocks![1] as UpdateTableBlock;
     block.setTable(table, alias);
     return this;
   }
 
   @override
-  Future updateSingle<T>(T entity, [QueryBuilder queryBuilder]) {
-    return updateSingleFunc(entity, this);
+  Future updateSingle<T>(T entity, [QueryBuilder? queryBuilder]) {
+    return updateSingleFunc!(entity, this);
   }
 
   @override
   QueryBuilder set(String field, value) {
-    final block = mBlocks[2] as SetFieldBlock;
+    final block = mBlocks![2] as SetFieldBlock;
     block.setFieldValue(field, value);
     return this;
   }
 
   @override
-  QueryBuilder setAll(Map<String, dynamic> fieldsAndValues) {
-    final block = mBlocks[2] as SetFieldBlock;
+  QueryBuilder setAll(Map<String, dynamic>? fieldsAndValues) {
+    final block = mBlocks![2] as SetFieldBlock;
 
     fieldsAndValues?.forEach((field, value) {
       block.setFieldValue(field, value);
@@ -76,47 +76,47 @@ class Update extends QueryBuilder {
   }
 
   @override
-  QueryBuilder where(String condition, [Object param, String andOr = 'AND']) {
-    final block = mBlocks[3] as WhereBlock;
+  QueryBuilder where(String condition, [Object? param, String andOr = 'AND']) {
+    final block = mBlocks![3] as WhereBlock;
     block.setWhere(condition, param, andOr);
     return this;
   }
 
   @override
-  QueryBuilder whereExpr(Expression condition, [Object param, String andOr = 'AND']) {
-    final block = mBlocks[3] as WhereBlock;
+  QueryBuilder whereExpr(Expression condition, [Object? param, String andOr = 'AND']) {
+    final block = mBlocks![3] as WhereBlock;
     block.setWhereWithExpression(condition, param);
     return this;
   }
 
   @override
   QueryBuilder whereRaw(String whereRawSql, [String andOr = 'AND']) {
-    final block = mBlocks[3] as WhereBlock;
+    final block = mBlocks![3] as WhereBlock;
     block.setWhereRaw(whereRawSql, andOr);
     return this;
   }
 
   @override
   QueryBuilder whereSafe(String field, String operator, value) {
-    final block = mBlocks[3] as WhereBlock;
+    final block = mBlocks![3] as WhereBlock;
     block.setWhereSafe(field, operator, value);
     return this;
   }
 
   @override
   QueryBuilder orWhereSafe(String field, String operator, value) {
-    final block = mBlocks[3] as WhereBlock;
+    final block = mBlocks![3] as WhereBlock;
     block.setOrWhereSafe(field, operator, value);
     return this;
   }
 
   @override
   QueryBuilder whereGroup(QueryBuilder Function(QueryBuilder) function) {
-    if (function == null) {
+    /*if (function == null) {
       throw Exception('function cannot be null');
-    }
+    }*/
 
-    final block = mBlocks[5] as WhereBlock;
+    final block = mBlocks![5] as WhereBlock;
     block.setStartGroup();
     var r = function(this);
     block.setEndGroup();
@@ -125,11 +125,11 @@ class Update extends QueryBuilder {
 
   @override
   QueryBuilder orWhereGroup(QueryBuilder Function(QueryBuilder) function) {
-    if (function == null) {
+    /* if (function == null) {
       throw Exception('function cannot be null');
-    }
+    }*/
 
-    final block = mBlocks[5] as WhereBlock;
+    final block = mBlocks![5] as WhereBlock;
     block.setStartGroup();
     var r = function(this);
     block.setEndGroup();
@@ -138,14 +138,14 @@ class Update extends QueryBuilder {
 
   @override
   QueryBuilder order(String field, {SortOrder dir = SortOrder.ASC}) {
-    final block = mBlocks[4] as OrderByBlock;
+    final block = mBlocks![4] as OrderByBlock;
     block.setOrder(field, dir);
     return this;
   }
 
   @override
   QueryBuilder limit(int value) {
-    final block = mBlocks[5] as LimitBlock;
+    final block = mBlocks![5] as LimitBlock;
     block.setLimit(value);
     return this;
   }

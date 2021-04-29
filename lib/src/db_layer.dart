@@ -25,51 +25,39 @@ import 'models/delete.dart';
 import 'fluent_model_base.dart';
 
 class DbLayer {
-  QueryExecutor executor;
-  QueryBuilder currentQuery;
-  final List<Map<Type, Function>> factories; // = <Type, Function>{};
+  late QueryExecutor executor;
+  late QueryBuilder currentQuery;
+  final List<Map<Type, Function>>? factories; // = <Type, Function>{};
   //ex: DiskCache<Agenda>(factories: {Agenda: (x) => Agenda.fromJson(x)});
   //{this.factory}
   DbLayer({this.factories}) {
     //currentQuery = Select(QueryBuilderOptions());
   }
-  QueryBuilderOptions options;
-  DBConnectionInfo connectionInfo;
+  QueryBuilderOptions? options;
+  DBConnectionInfo? connectionInfo;
   static const dynamic DEFAULT_NULL = [];
 
   Future<DbLayer> connect(DBConnectionInfo connInfo) async {
     options = connInfo.getQueryOptions();
     connectionInfo = connInfo.getSettings();
-    var nOfProces = connectionInfo.setNumberOfProcessorsFromPlatform
+    var nOfProces = connectionInfo!.setNumberOfProcessorsFromPlatform
         ? Platform.numberOfProcessors
-        : connectionInfo.numberOfProcessors;
+        : connectionInfo!.numberOfProcessors;
 
     //Todo implementar
     //se connectionInfo.driver for pgsql chama PostgreSqlExecutorPool
     //se for mysql chama  MySqlExecutor
-    if (connectionInfo.driver == ConnectionDriver.pgsql) {
+    if (connectionInfo!.driver == ConnectionDriver.pgsql) {
       executor = PostgreSqlExecutorPool(nOfProces, connectionInfo);
     } else {
-      /* executor = MySqlExecutor(
-          await MySqlConnection.connect(
-            ConnectionSettings(
-              host: connectionInfo.host,
-              port: connectionInfo.port,
-              db: connectionInfo.database,
-              user: connectionInfo.username,
-              password: connectionInfo.password,
-            ),
-          ),
-          connectionInfo: connectionInfo);
-    */
       executor = MySqlExecutorPool(nOfProces, () async {
         return await MySqlConnection.connect(
           ConnectionSettings(
-            host: connectionInfo.host,
-            port: connectionInfo.port,
-            db: connectionInfo.database,
-            user: connectionInfo.username,
-            password: connectionInfo.password,
+            host: connectionInfo!.host,
+            port: connectionInfo!.port,
+            db: connectionInfo!.database,
+            user: connectionInfo!.username,
+            password: connectionInfo!.password,
           ),
         );
       }, connectionInfo: connectionInfo);
@@ -133,7 +121,7 @@ class DbLayer {
 
   /// Starts the INSERT-query with the provided options and return id
   /// @return QueryBuilder
-  QueryBuilder insertGetId({String defaultIdColName = 'id'}) {
+  QueryBuilder insertGetId({String? defaultIdColName = 'id'}) {
     return currentQuery = Insert(options,
         returningFields: [defaultIdColName],
         execFunc: exec,
@@ -147,7 +135,7 @@ class DbLayer {
 
   /// Starts the INSERT-query with the provided options and return * or returningFields
   /// @return QueryBuilder
-  QueryBuilder insertGetAll({List<String> returningFields}) {
+  QueryBuilder insertGetAll({List<String>? returningFields}) {
     return currentQuery = Insert(options,
         returningFields: returningFields = returningFields ?? ['*'],
         execFunc: exec,
@@ -190,7 +178,7 @@ class DbLayer {
   }
 
   ///this method to execute current query and get results as List
-  Future<List<List>> exec() async {
+  Future<List<List?>?> exec() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
@@ -204,11 +192,11 @@ class DbLayer {
   }
 
   //alias for exec o execute current query and get results as List
-  Future<List<List>> get() async {
+  Future<List<List?>?> get() async {
     return exec();
   }
 
-  Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta() async {
+  Future<List<Map<String, Map<String?, dynamic>>>> getAsMapWithMeta() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@getAsMapWithMeta Is nessesary query');
     }
@@ -217,7 +205,7 @@ class DbLayer {
     return rows;
   }
 
-  Future<List> first() async {
+  Future<List?> first() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@first Is nessesary query');
     }
@@ -234,7 +222,7 @@ class DbLayer {
     }
   }
 
-  Future<int> _count() async {
+  Future<int?> _count() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
@@ -243,30 +231,30 @@ class DbLayer {
     //total_records
     if (rows != null) {
       if (rows.isNotEmpty) {
-        return rows[0][0];
+        return rows[0]![0];
       }
     }
 
     return 0;
   }
 
-  Future<Map<String, Map<String, dynamic>>> firstAsMapWithMeta() async {
+  Future<Map<String, Map<String?, dynamic>>?> firstAsMapWithMeta() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@firstAsMapWithMeta Is nessesary query');
     }
     final rows = await getAsMapWithMeta();
-    if (rows != null) {
-      if (rows.isNotEmpty) {
-        return rows[0];
-      } else {
-        return null;
-      }
+    //if (rows != null) {
+    if (rows.isNotEmpty) {
+      return rows[0];
     } else {
       return null;
     }
+    /* } else {
+      return null;
+    }*/
   }
 
-  Future<List<Map<String, dynamic>>> getAsMap() async {
+  Future<List<Map<String?, dynamic>>> getAsMap() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@getAsMap Is nessesary query');
     }
@@ -276,7 +264,7 @@ class DbLayer {
     return rows;
   }
 
-  Future<Map<String, dynamic>> firstAsMap() async {
+  Future<Map<String?, dynamic>?> firstAsMap() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@firstAsMap Is nessesary query');
     }
@@ -284,34 +272,33 @@ class DbLayer {
     final rows = await executor.getAsMap(currentQuery.toSql(isFirst: true),
         substitutionValues: currentQuery.buildSubstitutionValues());
 
-    if (rows != null) {
-      if (rows.isNotEmpty) {
-        return rows[0];
-      } else {
-        return null;
-      }
+    //if (rows != null) {
+    if (rows.isNotEmpty) {
+      return rows[0];
     } else {
       return null;
     }
+    /*} else {
+      return null;
+    }*/
   }
 
   Future close() async {
     await executor.close();
   }
 
-  Future<T> transaction<T>(FutureOr<T> Function(DbLayer) f) {
+  Future<T?> transaction<T>(FutureOr<T> Function(DbLayer) f) {
     return executor.transaction<T>((queryEcecutor) async {
-      var db = await DbLayer(factories: factories);
+      var db = DbLayer(factories: factories);
       db.executor = queryEcecutor;
       return f(db);
     });
   }
 
-  //
-  Future<List<T>> _fetchAll<T>([T Function(Map<String, dynamic>) factory]) async {
-    Function fac;
+  Future<List<T>> _fetchAll<T>([T Function(Map<String, dynamic>)? factory]) async {
+    Function? fac;
     if (factories != null) {
-      for (var item in factories) {
+      for (var item in factories!) {
         if (item.containsKey(T)) {
           fac = item[T];
         }
@@ -327,39 +314,38 @@ class DbLayer {
     var records = await getAsMap();
 
     final list = <T>[];
-    if (records != null) {
-      if (records.isNotEmpty) {
-        for (var item in records) {
-          list.add(fac(item));
-        }
-        // if is Relations
-        //get relations data
-        var ormDefinitions = _validateModel(fac(records[0]));
-        if (ormDefinitions.isRelations()) {
-          var len = ormDefinitions.relations.length;
-          for (var i = 0; i < len; i++) {
-            var relation = ormDefinitions.relations[i];
 
-            records = await getRelationFromMaps(
-              records,
-              relation.tableRelation,
-              relation.localKey,
-              relation.foreignKey,
-              defaultNull: null,
-            );
-          }
-        }
-        print('records $records');
+    if (records.isNotEmpty) {
+      for (var item in records) {
+        list.add(fac(item));
       }
+      // if is Relations
+      //get relations data
+      var ormDefinitions = _validateModel(fac(records[0]));
+      if (ormDefinitions.isRelations()) {
+        var len = ormDefinitions.relations!.length;
+        for (var i = 0; i < len; i++) {
+          var relation = ormDefinitions.relations![i];
+
+          records = await getRelationFromMaps(
+            records,
+            relation.tableRelation,
+            relation.localKey,
+            relation.foreignKey,
+            defaultNull: null,
+          );
+        }
+      }
+      print('records $records');
     }
 
     return list;
   }
 
-  Future<T> _fetchSingle<T>([T Function(Map<String, dynamic>) factory]) async {
-    Function fac;
+  Future<T?> _fetchSingle<T>([T Function(Map<String?, dynamic>)? factory]) async {
+    Function? fac;
     if (factories != null) {
-      for (var item in factories) {
+      for (var item in factories!) {
         if (item.containsKey(T)) {
           fac = item[T];
         }
@@ -374,7 +360,7 @@ class DbLayer {
     final record = await firstAsMap();
 
     if (record != null) {
-      return factory(record);
+      return factory!(record);
     }
     return null;
   }
@@ -402,14 +388,14 @@ class DbLayer {
     var mainInsertData = ormDefinitions.data;
     // if is Relations
     if (ormDefinitions.isRelations()) {
-      var len = ormDefinitions.relations.length;
+      var len = ormDefinitions.relations!.length;
       for (var i = 0; i < len; i++) {
-        var relation = ormDefinitions.relations[i];
+        var relation = ormDefinitions.relations![i];
 
         if (relation.data != null) {
           query = insertGetId(defaultIdColName: relation.localKey).setAll(relation.data).into(relation.tableRelation);
           id = (await query.exec())[0][0];
-          mainInsertData[relation.foreignKey] = id;
+          mainInsertData![relation.foreignKey] = id;
         }
       }
 
@@ -422,13 +408,13 @@ class DbLayer {
       var query = insertGetId(defaultIdColName: ormDefinitions.primaryKey)
           .setAll(mainInsertData)
           .into(ormDefinitions.tableName);
-      id = (await query.exec())[0][0];
+      id = (await query.exec())![0]![0];
     }
 
     return id;
   }
 
-  Future _updateSingle<T>(T entity, [QueryBuilder queryBuilder]) async {
+  Future _updateSingle<T>(T entity, [QueryBuilder? queryBuilder]) async {
     if (queryBuilder == null) {
       throw IllegalArgumentException('Dblayer@updateSingle queryBuilder not defined');
     }
@@ -441,7 +427,7 @@ class DbLayer {
     if (ormDefinitions.isRelations()) {}
   }
 
-  Future _deleteSingle<T>(T entity, [QueryBuilder queryBuilder]) async {
+  Future _deleteSingle<T>(T entity, [QueryBuilder? queryBuilder]) async {
     if (queryBuilder == null) {
       throw IllegalArgumentException('Dblayer@_deleteSingle queryBuilder not defined');
     }
@@ -457,9 +443,12 @@ class DbLayer {
     if (entity == null) {
       throw Exception('Dblayer@_validateModel cannot be null');
     }
-    try {
+    /*try {
       var model = entity as FluentModelBase;
     } catch (e) {
+      throw NotImplementedException('entity has not implemented the FluentModelBase interface');
+    }*/
+    if (!entity is FluentModelBase) {
       throw NotImplementedException('entity has not implemented the FluentModelBase interface');
     }
 
@@ -478,9 +467,9 @@ class DbLayer {
 
     var data = model.toMap();
 
-    if (data == null) {
+    /*if (data == null) {
       throw IllegalArgumentException('toMap() cannot return null');
-    }
+    }*/
 
     var primaryKeyVal;
     data.forEach((key, val) {
@@ -497,7 +486,7 @@ class DbLayer {
 
     if (model.ormDefinitions.fillable?.isNotEmpty == true) {
       data.forEach((key, val) {
-        model.ormDefinitions.fillable.forEach((item) {
+        model.ormDefinitions.fillable!.forEach((item) {
           if (key == item) {
             newData[key] = val;
           }
@@ -508,7 +497,7 @@ class DbLayer {
 
     if (model.ormDefinitions.guarded?.isNotEmpty == true) {
       data.forEach((key, val) {
-        model.ormDefinitions.guarded.forEach((item) {
+        model.ormDefinitions.guarded!.forEach((item) {
           if (key != item) {
             newData[key] = val;
           }
@@ -520,9 +509,9 @@ class DbLayer {
     var newRelations = <OrmRelation>[];
     //seta os dados da relação e remove dos dados do insert principal
     if (model.ormDefinitions.isRelations()) {
-      var len = model.ormDefinitions.relations.length;
+      var len = model.ormDefinitions.relations!.length;
       for (var i = 0; i < len; i++) {
-        var relation = model.ormDefinitions.relations[i];
+        var relation = model.ormDefinitions.relations![i];
         relation.data = data[relation.relationName];
         newRelations.add(relation);
         data.remove(relation.relationName);
@@ -566,34 +555,17 @@ class DbLayer {
   /// @param bool isSingle
   ///
   ///
-  Future<List<Map<String, dynamic>>> getRelationFromMaps(
-    List<Map<String, dynamic>> data,
+  Future<List<Map<String?, dynamic>>> getRelationFromMaps(
+    List<Map<String?, dynamic>> data,
     String tableName,
     String localKey,
     String foreignKey, {
-    String relationName,
+    String? relationName,
     dynamic defaultNull = DEFAULT_NULL,
-    Function(Map<String, dynamic>) callback_fields,
-    Function(QueryBuilder) callback_query,
+    Function(Map<String?, dynamic>)? callback_fields,
+    Function(QueryBuilder)? callback_query,
     isSingle = false,
   }) async {
-    if (data == null) {
-      //throw Exception('data cannot be null');
-      return data;
-    }
-
-    if (tableName == null) {
-      throw Exception('tableName cannot be null');
-    }
-
-    if (localKey == null) {
-      throw Exception('localKey cannot be null');
-    }
-
-    if (foreignKey == null) {
-      throw Exception('foreignKey cannot be null');
-    }
-
     //1º obtem os ids
     var itens_id = <int>[];
     for (var item2 in data) {
@@ -610,7 +582,7 @@ class DbLayer {
       callback_query(query);
     }
 
-    List<Map<String, dynamic>> queryResult;
+    List<Map<String?, dynamic>>? queryResult;
     //se ouver itens a serem pegos no banco
     if (itens_id.isNotEmpty) {
       //prepara a query where in e executa
@@ -638,22 +610,24 @@ class DbLayer {
       var conjunto = [];
       //faz o loop sobre os resultados da query
       if (queryResult != null) {
-        for (var value in queryResult) {
-          //verifica se o item corrente tem relação com algum filho trazido pela query
-          if (item[foreignKey] == value[localKey]) {
-            //checa se foi passado callback_fields
-            if (callback_fields != null) {
-              value = callback_fields(value);
-            }
-            //verifica se é para trazer um filho ou varios
-            if (isSingle) {
-              item[relationName] = value ?? defaultNull;
-              break;
-            } else {
-              conjunto.add(value ?? defaultNull);
-            }
+        for (Map<String?, dynamic>? value in queryResult) {
+          if (value is Map<String, dynamic>) {
+            //verifica se o item corrente tem relação com algum filho trazido pela query
+            if (item[foreignKey] == value[localKey]) {
+              //checa se foi passado callback_fields
+              if (callback_fields != null) {
+                value = callback_fields(value);
+              }
+              //verifica se é para trazer um filho ou varios
+              if (isSingle) {
+                item[relationName] = value ?? defaultNull;
+                break;
+              } else {
+                conjunto.add(value ?? defaultNull);
+              }
 
-            item[relationName] = conjunto;
+              item[relationName] = conjunto;
+            }
           }
         }
       }

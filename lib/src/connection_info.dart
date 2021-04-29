@@ -13,27 +13,27 @@ class DBConnectionInfo {
   ///PostgreSQLSeverity.error : Attempting to execute query, but connection is not open
   bool reconnectIfConnectionIsNotOpen = true;
 
-  String prefix = '';
-  String sslmode = 'prefer';
-  ConnectionDriver driver = ConnectionDriver.pgsql;
-  String host = 'loalhost';
-  int port;
-  String database = 'postgres';
-  String username = '';
-  String password = '';
-  String charset = 'utf8';
-  List<String> schemes = ['public'];
+  String? prefix = '';
+  String? sslmode = 'prefer';
+  ConnectionDriver driver;
+  String host;
+  int? port;
+  String database;
+  String username;
+  String password;
+  String? charset = 'utf8';
+  List<String>? schemes = ['public'];
   int numberOfProcessors = 1;
   bool setNumberOfProcessorsFromPlatform = false;
-  QueryBuilderOptions options;
+  QueryBuilderOptions? options;
 
   DBConnectionInfo({
-    this.driver,
-    this.host,
+    this.driver = ConnectionDriver.pgsql,
+    this.host = 'loalhost',
     this.port,
-    this.database,
-    this.username,
-    this.password,
+    this.database = 'postgres',
+    this.username = '',
+    this.password = '',
     this.charset,
     this.schemes,
     this.prefix,
@@ -58,6 +58,8 @@ class DBConnectionInfo {
       sslmode: sslmode,
       numberOfProcessors: numberOfProcessors,
       setNumberOfProcessorsFromPlatform: setNumberOfProcessorsFromPlatform,
+      reconnectIfConnectionIsNotOpen: reconnectIfConnectionIsNotOpen,
+      enablePsqlAutoSetSearchPath: enablePsqlAutoSetSearchPath,
     );
   }
 
@@ -69,13 +71,11 @@ class DBConnectionInfo {
           settings.port ??= 5432;
           return settings;
         }
-        break;
       case ConnectionDriver.mysql:
         {
           settings.port ??= 3306;
           return settings;
         }
-        break;
       default:
         {
           throw NullPointerException('Database Drive not selected');
@@ -83,7 +83,7 @@ class DBConnectionInfo {
     }
   }
 
-  QueryBuilderOptions getQueryOptions() {
+  QueryBuilderOptions? getQueryOptions() {
     if (options == null) {
       switch (driver) {
         case ConnectionDriver.pgsql:

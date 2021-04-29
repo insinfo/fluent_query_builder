@@ -45,26 +45,26 @@ class Validator {
     return result;
   }
 
-  static String sanitizeTable(String name, QueryBuilderOptions options) {
-    return options.autoQuoteTableNames ? options.nameQuoteCharacter + name + options.nameQuoteCharacter : name;
+  static String? sanitizeTable(String? name, QueryBuilderOptions options) {
+    return options.autoQuoteTableNames ? options.nameQuoteCharacter + name! + options.nameQuoteCharacter : name;
   }
 
-  static String sanitizeTableAlias(String value, QueryBuilderOptions options) {
+  static String? sanitizeTableAlias(String? value, QueryBuilderOptions? options) {
     return value != null
-        ? (options.autoQuoteAliasNames
+        ? (options!.autoQuoteAliasNames
             ? options.tableAliasQuoteCharacter + value + options.tableAliasQuoteCharacter
             : value)
         : null;
   }
 
-  static String formatValue(Object value, QueryBuilderOptions options) {
+  static String? formatValue(Object? value, QueryBuilderOptions? options) {
     if (value == null) {
       return formatNull();
     } else {
       if (value is num) {
         return formatNumber(value);
       } else if (value is String) {
-        return formatString(value, options);
+        return formatString(value, options!);
       } else if (value is bool) {
         return formatBoolean(value);
       } else if (value is QueryBuilder) {
@@ -72,14 +72,14 @@ class Validator {
       } else if (value is Expression) {
         return formatExpression(value);
       } else if (value is List) {
-        return formatArray(value, options);
+        return formatArray(value as List<Object>, options);
       }
     }
 
     return value.toString();
   }
 
-  static String escapeValue(String value, QueryBuilderOptions options) {
+  static String? escapeValue(String? value, QueryBuilderOptions options) {
     if (value == null) {
       return null;
     }
@@ -98,7 +98,7 @@ class Validator {
     return result;
   }
 
-  static String formatNull() {
+  static String? formatNull() {
     return null;
   }
 
@@ -126,15 +126,15 @@ class Validator {
     return '(${value.toString()})';
   }
 
-  static String formatIterable(List values, QueryBuilderOptions options) {
+  static String formatIterable(List values, QueryBuilderOptions? options) {
     final results = [];
-    for (Object value in values) {
+    for (var value in values as Iterable<Object>) {
       results.add(formatValue(value, options));
     }
-    return "(${Util.join(', ', results as List<String>)})";
+    return "(${Util.join(', ', results as List<String?>)})";
   }
 
-  static String formatArray(List<Object> values, QueryBuilderOptions options) {
+  static String formatArray(List<Object> values, QueryBuilderOptions? options) {
     return formatIterable(values, options);
   }
 }

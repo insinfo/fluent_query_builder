@@ -65,3 +65,7 @@
 ## 2.0.0
 
 - refactoring for better resiliency in case of loss of connection to the postgresql server, now has an option called "reconnectIfConnectionIsNotOpen" and "enablePsqlAutoSetSearchPath" in the connection configuration class "DBConnectionInfo"
+
+## 3.0.0
+
+- update to Null safety and fix bugs on whereGroup and fix tests

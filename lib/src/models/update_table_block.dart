@@ -3,5 +3,5 @@ import 'table_block_base.dart';
 
 /// Update table.
 class UpdateTableBlock extends TableBlockBase {
-  UpdateTableBlock(QueryBuilderOptions options) : super(options);
+  UpdateTableBlock(QueryBuilderOptions? options) : super(options);
 }

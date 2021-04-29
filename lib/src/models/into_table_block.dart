@@ -6,12 +6,12 @@ import 'util.dart';
 
 /// INTO table
 class IntoTableBlock extends Block {
-  IntoTableBlock(QueryBuilderOptions options) : super(options);
+  IntoTableBlock(QueryBuilderOptions? options) : super(options);
 
-  String mTable;
+  String? mTable;
 
-  void setInto(String table) {
-    var tbl = Validator.sanitizeTable(table, mOptions);
+  void setInto(String? table) {
+    var tbl = Validator.sanitizeTable(table, mOptions!);
     mTable = tbl;
   }
 

@@ -1,5 +1,3 @@
-import 'package:fluent_query_builder/src/exceptions/null_pointer_exception.dart';
-
 /// Error thrown for invalid operations in [Filter].
 class FilterError {
   final String message;
@@ -24,7 +22,7 @@ class Condition {
   String predicate;
 
   Condition(this.key, this.value, this.predicate) {
-    if (key == null) {
+    /*if (key == null) {
       throw NullPointerException('Key of Condition is Null');
     }
 
@@ -34,11 +32,11 @@ class Condition {
 
     if (predicate == null) {
       throw NullPointerException('Predicate of Condition is Null');
-    }
+    }*/
   }
 
   @override
-  String toString() => 'Condition(${key} ${predicate} $value)';
+  String toString() => 'Condition($key $predicate $value)';
 }
 
 /// Criteria provides a way to filter entities fetched from [Repository] based
@@ -46,8 +44,8 @@ class Condition {
 /// [Repository] interface.
 class Filter<T> {
   final List<Condition> conditions = <Condition>[];
-  int skip;
-  int take;
+  int? skip;
+  int? take;
 
   /// Default constructor.
   Filter();
@@ -59,5 +57,4 @@ class Filter<T> {
       ..skip = other.skip
       ..take = other.take;
   }
-
 }

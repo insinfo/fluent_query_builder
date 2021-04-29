@@ -8,15 +8,15 @@ import 'util.dart';
 class FieldNode {
   FieldNode(this.name, this.alias);
   final String name;
-  final String alias;
+  final String? alias;
 }
 
 /// (SELECT) field
 class GetFieldBlock extends Block {
-  GetFieldBlock(QueryBuilderOptions options) : super(options);
-  List<FieldNode> mFields;
-  HashMap<String, String> mFieldAliases;
-  String fieldRawSql;
+  GetFieldBlock(QueryBuilderOptions? options) : super(options);
+  List<FieldNode>? mFields;
+  HashMap<String, String?>? mFieldAliases;
+  String? fieldRawSql;
 
   /// Add the given fields to the result.
   /// @param fields A collection of fields to add
@@ -39,29 +39,29 @@ class GetFieldBlock extends Block {
   /// Add the given field to the final result.
   /// @param field Field to add
   /// @param alias Field's alias
-  void setField(String field, String alias) {
-    var fieldValue = Validator.sanitizeField(field.trim(), mOptions);
+  void setField(String field, String? alias) {
+    var fieldValue = Validator.sanitizeField(field.trim(), mOptions!);
 
     final aliasValue =
-        alias != null ? Validator.sanitizeFieldAlias(alias, mOptions) : null;
+        alias != null ? Validator.sanitizeFieldAlias(alias, mOptions!) : null;
 
     /// quote table and field string with dot, example:
     /// db.select().fields(['tablename.fieldname']).from('tablename') result in
     ///  SELECT "tablename"."fieldname" FROM tablename
-    if (mOptions.quoteStringWithFieldsTablesSeparator) {
-      if (fieldValue.contains(mOptions.fieldsTablesSeparator)) {
+    if (mOptions!.quoteStringWithFieldsTablesSeparator) {
+      if (fieldValue.contains(mOptions!.fieldsTablesSeparator)) {
         fieldValue = fieldValue
-            .split(mOptions.fieldsTablesSeparator)
+            .split(mOptions!.fieldsTablesSeparator)
             .map((f) => f)
             .join(
-                '${mOptions.fieldAliasQuoteCharacter}${mOptions.fieldsTablesSeparator}${mOptions.fieldAliasQuoteCharacter}');
+                '${mOptions!.fieldAliasQuoteCharacter}${mOptions!.fieldsTablesSeparator}${mOptions!.fieldAliasQuoteCharacter}');
       }
     }
 
     /// allow alias in fields, example:
     /// db.select().fields(['tablename.fieldname as f']).from('tablename') result in
     ///  SELECT "tablename"."fieldname" as "f" FROM tablename
-    if (mOptions.allowAliasInFields) {
+    if (mOptions!.allowAliasInFields) {
       final reg = RegExp(r'\s+\b|\b\s');
       if (fieldValue.contains(reg)) {
         fieldValue = fieldValue.replaceAll(' as ', ' ');
@@ -72,25 +72,25 @@ class GetFieldBlock extends Block {
     doSetField(fieldValue, aliasValue);
   }
 
-  void setFieldFromSubQuery(QueryBuilder field, String alias) {
+  void setFieldFromSubQuery(QueryBuilder field, String? alias) {
     final fieldName = Validator.sanitizeFieldFromQueryBuilder(field);
     final aliasValue =
-        alias != null ? Validator.sanitizeFieldAlias(alias, mOptions) : null;
+        alias != null ? Validator.sanitizeFieldAlias(alias, mOptions!) : null;
     doSetField(fieldName, aliasValue);
   }
 
   @override
-  String buildStr(QueryBuilder queryBuilder) {
+  String? buildStr(QueryBuilder queryBuilder) {
     if (fieldRawSql != null) {
       return fieldRawSql;
     }
 
-    if (mFields == null || mFields.isEmpty) {
+    if (mFields == null || mFields!.isEmpty) {
       return '*';
     }
 
     final sb = StringBuffer();
-    for (var field in mFields) {
+    for (var field in mFields!) {
       if (sb.length > 0) {
         sb.write(', ');
       }
@@ -106,16 +106,16 @@ class GetFieldBlock extends Block {
     return sb.toString();
   }
 
-  void doSetField(String field, String alias) {
+  void doSetField(String field, String? alias) {
     mFields ??= [];
 
-    mFieldAliases ??= HashMap<String, String>();
+    mFieldAliases ??= HashMap<String, String?>();
 
-    if (mFieldAliases.containsKey(field) && mFieldAliases[field] == alias) {
+    if (mFieldAliases!.containsKey(field) && mFieldAliases![field] == alias) {
       return;
     }
 
-    mFieldAliases[field] = alias;
-    mFields.add(FieldNode(field, alias));
+    mFieldAliases![field] = alias;
+    mFields!.add(FieldNode(field, alias));
   }
 }

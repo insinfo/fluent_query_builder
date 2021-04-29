@@ -1,5 +1,3 @@
-
-
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 import 'package:test/test.dart';
 
@@ -9,7 +7,7 @@ void main() {
     host: 'localhost',
     database: 'banco_teste',
     driver: ConnectionDriver.pgsql,
-    port: 5432,//32
+    port: 5432, //32
     username: 'sisadmin',
     password: 's1sadm1n',
     charset: 'utf8',
@@ -49,31 +47,29 @@ void main() {
       await db?.close();
     });
 
-    test(
-        'Issuing multiple queries and awaiting between each one successfully returns the right value',
-        () async {
+    test('Issuing multiple queries and awaiting between each one successfully returns the right value', () async {
       expect(
-          await await db.select().from('pessoas').fieldRaw('1').limit(1).exec(),
+          await db.select().from('pessoas').fieldRaw('1').limit(1).exec(),
           equals([
             [1]
           ]));
       expect(
-          await await db.select().from('pessoas').fieldRaw('2').limit(1).exec(),
+          await db.select().from('pessoas').fieldRaw('2').limit(1).exec(),
           equals([
             [2]
           ]));
       expect(
-          await await db.select().from('pessoas').fieldRaw('3').limit(1).exec(),
+          await db.select().from('pessoas').fieldRaw('3').limit(1).exec(),
           equals([
             [3]
           ]));
       expect(
-          await await db.select().from('pessoas').fieldRaw('4').limit(1).exec(),
+          await db.select().from('pessoas').fieldRaw('4').limit(1).exec(),
           equals([
             [4]
           ]));
       expect(
-          await await db.select().from('pessoas').fieldRaw('5').limit(1).exec(),
+          await db.select().from('pessoas').fieldRaw('5').limit(1).exec(),
           equals([
             [5]
           ]));
@@ -81,4 +77,3 @@ void main() {
   });
   //end queries over time test
 }
-

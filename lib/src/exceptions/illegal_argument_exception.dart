@@ -1,7 +1,7 @@
 ///param null or empty exception
 class IllegalArgumentException implements Exception {
   IllegalArgumentException([this.message, this.erroCode=400]);
-  final String message;
+  final String? message;
   final int erroCode;
 
   @override

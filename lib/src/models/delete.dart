@@ -14,14 +14,14 @@ import 'limit_block.dart';
 /// DELETE query builder.
 class Delete extends QueryBuilder {
   Delete(
-    QueryBuilderOptions options, {
-    Future<List<List>> Function() execFunc,
-    Future<Map<String, Map<String, dynamic>>> Function() firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String, dynamic>>>> Function()
+    QueryBuilderOptions? options, {
+    Future<List<List?>?> Function()? execFunc,
+    Future<Map<String, Map<String?, dynamic>>?> Function()? firstAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String?, dynamic>>>> Function()?
         getAsMapFuncWithMeta,
-    Future<List> Function() firstFunc,
-    Future<Map<String, dynamic>> Function() firstAsMapFunc,
-    Future<List<Map<String, dynamic>>> Function() getAsMapFunc,
+    Future<List?> Function()? firstFunc,
+    Future<Map<String?, dynamic>?> Function()? firstAsMapFunc,
+    Future<List<Map<String?, dynamic>>> Function()? getAsMapFunc,
     this.deleteSingleFunc,
   }) : super(
           options,
@@ -41,98 +41,98 @@ class Delete extends QueryBuilder {
           getAsMapFunc: getAsMapFunc,
         );
 
-  Future Function<T>(T entity, [QueryBuilder queryBuilder]) deleteSingleFunc;
+  Future Function<T>(T entity, [QueryBuilder? queryBuilder])? deleteSingleFunc;
 
   @override
-  Future deleteSingle<T>(T entity, [QueryBuilder queryBuilder]) {
-    return deleteSingleFunc(entity, this);
+  Future deleteSingle<T>(T entity, [QueryBuilder? queryBuilder]) {
+    return deleteSingleFunc!(entity, this);
   }
 
   @override
-  QueryBuilder from(String table, {String alias}) {
-    final block = mBlocks[1] as FromTableBlock;
+  QueryBuilder from(String? table, {String? alias}) {
+    final block = mBlocks![1] as FromTableBlock;
     block.setFrom(table, alias);
     return this;
   }
 
   @override
-  QueryBuilder where(String condition, [Object param, String andOr = 'AND']) {
-    final block = mBlocks[3] as WhereBlock;
+  QueryBuilder where(String condition, [Object? param, String andOr = 'AND']) {
+    final block = mBlocks![3] as WhereBlock;
     block.setWhere(condition, param, andOr);
     return this;
   }
 
   @override
   QueryBuilder whereExpr(Expression condition,
-      [Object param, String andOr = 'AND']) {
-    final block = mBlocks[3] as WhereBlock;
+      [Object? param, String andOr = 'AND']) {
+    final block = mBlocks![3] as WhereBlock;
     block.setWhereWithExpression(condition, param);
     return this;
   }
 
   @override
   QueryBuilder whereRaw(String whereRawSql, [String andOr = 'AND']) {
-    final block = mBlocks[3] as WhereBlock;
+    final block = mBlocks![3] as WhereBlock;
     block.setWhereRaw(whereRawSql, andOr);
     return this;
   }
 
   @override
   QueryBuilder whereSafe(String field, String operator, value) {
-    final block = mBlocks[3] as WhereBlock;
+    final block = mBlocks![3] as WhereBlock;
     block.setWhereSafe(field, operator, value);
     return this;
   }
 
   @override
   QueryBuilder orWhereSafe(String field, String operator, value) {
-    final block = mBlocks[3] as WhereBlock;
+    final block = mBlocks![3] as WhereBlock;
     block.setOrWhereSafe(field, operator, value);
     return this;
   }
 
   @override
   QueryBuilder join(String joinTableName, String condition,
-      {String alias, JoinType type = JoinType.INNER}) {
-    final block = mBlocks[2] as JoinBlock;
+      {String? alias, JoinType type = JoinType.INNER}) {
+    final block = mBlocks![2] as JoinBlock;
     block.setJoin(joinTableName, alias, condition, type);
     return this;
   }
 
   @override
   QueryBuilder joinWithSubQuery(QueryBuilder table, String condition,
-      {String alias, JoinType type = JoinType.INNER}) {
-    final block = mBlocks[2] as JoinBlock;
+      {String? alias, JoinType type = JoinType.INNER}) {
+    final block = mBlocks![2] as JoinBlock;
     block.setJoinWithSubQuery(table, alias, condition, type);
     return this;
   }
 
   @override
   QueryBuilder joinWithExpression(String table, Expression condition,
-      {String alias, JoinType type = JoinType.INNER}) {
-    final block = mBlocks[2] as JoinBlock;
+      {String? alias, JoinType type = JoinType.INNER}) {
+    final block = mBlocks![2] as JoinBlock;
     block.setJoinWithExpression(table, alias, condition, type);
     return this;
   }
 
   @override
   QueryBuilder joinWithQueryExpr(QueryBuilder table, Expression condition,
-      {String alias, JoinType type = JoinType.INNER}) {
-    final block = mBlocks[2] as JoinBlock;
+      {String? alias, JoinType type = JoinType.INNER}) {
+    final block = mBlocks![2] as JoinBlock;
     block.setJoinWithQueryWithExpr(table, alias, condition, type);
     return this;
   }
 
   @override
   QueryBuilder order(String field, {SortOrder dir = SortOrder.ASC}) {
-    final block = mBlocks[4] as OrderByBlock;
+    final block = mBlocks![4] as OrderByBlock;
     block.setOrder(field, dir);
     return this;
   }
 
   @override
   QueryBuilder limit(int value) {
-    final block = mBlocks[5] as LimitBlock;
+    final block = mBlocks![5] as LimitBlock;
     block.setLimit(value);
     return this;
   }

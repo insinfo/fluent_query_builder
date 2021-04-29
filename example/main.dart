@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:io';
 import 'package:fluent_query_builder/fluent_query_builder.dart';
 
 void main() async {
@@ -7,20 +7,20 @@ void main() async {
   final pgsqlComInfo = DBConnectionInfo(
     enablePsqlAutoSetSearchPath: true,
     reconnectIfConnectionIsNotOpen: true,
-    host: '192.168.133.13',
-    database: 'sistemas',
+    host: 'localhost', //192.168.133.13
+    database: 'banco_teste',
     driver: ConnectionDriver.pgsql,
-    port: 5432,
+    port: 5434,
     username: 'sisadmin',
     password: 's1sadm1n',
     charset: 'utf8',
-    schemes: ['jubarte'],
+    schemes: ['jubarte', 'public'],
     setNumberOfProcessorsFromPlatform: false,
     numberOfProcessors: 8,
   );
 
   //MySQL connection information
-  final mysqlComInfo = DBConnectionInfo(
+  /*final mysqlComInfo = DBConnectionInfo(
     host: 'localhost', //10.0.0.22
     database: 'banco_teste', //banco_teste
     driver: ConnectionDriver.mysql,
@@ -28,30 +28,49 @@ void main() async {
     username: 'sisadmin',
     password: 's1sadm1n',
     charset: 'utf8',
-  );
+  );*/
 
-  var pgsql;
+  var db;
   try {
     print('try connect');
-    pgsql = await DbLayer().connect(pgsqlComInfo);
+    db = await DbLayer().connect(pgsqlComInfo);
   } catch (e, s) {
-    print('catch connect $e');
+    print('catch connect $e $s');
   }
 
-  Timer.periodic(Duration(milliseconds: 3000), (timer) async {
+  /*Timer.periodic(Duration(milliseconds: 3000), (timer) async {
     try {
       print('Print after 3 seconds');
-      await pgsql
+       await pgsql
           .select()
           .from('usuarios')
           .whereSafe('login', '=', 'isaque.neves')
           .whereSafe('"idSistema"', '=', '1')
           .getAsMap()
-          .then((result) => print('pgsql select $result'));
+          .then((result) => print('pgsql select $result'));*/
+
+  /*var result = await pgsql.select().from('pessoas').whereGroup((QueryBuilder qb) {
+    //return qb.where('nome ilike ?', "'%isaque%'", 'or').where('telefone ilike ?', "'%05%'", 'or');
+    return qb.orWhereSafe('nome', 'ilike', '%isaque%').orWhereSafe('telefone', 'ilike', '%05%');
+  }).get();*/
+
+  var data = <String, dynamic>{'nome': 'transaction', 'telefone': 'test'};
+  var response;
+  await db.transaction((ctx) async {
+    response = await ctx.insertGetAll(returningFields: ['nome', 'telefone']).into('pessoas').setAll(data).exec();
+    response = await ctx.insertGetAll(returningFields: ['nome', 'telefone']).into('pessoas5').setAll(data).exec();
+  });
+
+  print(response);
+
+  //var result = await pgsql.select().from('pessoas').whereRaw("nome ilike '%isaque%'").limit(1).getAsMap();
+  // print('pgsql select ${result[0] is Map}');
+  exit(0);
+  /* 
     } catch (e, s) {
       print('catch select $e s $s');
     }
-  });
+  });*/
 
   /* var mysql;
   try {
@@ -277,7 +296,7 @@ void main() async {
 }
 */
 }
-
+/*
 class Usuario implements FluentModelBase {
   Usuario({this.id, this.username, this.password, this.idPerfil, this.idPessoa});
 
@@ -390,3 +409,4 @@ class Pessoa implements FluentModelBase {
     return toMap().toString();
   }
 }
+*/

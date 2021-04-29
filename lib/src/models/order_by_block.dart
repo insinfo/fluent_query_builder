@@ -12,8 +12,8 @@ class OrderNode {
 
 /// ORDER BY
 class OrderByBlock extends Block {
-  OrderByBlock(QueryBuilderOptions options) : super(options);
-  List<OrderNode> mOrders;
+  OrderByBlock(QueryBuilderOptions? options) : super(options);
+  List<OrderNode>? mOrders;
 
   /// Add an ORDER BY transformation for the given setField in the given order.
   /// @param field Field
@@ -21,18 +21,18 @@ class OrderByBlock extends Block {
   void setOrder(String field, SortOrder dir) {
     mOrders ??= [];
 
-    final fld = Validator.sanitizeField(field, mOptions);
-    mOrders.add(OrderNode(fld, dir));
+    final fld = Validator.sanitizeField(field, mOptions!);
+    mOrders!.add(OrderNode(fld, dir));
   }
 
   @override
   String buildStr(QueryBuilder queryBuilder) {
-    if (mOrders == null || mOrders.isEmpty) {
+    if (mOrders == null || mOrders!.isEmpty) {
       return '';
     }
 
     final sb = StringBuffer();
-    for (var o in mOrders) {
+    for (var o in mOrders!) {
       if (sb.length > 0) {
         sb.write(', ');
       }

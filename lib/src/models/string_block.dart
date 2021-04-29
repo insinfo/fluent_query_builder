@@ -5,21 +5,21 @@ import 'util.dart';
 
 /// A String which always gets output
 class StringBlock extends Block {
-  StringBlock(QueryBuilderOptions options, String str, {this.returningFields}) : super(options) {
+  StringBlock(QueryBuilderOptions? options, String str, {this.returningFields}) : super(options) {
     mText = str;
   }
 
-  String mText;
-  List<String> returningFields;
+  String? mText;
+  List<String?>? returningFields;
 
   @override
-  String buildStr(QueryBuilder queryBuilder) {
+  String? buildStr(QueryBuilder queryBuilder) {
     assert(mText != null && !Util.isEmpty(mText));
     return mText;
   }
 
   @override
-  List<String> buildReturningFields() {
+  List<String?>? buildReturningFields() {
     return returningFields;
   }
 }

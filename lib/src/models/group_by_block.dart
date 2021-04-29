@@ -7,9 +7,9 @@ import 'util.dart';
 
 /// GROUP BY
 class GroupByBlock extends Block {
-  GroupByBlock(QueryBuilderOptions options) : super(options);
-  List<String> mGroups;
-  String groupRawSql;
+  GroupByBlock(QueryBuilderOptions? options) : super(options);
+  List<String>? mGroups;
+  String? groupRawSql;
 
   void setGroups(Iterable<String> groups) {
     for (var field in groups) {
@@ -19,18 +19,18 @@ class GroupByBlock extends Block {
 
   void setGroup(String field) {
     mGroups ??= [];
-    var fieldValue = Validator.sanitizeField(field, mOptions);
-    if (mOptions.quoteStringWithFieldsTablesSeparator) {
-      if (fieldValue.contains(mOptions.fieldsTablesSeparator)) {
+    var fieldValue = Validator.sanitizeField(field, mOptions!);
+    if (mOptions!.quoteStringWithFieldsTablesSeparator) {
+      if (fieldValue.contains(mOptions!.fieldsTablesSeparator)) {
         fieldValue = fieldValue
-            .split(mOptions.fieldsTablesSeparator)
+            .split(mOptions!.fieldsTablesSeparator)
             .map((f) => f)
             .join(
-                '${mOptions.fieldAliasQuoteCharacter}${mOptions.fieldsTablesSeparator}${mOptions.fieldAliasQuoteCharacter}');
+                '${mOptions!.fieldAliasQuoteCharacter}${mOptions!.fieldsTablesSeparator}${mOptions!.fieldAliasQuoteCharacter}');
       }
     }
 
-    mGroups.add(fieldValue);
+    mGroups!.add(fieldValue);
   }
 
   void setGroupRaw(String groupRawSql) {
@@ -42,9 +42,9 @@ class GroupByBlock extends Block {
     if (groupRawSql != null) {
       return 'GROUP BY $groupRawSql';
     }
-    if (mGroups == null || mGroups.isEmpty) {
+    if (mGroups == null || mGroups!.isEmpty) {
       return '';
     }
-    return "GROUP BY ${Util.join(', ', mGroups)}";
+    return "GROUP BY ${Util.join(', ', mGroups!)}";
   }
 }

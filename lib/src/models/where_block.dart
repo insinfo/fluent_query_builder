@@ -7,17 +7,15 @@ import 'where_node.dart';
 
 /// WHERE
 class WhereBlock extends Block {
-  WhereBlock(QueryBuilderOptions options) : super(options);
-  List<WhereNode> mWheres;
-  List<WhereRawNode> wheresRawSql;
+  WhereBlock(QueryBuilderOptions? options) : super(options);
+  List<WhereNode> mWheres = <WhereNode>[];
+  List<WhereRawNode> wheresRawSql = <WhereRawNode>[];
 
   void setStartGroup() {
-    mWheres ??= [];
     mWheres.add(WhereNode(null, null, groupDivider: '('));
   }
 
   void setEndGroup() {
-    mWheres ??= [];
     mWheres.add(WhereNode(null, null, groupDivider: ')'));
   }
 
@@ -26,34 +24,34 @@ class WhereBlock extends Block {
   /// @param param Parameter to add to condition.
   /// @param <P> Type of the parameter to add.
   void setWhere(String condition, param, [String andOr = 'AND']) {
-    assert(condition != null);
+    //assert(condition != null);
     doSetWhere(condition, param, andOr);
   }
 
   void setWhereRaw(String whereRawSql, [String andOr = 'AND']) {
-    assert(whereRawSql != null);
-    wheresRawSql ??= [];
+    //assert(whereRawSql != null);
+
     wheresRawSql.add(WhereRawNode(whereRawSql, andOr));
   }
 
   void setWhereSafe(String field, String operator, value) {
-    assert(field != null);
-    assert(operator != null);
-    assert(value != null);
-    mWheres ??= [];
+    //assert(field != null);
+    //assert(operator != null);
+    //assert(value != null);
+
     mWheres.add(WhereNode(field, value, operator: operator, andOr: 'AND'));
   }
 
   void setOrWhereSafe(String field, String operator, value) {
-    assert(field != null);
-    assert(operator != null);
-    assert(value != null);
-    mWheres ??= [];
+    //assert(field != null);
+    //assert(operator != null);
+    //assert(value != null);
+
     mWheres.add(WhereNode(field, value, operator: operator, andOr: 'OR'));
   }
 
   void setWhereWithExpression(Expression condition, param, [String andOr = 'AND']) {
-    assert(condition != null);
+    //assert(condition != null);
     doSetWhere(condition.toString(), param, andOr);
   }
 
@@ -61,18 +59,17 @@ class WhereBlock extends Block {
   String buildStr(QueryBuilder queryBuilder) {
     final sb = StringBuffer();
 
-    if (wheresRawSql != null) {
+    if (wheresRawSql.isNotEmpty) {
       for (var whereRaw in wheresRawSql) {
         if (sb.length > 0) {
           sb.write(' ${whereRaw.andOr} ');
         }
-
         sb.write(whereRaw.sqlString);
       }
       return 'WHERE $sb';
     }
 
-    if (mWheres == null || mWheres.isEmpty) {
+    if (mWheres.isEmpty) {
       return '';
     }
 
@@ -83,13 +80,11 @@ class WhereBlock extends Block {
 
       if (where.groupDivider == null) {
         if (where.operator == null) {
-          sb.write(where.text.replaceAll('?', Validator.formatValue(where.param, mOptions)));
+          sb.write(where.text!.replaceAll('?', Validator.formatValue(where.param, mOptions)!));
         } else {
           //text = collunm
-
           sb.write('${where.text}');
           sb.write(' ${where.operator} ');
-
           /* var substitutionValue = where.text;
           if (where?.text?.startsWith('"') == true) {
             substitutionValue = substitutionValue.substring(1).substring(0, substitutionValue.length - 2);
@@ -105,36 +100,39 @@ class WhereBlock extends Block {
       } else {
         if (where.groupDivider == ')') {
           var str = sb.toString();
-          //print('WhereBlock@buildStr 1 $str');
-          var lastIndexOf = str.contains('OR') ? str.lastIndexOf('OR') : str.lastIndexOf('or');
-          str = str.substring(0, lastIndexOf);
-          //str = str.substring(0, str.lastIndexOf('AND'));
-          //print('WhereBlock@buildStr 2 $str');
+          //print('WhereBlock@buildStr $str');
+          if (str.toLowerCase().contains('or')) {
+            var lastIndexOf = str.contains('OR') ? str.lastIndexOf('OR') : str.lastIndexOf('or');
+            str = str.substring(0, lastIndexOf);
+          }
+          if (str.toLowerCase().contains('and')) {
+            var lastIndexOf = str.contains('AND') ? str.lastIndexOf('AND') : str.lastIndexOf('and');
+            str = str.substring(0, lastIndexOf);
+          }
+
           sb.clear();
           var andOr = where.andOr;
           if (i == length - 1) {
             andOr = '';
           }
-          sb.write(' ${str} ) ${andOr} ');
+          sb.write(' $str ) $andOr ');
         } else {
           sb.write(' ${where.groupDivider} ');
         }
       }
     }
 
-    // return 'WHERE ($sb)';
-    //print('WhereBlock@buildStr 3 $sb');
     return 'WHERE $sb';
   }
 
-  String _getSubstitutionValue(String text) {
+  String? _getSubstitutionValue(String? text) {
     var substitutionValue = text;
     if (text?.contains('.') == true) {
-      var parts = text.split('.');
+      var parts = text!.split('.');
       substitutionValue = parts[1];
     }
     if (text?.startsWith('"') == true && text?.endsWith('"') == true) {
-      substitutionValue = substitutionValue.substring(1, substitutionValue.length - 1);
+      substitutionValue = substitutionValue!.substring(1, substitutionValue.length - 1);
     }
     return substitutionValue;
   }
@@ -142,7 +140,7 @@ class WhereBlock extends Block {
   @override
   Map<String, dynamic> buildSubstitutionValues() {
     final result = <String, dynamic>{};
-    if (mWheres == null || mWheres.isEmpty) {
+    if (mWheres.isEmpty) {
       return result;
     }
 
@@ -174,7 +172,6 @@ class WhereBlock extends Block {
   }*/
 
   void doSetWhere(String condition, param, [String andOr = 'AND']) {
-    mWheres ??= [];
     mWheres.add(WhereNode(condition, param, andOr: andOr));
   }
 }

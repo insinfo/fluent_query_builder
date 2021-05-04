@@ -2,11 +2,11 @@
 
 [![Build Status](https://api.travis-ci.org/insinfo/fluent_query_builder.svg?branch=master)](https://travis-ci.com/github/insinfo/fluent_query_builder) 
 
-A dart library that allows you to execute SQL queries in the PostgreSQL database in a fluent way, is very easy to execute.
+A dart library that allows you to execute SQL queries in the PostgreSQL and MySql database in a fluent way, is very easy to execute.
 This library implements POOL of connections.
 This lib implements the vast majority of SQL statements and clauses
 
-Soon it will also support mysql and ORM without reflection and without code generation in a simple and consistent way.
+Soon it will also support ORM without reflection and without code generation in a simple and consistent way.
 
 ## Usage
 
@@ -137,6 +137,75 @@ void main() {
         .from('pessoas')       
         .count()
         .then((result) => print('pgsql count $result'));
+
+     //Complex selection With whereGroup, whereSafe, where whereRaw
+      await db.raw('DROP TABLE IF EXISTS notificacoes').exec();
+      await db.raw('''CREATE TABLE notificacoes (
+                      "id" serial NOT NULL ,
+                      "mensagem" text COLLATE "pg_catalog"."default",
+                      "dataCriado" timestamp(0) DEFAULT now(),
+                      "link" text COLLATE "pg_catalog"."default" DEFAULT NULL::character varying,
+                      "idPessoa" int4,
+                      "idSistema" int4,
+                      "userAgent" text COLLATE "pg_catalog"."default" DEFAULT NULL::character varying,
+                      "idOrganograma" int4,
+                      "isLido" bool,
+                      "toAll" bool,
+                      "icon" text COLLATE "pg_catalog"."default",
+                      CONSTRAINT "notificacoes_pkey" PRIMARY KEY ("id")
+                    )''').exec();
+      await db.insert().into('notificacoes').setAll({
+        'mensagem': 'Teste',
+        'link': 'https://pub.dev',
+        'dataCriado': '2021-05-04 17:53:55',
+        'idPessoa': 2,
+        'idSistema': 1,
+        'userAgent': 'Google',
+        'idOrganograma': 19,
+        'isLido': false,
+        'toAll': true,
+        'icon': ''
+      }).exec();
+
+      final query = db.select().fromRaw('notificacoes');
+      query.where('"dataCriado"::TIMESTAMP  > \'?\'::TIMESTAMP ', '2021-05-04 17:53:55');
+      query.whereGroup((q) {
+        q.where('"idPessoa"=?', 2, 'or');
+        q.where('"idOrganograma"=?', 19, 'or');
+        q.where('"toAll"=?', "'t'", 'or');
+        q.whereSafe('"toAll"', '=', 'true');
+        q.whereRaw('"toAll"= true');
+        return q;
+      });
+      query.orWhereGroup((q) {
+        q.whereSafe('"toAll"', '=', 'true');
+        query.orWhereGroup((q) {
+          q.whereSafe('"toAll"', '=', 'true');
+          return q;
+        });
+        return q;
+      });
+      query.order('dataCriado', dir: SortOrder.DESC);
+      final listMap = await query.limit(1).getAsMap();
+
+      print(listMap)
+       /*Resullt
+       [
+        {
+          'id': 1,
+          'mensagem': 'Teste',
+          'dataCriado': DateTime.tryParse('2021-05-04 17:53:55.000Z'),
+          'link': 'https://pub.dev',
+          'idPessoa': 2,
+          'idSistema': 1,
+          'userAgent': 'Google',
+          'idOrganograma': 19,
+          'isLido': false,
+          'toAll': true,
+          'icon': ''
+        }
+      ]*/
+   
 
         
   });

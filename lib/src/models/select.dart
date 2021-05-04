@@ -226,7 +226,7 @@ class Select extends QueryBuilder {
     }*/
 
     final block = mBlocks![5] as WhereBlock;
-    block.setStartGroup();
+    block.setStartGroup('AND');
     var r = function(this);
     block.setEndGroup();
     return r;
@@ -239,7 +239,7 @@ class Select extends QueryBuilder {
     }*/
 
     final block = mBlocks![5] as WhereBlock;
-    block.setStartGroup();
+    block.setStartGroup('OR');
     var r = function(this);
     block.setEndGroup();
     return r;

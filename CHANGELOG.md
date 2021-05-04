@@ -69,3 +69,7 @@
 ## 3.0.0
 
 - update to Null safety and fix bugs on whereGroup and fix tests
+
+# 3.0.1
+
+- fix bugs on Complex selection With whereGroup, whereSafe, where and whereRaw

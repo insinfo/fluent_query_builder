@@ -114,6 +114,75 @@ void main() {
       ]);
     });
 
+    test('Complex selection With whereGroup, whereSafe, where whereRaw', () async {
+      await db.raw('DROP TABLE IF EXISTS notificacoes').exec();
+      await db.raw('''CREATE TABLE notificacoes (
+  "id" serial NOT NULL ,
+  "mensagem" text COLLATE "pg_catalog"."default",
+  "dataCriado" timestamp(0) DEFAULT now(),
+  "link" text COLLATE "pg_catalog"."default" DEFAULT NULL::character varying,
+  "idPessoa" int4,
+  "idSistema" int4,
+  "userAgent" text COLLATE "pg_catalog"."default" DEFAULT NULL::character varying,
+  "idOrganograma" int4,
+  "isLido" bool,
+  "toAll" bool,
+  "icon" text COLLATE "pg_catalog"."default",
+  CONSTRAINT "notificacoes_pkey" PRIMARY KEY ("id")
+)''').exec();
+      await db.insert().into('notificacoes').setAll({
+        'mensagem': 'Teste',
+        'link': 'https://pub.dev',
+        'dataCriado': '2021-05-04 17:53:55',
+        'idPessoa': 2,
+        'idSistema': 1,
+        'userAgent': 'Google',
+        'idOrganograma': 19,
+        'isLido': false,
+        'toAll': true,
+        'icon': ''
+      }).exec();
+
+      final query = db.select().fromRaw('notificacoes');
+      query.where('"dataCriado"::TIMESTAMP  > \'?\'::TIMESTAMP ', '2021-05-04 17:53:55');
+
+      query.whereGroup((q) {
+        q.where('"idPessoa"=?', 2, 'or');
+        q.where('"idOrganograma"=?', 19, 'or');
+        q.where('"toAll"=?', "'t'", 'or');
+        q.whereSafe('"toAll"', '=', 'true');
+        q.whereRaw('"toAll"= true');
+        return q;
+      });
+      query.orWhereGroup((q) {
+        q.whereSafe('"toAll"', '=', 'true');
+        query.orWhereGroup((q) {
+          q.whereSafe('"toAll"', '=', 'true');
+          return q;
+        });
+        return q;
+      });
+
+      query.order('dataCriado', dir: SortOrder.DESC);
+      final listMap = await query.limit(1).getAsMap();
+
+      expect(listMap, [
+        {
+          'id': 1,
+          'mensagem': 'Teste',
+          'dataCriado': DateTime.tryParse('2021-05-04 17:53:55.000Z'),
+          'link': 'https://pub.dev',
+          'idPessoa': 2,
+          'idSistema': 1,
+          'userAgent': 'Google',
+          'idOrganograma': 19,
+          'isLido': false,
+          'toAll': true,
+          'icon': ''
+        }
+      ]);
+    });
+
     /* test('Select With whereExpr', () async {
       var result =
           await db.select().from('pessoas').whereExpr(DbLayer().expression().and('nome ilike ?'), "'%isaque%'").get();

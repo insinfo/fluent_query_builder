@@ -448,7 +448,7 @@ class DbLayer {
     } catch (e) {
       throw NotImplementedException('entity has not implemented the FluentModelBase interface');
     }*/
-    if (!entity is FluentModelBase) {
+    if (!(entity is FluentModelBase)) {
       throw NotImplementedException('entity has not implemented the FluentModelBase interface');
     }
 

@@ -360,7 +360,7 @@ class DbLayer {
     final record = await firstAsMap();
 
     if (record != null) {
-      return factory!(record);
+      return fac(record);
     }
     return null;
   }

@@ -15,16 +15,21 @@ abstract class QueryBuilder {
     QueryBuilderOptions? options,
     List<Block> blocks, {
     Future<List<List?>?> Function()? execFunc,
-    Future<Map<String, Map<String?, dynamic>>?> Function()? firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String?, dynamic>>>> Function()? getAsMapFuncWithMeta,
+    Future<Map<String, Map<String?, dynamic>>?> Function()?
+        firstAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String?, dynamic>>>> Function()?
+        getAsMapFuncWithMeta,
     Future<List?> Function()? firstFunc,
     Future<Map<String?, dynamic>?> Function()? firstAsMapFunc,
     Future<List<Map<String?, dynamic>>> Function()? getAsMapFunc,
-    Future<List<T>> Function<T>([T Function(Map<String, dynamic>)? factory])? fetchAllFunc,
-    Future<T?> Function<T>([T Function(Map<String?, dynamic>)? factory])? fetchSingleFunc,
+    Future<List<T>> Function<T>([T Function(Map<String, dynamic>)? factory])?
+        fetchAllFunc,
+    Future<T?> Function<T>([T Function(Map<String?, dynamic>)? factory])?
+        fetchSingleFunc,
     Future Function<T>(T entity)? putSingleFunc,
     Future Function<T>(T entity, [QueryBuilder queryBuilder])? updateSingleFunc,
-    Future Function<T>(T entity, [QueryBuilder? queryBuilder])? deleteSingleFunc,
+    Future Function<T>(T entity, [QueryBuilder? queryBuilder])?
+        deleteSingleFunc,
     Future<int?> Function()? countFunc,
   }) {
     mOptions = options ?? QueryBuilderOptions();
@@ -51,13 +56,17 @@ abstract class QueryBuilder {
   Future<List<List?>?> Function()? _execFunc;
   Future<int?> Function()? _countFunc;
 
-  Future<Map<String, Map<String?, dynamic>>?> Function()? _firstAsMapFuncWithMeta;
-  Future<List<Map<String, Map<String?, dynamic>>>> Function()? _getAsMapFuncWithMeta;
+  Future<Map<String, Map<String?, dynamic>>?> Function()?
+      _firstAsMapFuncWithMeta;
+  Future<List<Map<String, Map<String?, dynamic>>>> Function()?
+      _getAsMapFuncWithMeta;
   Future<Map<String?, dynamic>?> Function()? _firstAsMapFunc;
   Future<List<Map<String?, dynamic>>> Function()? _getAsMapFunc;
   Future<List?> Function()? _firstFunc;
-  Future<List<T>> Function<T>([T Function(Map<String, dynamic>)? factory])? _fetchAllFunc;
-  Future<T?> Function<T>([T Function(Map<String?, dynamic>)? factory])? _fetchSingleFunc;
+  Future<List<T>> Function<T>([T Function(Map<String, dynamic>)? factory])?
+      _fetchAllFunc;
+  Future<T?> Function<T>([T Function(Map<String?, dynamic>)? factory])?
+      _fetchSingleFunc;
   Future Function<T>(T entity)? _putSingleFunc;
   /* Future Function<T>(T entity, [QueryBuilder queryBuilder])? _updateSingleFunc;
   Future Function<T>(T entity, [QueryBuilder? queryBuilder])? _deleteSingleFunc;*/
@@ -119,11 +128,13 @@ abstract class QueryBuilder {
 
     if (isCount) {
       //result.replaceFirst(from, to)
-      final fromIdx = result.lastIndexOf(RegExp(r'FROM', caseSensitive: false));
+      //print('antes:\r\n $result');
+      final fromIdx = result.indexOf(RegExp(r'FROM', caseSensitive: false));
       if (fromIdx != -1) {
         result = result.substring(fromIdx, result.length);
         result = 'SELECT COUNT(*) as total_records $result';
       }
+      // print('depois:\r\n $result');
     }
 
     return result;
@@ -182,7 +193,8 @@ abstract class QueryBuilder {
   ///Return rows as maps containing table and column names
   Future<List<Map<String, Map<String?, dynamic>>>> getAsMapWithMeta() async {
     if (_getAsMapFuncWithMeta == null) {
-      throw Exception('QueryBuilder@getAsMapWithMeta getAsMapFuncWithMeta not defined');
+      throw Exception(
+          'QueryBuilder@getAsMapWithMeta getAsMapFuncWithMeta not defined');
     }
     return _getAsMapFuncWithMeta!();
   }
@@ -190,7 +202,8 @@ abstract class QueryBuilder {
   ///Return row as maps containing table and column names
   Future<Map<String, Map<String?, dynamic>>?> firstAsMapWithMeta() async {
     if (_firstAsMapFuncWithMeta == null) {
-      throw Exception('QueryBuilder@firstAsMapWithMeta firstAsMapFuncWithMeta not defined');
+      throw Exception(
+          'QueryBuilder@firstAsMapWithMeta firstAsMapFuncWithMeta not defined');
     }
     return _firstAsMapFuncWithMeta!();
   }
@@ -209,7 +222,8 @@ abstract class QueryBuilder {
     return _firstAsMapFunc!();
   }
 
-  Future<List<T>> fetchAll<T>([T Function(Map<String, dynamic>)? factory]) async {
+  Future<List<T>> fetchAll<T>(
+      [T Function(Map<String, dynamic>)? factory]) async {
     if (_fetchAllFunc == null) {
       throw Exception('QueryBuilder@fetchAll _fetchAllFunc not defined');
     }
@@ -217,7 +231,8 @@ abstract class QueryBuilder {
     return _fetchAllFunc!(factory);
   }
 
-  Future<T?> fetchSingle<T>([T Function(Map<String?, dynamic>)? factory]) async {
+  Future<T?> fetchSingle<T>(
+      [T Function(Map<String?, dynamic>)? factory]) async {
     if (_fetchSingleFunc == null) {
       throw Exception('QueryBuilder@fetchSingle _fetchSingleFunc not defined');
     }
@@ -275,7 +290,8 @@ abstract class QueryBuilder {
   }
 
   QueryBuilder fieldSubQuery(QueryBuilder field, {String? alias}) {
-    throw UnsupportedOperationException('`fieldSubQueryWithAlias` not implemented');
+    throw UnsupportedOperationException(
+        '`fieldSubQueryWithAlias` not implemented');
   }
 
   QueryBuilder fields(Iterable<String> fields) {
@@ -308,27 +324,39 @@ abstract class QueryBuilder {
     throw UnsupportedOperationException('`joinRaw` not implemented');
   }
 
-  QueryBuilder join(String joinTableName, String condition, {String? alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder join(String joinTableName, String condition,
+      {String? alias, JoinType type = JoinType.INNER}) {
     throw UnsupportedOperationException('`join` not implemented');
   }
 
-  QueryBuilder innerJoin(String joinTableName, String field1, String operator, String field2, {String? alias}) {
-    return join(joinTableName, field1 + operator + field2, type: JoinType.INNER, alias: alias);
+  QueryBuilder innerJoin(
+      String joinTableName, String field1, String operator, String field2,
+      {String? alias}) {
+    return join(joinTableName, field1 + operator + field2,
+        type: JoinType.INNER, alias: alias);
   }
 
-  QueryBuilder leftJoin(String joinTableName, String field1, String operator, String field2, {String? alias}) {
-    return join(joinTableName, field1 + operator + field2, type: JoinType.LEFT, alias: alias);
+  QueryBuilder leftJoin(
+      String joinTableName, String field1, String operator, String field2,
+      {String? alias}) {
+    return join(joinTableName, field1 + operator + field2,
+        type: JoinType.LEFT, alias: alias);
   }
 
-  QueryBuilder rightJoin(String joinTableName, String field1, String operator, String field2, {String? alias}) {
-    return join(joinTableName, field1 + operator + field2, type: JoinType.RIGHT, alias: alias);
+  QueryBuilder rightJoin(
+      String joinTableName, String field1, String operator, String field2,
+      {String? alias}) {
+    return join(joinTableName, field1 + operator + field2,
+        type: JoinType.RIGHT, alias: alias);
   }
 
-  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition, {String? alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition,
+      {String? alias, JoinType type = JoinType.INNER}) {
     throw UnsupportedOperationException('`joinWithSubQuery` not implemented');
   }
 
-  QueryBuilder joinWithExpression(String table, Expression condition, {String? alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithExpression(String table, Expression condition,
+      {String? alias, JoinType type = JoinType.INNER}) {
     throw UnsupportedOperationException('`joinWithExpression` not implemented');
   }
 
@@ -344,7 +372,8 @@ abstract class QueryBuilder {
     throw UnsupportedOperationException('`where` not implemented');
   }
 
-  QueryBuilder whereExpr(Expression condition, [Object? param, String andOr = 'AND']) {
+  QueryBuilder whereExpr(Expression condition,
+      [Object? param, String andOr = 'AND']) {
     throw UnsupportedOperationException('`whereExpr` not implemented');
   }
 

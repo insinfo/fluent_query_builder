@@ -4,10 +4,12 @@ import 'dart:async';
 ///
 /// This class should be implemented.
 abstract class QueryExecutor {
-  const QueryExecutor();
+  QueryExecutor();
 
   /// Executes a single query.
-  Future<List<List?>?> query(String query, Map<String, dynamic> substitutionValues, [List<String?>? returningFields]);
+  Future<List<List?>?> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String?>? returningFields]);
 
   /// Enters a database transaction, performing the actions within,
   /// and returning the results of [f].
@@ -22,10 +24,14 @@ abstract class QueryExecutor {
 
   //Future transaction2(Function queryBlock);
 
-  Future<List<Map<String, Map<String?, dynamic>>>> getAsMapWithMeta(String query,
+  Future<List<Map<String, Map<String?, dynamic>>>> getAsMapWithMeta(
+      String query,
       {Map<String, dynamic>? substitutionValues});
 
-  Future<List<Map<String?, dynamic>>> getAsMap(String query, {Map<String, dynamic>? substitutionValues});
+  Future<List<Map<String?, dynamic>>> getAsMap(String query,
+      {Map<String, dynamic>? substitutionValues});
 
   Future close();
+
+  final List<dynamic> connections = [];
 }

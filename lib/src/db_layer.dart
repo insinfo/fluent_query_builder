@@ -44,9 +44,6 @@ class DbLayer {
         ? Platform.numberOfProcessors
         : connectionInfo!.numberOfProcessors;
 
-    //Todo implementar
-    //se connectionInfo.driver for pgsql chama PostgreSqlExecutorPool
-    //se for mysql chama  MySqlExecutor
     if (connectionInfo!.driver == ConnectionDriver.pgsql) {
       executor = PostgreSqlExecutorPool(nOfProces, connectionInfo);
     } else {
@@ -209,7 +206,8 @@ class DbLayer {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@first Is nessesary query');
     }
-    final rows = await executor.query(currentQuery.toSql(isFirst: true), currentQuery.buildSubstitutionValues());
+    final rows = await executor.query(currentQuery.toSql(isFirst: true),
+        currentQuery.buildSubstitutionValues());
 
     if (rows != null) {
       if (rows.isNotEmpty) {
@@ -227,7 +225,8 @@ class DbLayer {
       throw Exception('Is nessesary query');
     }
 
-    final rows = await executor.query(currentQuery.toSql(isCount: true), currentQuery.buildSubstitutionValues());
+    final rows = await executor.query(currentQuery.toSql(isCount: true),
+        currentQuery.buildSubstitutionValues());
     //total_records
     if (rows != null) {
       if (rows.isNotEmpty) {
@@ -259,8 +258,8 @@ class DbLayer {
       throw Exception('Dblayer@getAsMap Is nessesary query');
     }
 
-    final rows =
-        await executor.getAsMap(currentQuery.toSql(), substitutionValues: currentQuery.buildSubstitutionValues());
+    final rows = await executor.getAsMap(currentQuery.toSql(),
+        substitutionValues: currentQuery.buildSubstitutionValues());
     return rows;
   }
 
@@ -295,7 +294,8 @@ class DbLayer {
     });
   }
 
-  Future<List<T>> _fetchAll<T>([T Function(Map<String, dynamic>)? factory]) async {
+  Future<List<T>> _fetchAll<T>(
+      [T Function(Map<String, dynamic>)? factory]) async {
     Function? fac;
     if (factories != null) {
       for (var item in factories!) {
@@ -342,7 +342,8 @@ class DbLayer {
     return list;
   }
 
-  Future<T?> _fetchSingle<T>([T Function(Map<String?, dynamic>)? factory]) async {
+  Future<T?> _fetchSingle<T>(
+      [T Function(Map<String?, dynamic>)? factory]) async {
     Function? fac;
     if (factories != null) {
       for (var item in factories!) {
@@ -393,7 +394,9 @@ class DbLayer {
         var relation = ormDefinitions.relations![i];
 
         if (relation.data != null) {
-          query = insertGetId(defaultIdColName: relation.localKey).setAll(relation.data).into(relation.tableRelation);
+          query = insertGetId(defaultIdColName: relation.localKey)
+              .setAll(relation.data)
+              .into(relation.tableRelation);
           id = (await query.exec())[0][0];
           mainInsertData![relation.foreignKey] = id;
         }
@@ -416,7 +419,8 @@ class DbLayer {
 
   Future _updateSingle<T>(T entity, [QueryBuilder? queryBuilder]) async {
     if (queryBuilder == null) {
-      throw IllegalArgumentException('Dblayer@updateSingle queryBuilder not defined');
+      throw IllegalArgumentException(
+          'Dblayer@updateSingle queryBuilder not defined');
     }
 
     var ormDefinitions = _validateModel(entity);
@@ -429,12 +433,14 @@ class DbLayer {
 
   Future _deleteSingle<T>(T entity, [QueryBuilder? queryBuilder]) async {
     if (queryBuilder == null) {
-      throw IllegalArgumentException('Dblayer@_deleteSingle queryBuilder not defined');
+      throw IllegalArgumentException(
+          'Dblayer@_deleteSingle queryBuilder not defined');
     }
 
     var ormDefinitions = _validateModel(entity);
     queryBuilder.from(ormDefinitions.tableName);
-    queryBuilder.whereSafe('${ormDefinitions.primaryKey}', '=', ormDefinitions.primaryKeyVal);
+    queryBuilder.whereSafe(
+        '${ormDefinitions.primaryKey}', '=', ormDefinitions.primaryKeyVal);
     await exec();
   }
 
@@ -449,9 +455,11 @@ class DbLayer {
       throw NotImplementedException('entity has not implemented the FluentModelBase interface');
     }*/
     if (!(entity is FluentModelBase)) {
-      throw NotImplementedException('entity has not implemented the FluentModelBase interface');
+      throw NotImplementedException(
+          'entity has not implemented the FluentModelBase interface');
     }
 
+    // ignore: unnecessary_cast
     var model = entity as FluentModelBase;
     var tableName = model.ormDefinitions.tableName;
 
@@ -478,8 +486,10 @@ class DbLayer {
       }
     });
 
-    if (model.ormDefinitions.fillable?.isNotEmpty == true && model.ormDefinitions.guarded?.isNotEmpty == true) {
-      throw IllegalArgumentException('Importantly, you should use either fillable or guarded - not both.');
+    if (model.ormDefinitions.fillable?.isNotEmpty == true &&
+        model.ormDefinitions.guarded?.isNotEmpty == true) {
+      throw IllegalArgumentException(
+          'Importantly, you should use either fillable or guarded - not both.');
     }
 
     var newData = <String, dynamic>{};

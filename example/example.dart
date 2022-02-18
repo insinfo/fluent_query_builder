@@ -7,7 +7,7 @@ void main() async {
   final pgsqlComInfo = DBConnectionInfo(
     enablePsqlAutoSetSearchPath: true,
     reconnectIfConnectionIsNotOpen: true,
-    host: 'localhost', //192.168.133.13
+    host: 'localhost',
     database: 'banco_teste',
     driver: ConnectionDriver.pgsql,
     port: 5434,
@@ -18,17 +18,6 @@ void main() async {
     setNumberOfProcessorsFromPlatform: false,
     numberOfProcessors: 8,
   );
-
-  //MySQL connection information
-  /*final mysqlComInfo = DBConnectionInfo(
-    host: 'localhost', //10.0.0.22
-    database: 'banco_teste', //banco_teste
-    driver: ConnectionDriver.mysql,
-    port: 3307,
-    username: 'sisadmin',
-    password: 's1sadm1n',
-    charset: 'utf8',
-  );*/
 
   var db;
   try {
@@ -57,8 +46,16 @@ void main() async {
   var data = <String, dynamic>{'nome': 'transaction', 'telefone': 'test'};
   var response;
   await db.transaction((ctx) async {
-    response = await ctx.insertGetAll(returningFields: ['nome', 'telefone']).into('pessoas').setAll(data).exec();
-    response = await ctx.insertGetAll(returningFields: ['nome', 'telefone']).into('pessoas5').setAll(data).exec();
+    response = await ctx
+        .insertGetAll(returningFields: ['nome', 'telefone'])
+        .into('pessoas')
+        .setAll(data)
+        .exec();
+    response = await ctx
+        .insertGetAll(returningFields: ['nome', 'telefone'])
+        .into('pessoas5')
+        .setAll(data)
+        .exec();
   });
 
   print(response);

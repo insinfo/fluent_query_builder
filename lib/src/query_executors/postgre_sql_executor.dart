@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:postgres/postgres.dart';
+
 import '../../fluent_query_builder.dart';
 import 'query_executor.dart';
 import 'package:logging/logging.dart';
 import 'package:pool/pool.dart';
-import 'package:galileo_postgres/galileo_postgres.dart';
+//import 'package:galileo_postgres/galileo_postgres.dart';
 
 /// A [QueryExecutor] that queries a PostgreSQL database.
 class PostgreSqlExecutor implements QueryExecutor {
@@ -19,7 +21,8 @@ class PostgreSqlExecutor implements QueryExecutor {
     await open();
   }
 
-  String get schemesString => connectionInfo!.schemes!.map((i) => '"$i"').toList().join(', ');
+  String get schemesString =>
+      connectionInfo!.schemes!.map((i) => '"$i"').toList().join(', ');
 
   Future<void> open() async {
     if (connection is PostgreSQLConnection) {
@@ -35,7 +38,8 @@ class PostgreSqlExecutor implements QueryExecutor {
         com = connection as PostgreSQLConnection;
         await com.open();
         //isso executa uma query para definir os esquemas
-        if (connectionInfo?.enablePsqlAutoSetSearchPath == true && connectionInfo?.schemes?.isNotEmpty == true) {
+        if (connectionInfo?.enablePsqlAutoSetSearchPath == true &&
+            connectionInfo?.schemes?.isNotEmpty == true) {
           await query('set search_path to $schemesString;', {});
         }
       }
@@ -50,7 +54,8 @@ class PostgreSqlExecutor implements QueryExecutor {
       var com = connection as PostgreSQLConnection;
       await com.open();
       //isso executa uma query para definir os esquemas
-      if (connectionInfo?.enablePsqlAutoSetSearchPath == true && connectionInfo?.schemes?.isNotEmpty == true) {
+      if (connectionInfo?.enablePsqlAutoSetSearchPath == true &&
+          connectionInfo?.schemes?.isNotEmpty == true) {
         await query('set search_path to $schemesString;', {});
       }
     } else {
@@ -71,7 +76,8 @@ class PostgreSqlExecutor implements QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues,
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
       [List<String?>? returningFields]) async {
     if (returningFields?.isNotEmpty == true) {
       //if (returningFields != null) {
@@ -89,14 +95,17 @@ class PostgreSqlExecutor implements QueryExecutor {
     //return _connection.query(query, substitutionValues: substitutionValues);
 
     try {
-      results = await connection!.query(query, substitutionValues: substitutionValues);
+      results = await connection!
+          .query(query, substitutionValues: substitutionValues);
     } catch (e) {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
-      if (connectionInfo?.reconnectIfConnectionIsNotOpen == true && '$e'.contains('connection is not open')) {
+      if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
+          '$e'.contains('connection is not open')) {
         // print('PostgreSqlExecutor@query reconnect in Error');
         await reconnect();
-        results = await connection!.query(query, substitutionValues: substitutionValues);
+        results = await connection!
+            .query(query, substitutionValues: substitutionValues);
       } else {
         rethrow;
       }
@@ -106,8 +115,10 @@ class PostgreSqlExecutor implements QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAsMap(String query, {Map<String, dynamic>? substitutionValues}) async {
-    var rows = await getAsMapWithMeta(query, substitutionValues: substitutionValues);
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
+      {Map<String, dynamic>? substitutionValues}) async {
+    var rows =
+        await getAsMapWithMeta(query, substitutionValues: substitutionValues);
 
     final result = <Map<String, dynamic>>[];
     if (rows.isNotEmpty) {
@@ -119,20 +130,24 @@ class PostgreSqlExecutor implements QueryExecutor {
     return result;
   }
 
-  Future<int> execute(String query, {Map<String, dynamic>? substitutionValues}) async {
+  Future<int> execute(String query,
+      {Map<String, dynamic>? substitutionValues}) async {
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
 
     var results;
     try {
-      results = await connection!.execute(query, substitutionValues: substitutionValues);
+      results = await connection!
+          .execute(query, substitutionValues: substitutionValues);
     } catch (e) {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
-      if (connectionInfo?.reconnectIfConnectionIsNotOpen == true && '$e'.contains('connection is not open')) {
+      if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
+          '$e'.contains('connection is not open')) {
         //print('PostgreSqlExecutor@execute reconnect in Error');
         await reconnect();
-        results = await connection!.query(query, substitutionValues: substitutionValues);
+        results = await connection!
+            .query(query, substitutionValues: substitutionValues);
       } else {
         rethrow;
       }
@@ -150,15 +165,18 @@ class PostgreSqlExecutor implements QueryExecutor {
 
     var results = <Map<String, Map<String, dynamic>>>[];
     try {
-      results = await connection!.mappedResultsQuery(query, substitutionValues: substitutionValues);
+      results = await connection!
+          .mappedResultsQuery(query, substitutionValues: substitutionValues);
     } catch (e) {
       // print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error  $e');
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
-      if (connectionInfo?.reconnectIfConnectionIsNotOpen == true && '$e'.contains('connection is not open')) {
+      if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
+          '$e'.contains('connection is not open')) {
         //print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error');
         await reconnect();
-        results = await connection!.mappedResultsQuery(query, substitutionValues: substitutionValues);
+        results = await connection!
+            .mappedResultsQuery(query, substitutionValues: substitutionValues);
       } else {
         rethrow;
       }
@@ -168,7 +186,8 @@ class PostgreSqlExecutor implements QueryExecutor {
 
   //Use generic function type syntax for parameters.
   //Future<dynamic> f(QueryExecutor connection)
-  Future<dynamic> simpleTransaction(Future<dynamic> Function(QueryExecutor) f) async {
+  Future<dynamic> simpleTransaction(
+      Future<dynamic> Function(QueryExecutor) f) async {
     logger?.fine('Entering simpleTransaction');
     if (connection is! PostgreSQLConnection) {
       return await f(this);
@@ -180,7 +199,8 @@ class PostgreSqlExecutor implements QueryExecutor {
     var txResult = await conn.transaction((ctx) async {
       try {
         logger?.fine('Entering transaction');
-        var tx = PostgreSqlExecutor(connectionInfo, logger: logger, connection: ctx);
+        var tx =
+            PostgreSqlExecutor(connectionInfo, logger: logger, connection: ctx);
         returnValue = await f(tx);
       } catch (e) {
         ctx.cancelTransaction(reason: e.toString());
@@ -194,7 +214,8 @@ class PostgreSqlExecutor implements QueryExecutor {
       /*if (txResult.reason == null) {
         throw StateError('The transaction was cancelled.');
       } else {*/
-      throw StateError('The transaction was cancelled with reason "${txResult.reason}".');
+      throw StateError(
+          'The transaction was cancelled with reason "${txResult.reason}".');
       //}
     } else {
       return returnValue;
@@ -211,7 +232,8 @@ class PostgreSqlExecutor implements QueryExecutor {
     var txResult = await conn.transaction((ctx) async {
       try {
         logger?.fine('Entering transaction');
-        var tx = PostgreSqlExecutor(connectionInfo, logger: logger, connection: ctx);
+        var tx =
+            PostgreSqlExecutor(connectionInfo, logger: logger, connection: ctx);
         returnValue = await f(tx);
       } catch (e) {
         ctx.cancelTransaction(reason: e.toString());
@@ -225,12 +247,16 @@ class PostgreSqlExecutor implements QueryExecutor {
       /*if (txResult.reason == null) {
         throw StateError('The transaction was cancelled.');
       } else {*/
-      throw StateError('The transaction was cancelled with reason "${txResult.reason}".');
+      throw StateError(
+          'The transaction was cancelled with reason "${txResult.reason}".');
       //}
     } else {
       return returnValue;
     }
   }
+
+  @override
+  List<PostgreSQLExecutionContext?> get connections => [connection];
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
@@ -246,13 +272,16 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   /// An optional [Logger] to print information to.
   final Logger? logger;
 
-  final List<PostgreSqlExecutor> _connections = [];
+  @override
+  final List<PostgreSqlExecutor> connections = [];
+
   int _index = 0;
   final Pool _pool, _connMutex = Pool(1);
 
   DBConnectionInfo? connectionInfo;
 
-  PostgreSqlExecutorPool(this.size, this.connectionInfo, {this.logger}) : _pool = Pool(size) {
+  PostgreSqlExecutorPool(this.size, this.connectionInfo, {this.logger})
+      : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
 
@@ -261,11 +290,11 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   Future close() async {
     await _pool.close();
     await _connMutex.close();
-    return Future.wait(_connections.map((c) => c.close()));
+    return Future.wait(connections.map((c) => c.close()));
   }
 
   Future _open() async {
-    if (_connections.isEmpty) {
+    if (connections.isEmpty) {
       final listCon = await Future.wait(
         List.generate(size, (_) async {
           logger?.fine('Spawning connections...');
@@ -276,7 +305,7 @@ class PostgreSqlExecutorPool implements QueryExecutor {
           return executor;
         }),
       );
-      _connections.addAll(listCon);
+      connections.addAll(listCon);
     }
   }
 
@@ -286,16 +315,19 @@ class PostgreSqlExecutorPool implements QueryExecutor {
       if (_index >= size) _index = 0;
       var currentConnIdx = _index++;
       //print('PostgreSqlExecutorPool currentConnIdx $currentConnIdx ');
-      return _connections[currentConnIdx];
+      return connections[currentConnIdx];
     });
   }
 
   @override
-  Future<List<Map<String, Map<String?, dynamic>>>> getAsMapWithMeta(String query,
-      {Map<String, dynamic>? substitutionValues, List<String>? returningFields}) {
+  Future<List<Map<String, Map<String?, dynamic>>>> getAsMapWithMeta(
+      String query,
+      {Map<String, dynamic>? substitutionValues,
+      List<String>? returningFields}) {
     return _pool.withResource(() async {
       final executor = await _next();
-      return executor.getAsMapWithMeta(query, substitutionValues: substitutionValues);
+      return executor.getAsMapWithMeta(query,
+          substitutionValues: substitutionValues);
     });
   }
 
@@ -308,7 +340,8 @@ class PostgreSqlExecutorPool implements QueryExecutor {
     });
   }
 
-  Future<int> execute(String query, {Map<String, dynamic>? substitutionValues}) {
+  Future<int> execute(String query,
+      {Map<String, dynamic>? substitutionValues}) {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.execute(query, substitutionValues: substitutionValues);
@@ -316,7 +349,9 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(String query, Map<String, dynamic> substitutionValues, [List<String?>? returningFields]) {
+  Future<List<List>> query(
+      String query, Map<String, dynamic> substitutionValues,
+      [List<String?>? returningFields]) {
     return _pool.withResource(() async {
       final executor = await _next();
       return executor.query(query, substitutionValues, returningFields);

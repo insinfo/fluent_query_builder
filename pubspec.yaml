@@ -1,6 +1,6 @@
 name: fluent_query_builder
 description: A dart library that allows you to execute SQL queries in the PostgreSQL database in a fluent way, is very easy to execute.
-version: 3.0.1
+version: 3.1.1
 homepage: https://github.com/insinfo/fluent_query_builder
 authors: 
   - Isaque Neves <insinfo2008@gmail.com> 

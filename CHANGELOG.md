@@ -73,3 +73,7 @@
 # 3.0.1
 
 - fix bugs on Complex selection With whereGroup, whereSafe, where and whereRaw
+
+# 3.1.1
+
+- fix bug on count query

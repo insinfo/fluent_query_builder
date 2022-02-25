@@ -3,9 +3,7 @@ import 'dart:async';
 /// An abstract interface that performs queries.
 ///
 /// This class should be implemented.
-abstract class QueryExecutor {
-  QueryExecutor();
-
+abstract class QueryExecutor<U> {
   /// Executes a single query.
   Future<List<List?>?> query(
       String query, Map<String, dynamic> substitutionValues,
@@ -22,6 +20,28 @@ abstract class QueryExecutor {
   //Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f);
   Future<T?> transaction<T>(FutureOr<T> Function(QueryExecutor) f);
 
+  Future<QueryExecutor> startTransaction() {
+    throw UnimplementedError('startTransaction not implemented');
+  }
+
+  Future<void> commit() {
+    throw UnimplementedError('commit not implemented');
+  }
+
+  Future<void> rollback() {
+    throw UnimplementedError('rollback not implemented');
+  }
+
+  Future<dynamic> reconnectIfNecessary();
+
+  Future<int> execute(String query, {Map<String, dynamic>? substitutionValues});
+
+  Future<dynamic> transaction2(
+      Future<dynamic> Function(QueryExecutor) queryBlock,
+      {int? commitTimeoutInSeconds}) {
+    throw UnimplementedError('transaction2 not implemented');
+  }
+
   //Future transaction2(Function queryBlock);
 
   Future<List<Map<String, Map<String?, dynamic>>>> getAsMapWithMeta(
@@ -33,5 +53,6 @@ abstract class QueryExecutor {
 
   Future close();
 
-  final List<dynamic> connections = [];
+  final List<U> connections = [];
+  U? connection;
 }

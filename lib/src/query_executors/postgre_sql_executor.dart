@@ -8,7 +8,8 @@ import 'package:pool/pool.dart';
 //import 'package:galileo_postgres/galileo_postgres.dart';
 
 /// A [QueryExecutor] that queries a PostgreSQL database.
-class PostgreSqlExecutor implements QueryExecutor {
+class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
+  @override
   PostgreSQLExecutionContext? connection;
 
   /// An optional [Logger] to print information to.
@@ -76,6 +77,22 @@ class PostgreSqlExecutor implements QueryExecutor {
   }
 
   @override
+  Future<dynamic> reconnectIfNecessary() async {
+    try {
+      await query('select true', {});
+      return this;
+    } catch (e) {
+//when the database restarts there is a loss of connection
+      if ('$e'.contains('Cannot write to socket, it is closed') ||
+          '$e'.contains('database connection closing')) {
+        await reconnect();
+        return this;
+      }
+      rethrow;
+    }
+  }
+
+  @override
   Future<List<List>> query(
       String query, Map<String, dynamic> substitutionValues,
       [List<String?>? returningFields]) async {
@@ -92,7 +109,6 @@ class PostgreSqlExecutor implements QueryExecutor {
     //print('Values: $substitutionValues');
     //print('Fields: $returningFields');
     List<List> results;
-    //return _connection.query(query, substitutionValues: substitutionValues);
 
     try {
       results = await connection!
@@ -101,7 +117,8 @@ class PostgreSqlExecutor implements QueryExecutor {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
       if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
-          '$e'.contains('connection is not open')) {
+              '$e'.contains('connection is not open') ||
+          '$e'.contains('database connection closing')) {
         // print('PostgreSqlExecutor@query reconnect in Error');
         await reconnect();
         results = await connection!
@@ -143,11 +160,12 @@ class PostgreSqlExecutor implements QueryExecutor {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
       if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
-          '$e'.contains('connection is not open')) {
+              '$e'.contains('connection is not open') ||
+          '$e'.contains('database connection closing')) {
         //print('PostgreSqlExecutor@execute reconnect in Error');
         await reconnect();
         results = await connection!
-            .query(query, substitutionValues: substitutionValues);
+            .execute(query, substitutionValues: substitutionValues);
       } else {
         rethrow;
       }
@@ -172,7 +190,8 @@ class PostgreSqlExecutor implements QueryExecutor {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
       if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
-          '$e'.contains('connection is not open')) {
+              '$e'.contains('connection is not open') ||
+          '$e'.contains('database connection closing')) {
         //print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error');
         await reconnect();
         results = await connection!
@@ -223,23 +242,43 @@ class PostgreSqlExecutor implements QueryExecutor {
   }
 
   @override
-  Future<T?> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
-    if (connection is! PostgreSQLConnection) return await f(this);
+  Future<QueryExecutor> startTransaction() async {
+    await connection!.execute('begin');
+    return this;
+  }
 
+  @override
+  Future<void> commit() async {
+    await connection!.execute('commit');
+  }
+
+  @override
+  Future<void> rollback() async {
+    //await connection!.execute('rollback');
+  }
+
+  @override
+  Future<T?> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
+    if (connection is! PostgreSQLConnection) return f(this);
+    print('PostgreSqlExecutor transaction');
     var conn = connection as PostgreSQLConnection;
     T? returnValue;
 
     var txResult = await conn.transaction((ctx) async {
+      print('PostgreSqlExecutor entering transaction');
       try {
         logger?.fine('Entering transaction');
         var tx =
             PostgreSqlExecutor(connectionInfo, logger: logger, connection: ctx);
         returnValue = await f(tx);
+        print('PostgreSqlExecutor end transaction');
       } catch (e) {
+        print('PostgreSqlExecutor catch transaction');
         ctx.cancelTransaction(reason: e.toString());
         rethrow;
       } finally {
         logger?.fine('Exiting transaction');
+        print('PostgreSqlExecutor Exiting transactionn');
       }
     });
 
@@ -256,11 +295,22 @@ class PostgreSqlExecutor implements QueryExecutor {
   }
 
   @override
-  List<PostgreSQLExecutionContext?> get connections => [connection];
+  Future<dynamic> transaction2(
+      Future<dynamic> Function(QueryExecutor) queryBlock,
+      {int? commitTimeoutInSeconds}) async {
+    var conn = connection as PostgreSQLConnection;
+    var re = await conn.transaction((ctx) async {
+      var tx =
+          PostgreSqlExecutor(connectionInfo, logger: logger, connection: ctx);
+      await queryBlock(tx);
+    }, commitTimeoutInSeconds: commitTimeoutInSeconds);
+
+    return re;
+  }
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
-class PostgreSqlExecutorPool implements QueryExecutor {
+class PostgreSqlExecutorPool extends QueryExecutor<PostgreSqlExecutor> {
   /// The maximum amount of concurrent connections.
   final int size;
 
@@ -359,10 +409,25 @@ class PostgreSqlExecutorPool implements QueryExecutor {
   }
 
   @override
-  Future<T?> transaction<T>(FutureOr<T> Function(QueryExecutor) f) {
+  Future<T?> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
     return _pool.withResource(() async {
       var executor = await _next();
       return executor.transaction(f);
     });
+  }
+
+  @override
+  Future<dynamic> transaction2(
+      Future<dynamic> Function(QueryExecutor) queryBlock,
+      {int? commitTimeoutInSeconds}) async {
+    return _pool.withResource(() async {
+      var executor = await _next();
+      return executor.transaction2(queryBlock);
+    });
+  }
+
+  @override
+  Future reconnectIfNecessary() {
+    throw UnimplementedError();
   }
 }

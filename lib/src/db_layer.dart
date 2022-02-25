@@ -45,19 +45,12 @@ class DbLayer {
         : connectionInfo!.numberOfProcessors;
 
     if (connectionInfo!.driver == ConnectionDriver.pgsql) {
-      executor = PostgreSqlExecutorPool(nOfProces, connectionInfo);
+      executor = PostgreSqlExecutor(connectionInfo);
+      if (executor is PostgreSqlExecutor) {
+        await (executor as PostgreSqlExecutor).open();
+      }
     } else {
-      executor = MySqlExecutorPool(nOfProces, () async {
-        return await MySqlConnection.connect(
-          ConnectionSettings(
-            host: connectionInfo!.host,
-            port: connectionInfo!.port,
-            db: connectionInfo!.database,
-            user: connectionInfo!.username,
-            password: connectionInfo!.password,
-          ),
-        );
-      }, connectionInfo: connectionInfo);
+      executor = MySqlExecutorPool(nOfProces, connectionInfo: connectionInfo);
     }
 
     return this;
@@ -287,11 +280,35 @@ class DbLayer {
   }
 
   Future<T?> transaction<T>(FutureOr<T> Function(DbLayer) f) {
-    return executor.transaction<T>((queryEcecutor) async {
+    return executor.transaction<T>((queryEcecutor) {
       var db = DbLayer(factories: factories);
       db.executor = queryEcecutor;
       return f(db);
     });
+  }
+
+  Future<dynamic> transaction2(Future<dynamic> Function(DbLayer) queryBlock,
+      {int? commitTimeoutInSeconds}) {
+    return executor.transaction2((queryExecutor) async {
+      var db = DbLayer(factories: factories);
+      db.executor = queryExecutor;
+      await queryBlock(db);
+    }, commitTimeoutInSeconds: commitTimeoutInSeconds);
+  }
+
+  Future<DbLayer> startTransaction() async {
+    await executor.startTransaction();
+    return this;
+  }
+
+  Future<DbLayer> commit() async {
+    await executor.commit();
+    return this;
+  }
+
+  Future<DbLayer> rollback() async {
+    await executor.rollback();
+    return this;
   }
 
   Future<List<T>> _fetchAll<T>(

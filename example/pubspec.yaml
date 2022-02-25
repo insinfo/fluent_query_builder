@@ -13,10 +13,10 @@ dependencies:
   #galileo_postgres: ^3.0.0
   #postgres: ^2.4.3
   convert: ^3.0.1
-  postgres:
-    git:
-      url: https://github.com/isoos/postgresql-dart.git
-      ref: encoding
+  #postgres:
+  #  git:
+  #    url: https://github.com/isoos/postgresql-dart.git
+  #    ref: encoding
 
   fluent_query_builder: 
     path: ../

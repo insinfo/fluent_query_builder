@@ -12,6 +12,7 @@ class MySqlExecutor extends QueryExecutor {
   /// An optional [Logger] to write to.
   final Logger? logger;
 
+  @override
   final MySqlConnection connection;
 
   MySqlExecutor(this.connection, {this.logger});
@@ -137,6 +138,18 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
+  Future<dynamic> transaction2(
+      Future<dynamic> Function(QueryExecutor) queryBlock,
+      {int? commitTimeoutInSeconds}) async {
+    var conn = connection;
+    var re = await conn.transaction((ctx) async {
+      var tx = MySqlExecutor(ctx, logger: logger);
+      await queryBlock(tx);
+    });
+    return re;
+  }
+
+  @override
   Future<List<Map<String?, dynamic>>> getAsMap(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     print('MySqlExecutor@getAsMap query $query');
@@ -167,10 +180,34 @@ class MySqlExecutor extends QueryExecutor {
 
   @override
   List<MySqlConnection?> get connections => [connection];
+
+  @override
+  Future<dynamic> reconnectIfNecessary() async {
+    /*try {
+      await query('select true', {});
+      return this;
+    } catch (e) {
+//when the database restarts there is a loss of connection
+      if ('$e'.contains('Cannot write to socket, it is closed') ||
+          '$e'.contains('database connection closing')) {
+        await reconnect();
+        return this;
+      }
+      rethrow;
+    }*/
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int> execute(String query,
+      {Map<String, dynamic>? substitutionValues}) {
+    // TODO: implement execute
+    throw UnimplementedError();
+  }
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
-class MySqlExecutorExecutorPool implements QueryExecutor {
+class MySqlExecutorExecutorPool extends QueryExecutor {
   /// The maximum amount of concurrent connections.
   final int size;
 
@@ -243,11 +280,12 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
     });
   }
 
-  Future<List<List>> execute(String query,
+  @override
+  Future<int> execute(String query,
       {Map<String, dynamic>? substitutionValues}) {
     return _pool.withResource(() async {
       final executor = await _next();
-      return executor.query(query, substitutionValues!);
+      return executor.execute(query, substitutionValues: substitutionValues!);
     });
   }
 
@@ -269,9 +307,18 @@ class MySqlExecutorExecutorPool implements QueryExecutor {
     });
   }
 
-  /*@override
-  Future transaction2(Function queryBlock, {int commitTimeoutInSeconds}) async {
-    var executor = await _next();
-    return executor.transaction(queryBlock);
-  }*/
+  @override
+  Future<dynamic> transaction2(
+      Future<dynamic> Function(QueryExecutor) queryBlock,
+      {int? commitTimeoutInSeconds}) async {
+    return _pool.withResource(() async {
+      var executor = await _next();
+      return executor.transaction2(queryBlock);
+    });
+  }
+
+  @override
+  Future reconnectIfNecessary() {
+    throw UnimplementedError();
+  }
 }

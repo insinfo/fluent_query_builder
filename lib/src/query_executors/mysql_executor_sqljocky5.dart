@@ -10,13 +10,41 @@ import 'package:logging/logging.dart';
 
 import 'utils.dart';
 
-class MySqlExecutor extends QueryExecutor {
+class MySqlExecutor extends QueryExecutor<Querier> {
   /// An optional [Logger] to write to.
   final Logger? logger;
-  Querier? connection;
+  @override
+  late Querier? connection;
   DBConnectionInfo? connectionInfo;
 
-  MySqlExecutor(this.connection, {this.logger, this.connectionInfo});
+  MySqlExecutor({this.logger, this.connectionInfo, this.connection});
+
+  Future<void> open() async {
+    connection = await MySqlConnection.connect(
+      ConnectionSettings(
+        host: connectionInfo!.host,
+        port: connectionInfo!.port,
+        db: connectionInfo!.database,
+        user: connectionInfo!.username,
+        password: connectionInfo!.password,
+      ),
+    );
+  }
+
+  @override
+  Future<dynamic> reconnectIfNecessary() async {
+    try {
+      await query('select true', {});
+      return this;
+    } catch (e) {
+//when the database restarts there is a loss of connection
+      if ('$e'.contains('Cannot write to socket, it is closed')) {
+        await reconnect();
+        return this;
+      }
+      rethrow;
+    }
+  }
 
   Future<void> reconnect() async {
     connection = await MySqlConnection.connect(
@@ -39,17 +67,13 @@ class MySqlExecutor extends QueryExecutor {
     }
   }
 
-  Future<Transaction> _startTransaction() {
-    if (connection is Transaction) {
-      return Future.value(connection as Transaction?);
-    } else if (connection is MySqlConnection) {
-      return (connection as MySqlConnection).begin();
-    } else {
-      throw StateError('Connection must be transaction or connection');
-    }
+  Future<int> execute(String query,
+      {Map<String, dynamic>? substitutionValues}) async {
+    await connection!.execute(query);
+    return 0;
   }
 
-  ///this method execute query on MySQL or MariaDB DataBase
+  ///this method run query on MySQL or MariaDB DataBase
   @override
   Future<List<List?>?> query(
       String query, Map<String, dynamic> substitutionValues,
@@ -100,7 +124,7 @@ class MySqlExecutor extends QueryExecutor {
       return list;
     } else {
       return Future(() async {
-        var tx = await _startTransaction();
+        var tx = await _startTransactionNative();
         try {
           var tableName = '';
           /*          
@@ -163,26 +187,6 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
-    if (connection is Transaction) {
-      return await f(this);
-    }
-
-    Transaction? tx;
-    try {
-      tx = await _startTransaction();
-      var executor =
-          MySqlExecutor(tx, logger: logger, connectionInfo: connectionInfo);
-      var result = await f(executor);
-      await tx.commit();
-      return result;
-    } catch (_) {
-      await tx?.rollback();
-      rethrow;
-    }
-  }
-
-  @override
   Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     // return rs.map((row) => row.toTableColumnMap()).toList();
@@ -232,10 +236,82 @@ class MySqlExecutor extends QueryExecutor {
     //print('MySqlExecutor@getAsMap results ${results}');
     return results;
   }
+
+  @override
+  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
+    if (connection is Transaction) {
+      return await f(this);
+    }
+
+    Transaction? tx;
+    try {
+      tx = await _startTransactionNative();
+      var executor = MySqlExecutor(
+          logger: logger, connectionInfo: connectionInfo, connection: tx);
+      var result = await f(executor);
+      await tx.commit();
+      return result;
+    } catch (_) {
+      await tx?.rollback();
+      rethrow;
+    }
+  }
+
+  @override
+  Future<dynamic> transaction2(
+      Future<dynamic> Function(QueryExecutor) queryBlock,
+      {int? commitTimeoutInSeconds}) async {
+    Transaction? tx;
+    try {
+      tx = await _startTransactionNative();
+      var executor = MySqlExecutor(
+          logger: logger, connectionInfo: connectionInfo, connection: tx);
+      var result = await queryBlock(executor);
+      await tx.commit();
+      return result;
+    } catch (_) {
+      await tx?.rollback();
+      rethrow;
+    }
+  }
+
+  Future<Transaction> _startTransactionNative() {
+    if (connection is Transaction) {
+      return Future.value(connection as Transaction);
+    } else if (connection is MySqlConnection) {
+      return (connection as MySqlConnection).begin();
+    } else {
+      throw StateError('Connection must be transaction or connection');
+    }
+  }
+
+  @override
+  Future<QueryExecutor> startTransaction() {
+    if (connection is Transaction) {
+      return Future.value(this);
+    } else if (connection is MySqlConnection) {
+      (connection as MySqlConnection).begin();
+      return Future.value(this);
+    } else {
+      throw StateError('Connection must be transaction or connection');
+    }
+  }
+
+  @override
+  Future<void> commit() async {
+    var tx = connection as Transaction;
+    await tx.commit();
+  }
+
+  @override
+  Future<void> rollback() async {
+    var tx = connection as Transaction;
+    await tx.rollback();
+  }
 }
 
 /// A [QueryExecutor] that manages a pool of PostgreSQL connections.
-class MySqlExecutorPool implements QueryExecutor {
+class MySqlExecutorPool extends QueryExecutor<MySqlExecutor> {
   /// The maximum amount of concurrent connections.
   final int size;
 
@@ -243,18 +319,19 @@ class MySqlExecutorPool implements QueryExecutor {
   ///
   /// The created connection should **not** be open.
   //final Querier Function() connectionFactory;
-  final Future<Querier> Function() connectionFactory;
+  //final Future<Querier> Function() connectionFactory;
 
   /// An optional [Logger] to print information to.
   final Logger? logger;
 
+  @override
   final List<MySqlExecutor> connections = [];
+
   int _index = 0;
   final Pool _pool, _connMutex = Pool(1);
   DBConnectionInfo? connectionInfo;
 
-  MySqlExecutorPool(this.size, this.connectionFactory,
-      {this.logger, this.connectionInfo})
+  MySqlExecutorPool(this.size, {this.logger, this.connectionInfo})
       : _pool = Pool(size) {
     assert(size > 0, 'Connection pool cannot be empty.');
   }
@@ -272,10 +349,11 @@ class MySqlExecutorPool implements QueryExecutor {
       final listCon = await Future.wait(
         List.generate(size, (_) async {
           logger?.fine('Spawning connections...');
-          final conn = await connectionFactory();
+          //   await connectionFactory();
 
-          final executor = MySqlExecutor(conn,
-              logger: logger, connectionInfo: connectionInfo);
+          final executor =
+              MySqlExecutor(logger: logger, connectionInfo: connectionInfo);
+          await executor.open();
 
           return executor;
         }),
@@ -311,11 +389,11 @@ class MySqlExecutorPool implements QueryExecutor {
     });
   }
 
-  Future<List<List?>?> execute(String query,
+  Future<int> execute(String query,
       {Map<String, dynamic>? substitutionValues}) {
     return _pool.withResource(() async {
       final executor = await _next();
-      return executor.query(query, substitutionValues!);
+      return executor.execute(query, substitutionValues: substitutionValues!);
     });
   }
 
@@ -335,5 +413,20 @@ class MySqlExecutorPool implements QueryExecutor {
       var executor = await _next();
       return executor.transaction(f);
     });
+  }
+
+  @override
+  Future<dynamic> transaction2(
+      Future<dynamic> Function(QueryExecutor) queryBlock,
+      {int? commitTimeoutInSeconds}) async {
+    return _pool.withResource(() async {
+      var executor = await _next();
+      return executor.transaction2(queryBlock);
+    });
+  }
+
+  @override
+  Future reconnectIfNecessary() {
+    throw UnimplementedError();
   }
 }

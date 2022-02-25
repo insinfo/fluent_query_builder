@@ -311,6 +311,15 @@ class DbLayer {
     return this;
   }
 
+  Future<dynamic> reconnectIfNecessary() {
+    return executor.reconnectIfNecessary();
+  }
+
+  Future<int> execute(String query,
+      {Map<String, dynamic>? substitutionValues}) async {
+    return executor.execute(query, substitutionValues: substitutionValues);
+  }
+
   Future<List<T>> _fetchAll<T>(
       [T Function(Map<String, dynamic>)? factory]) async {
     Function? fac;

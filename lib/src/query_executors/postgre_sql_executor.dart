@@ -147,6 +147,7 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
     return result;
   }
 
+  @override
   Future<int> execute(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     logger?.fine('Query: $query');
@@ -390,6 +391,7 @@ class PostgreSqlExecutorPool extends QueryExecutor<PostgreSqlExecutor> {
     });
   }
 
+  @override
   Future<int> execute(String query,
       {Map<String, dynamic>? substitutionValues}) {
     return _pool.withResource(() async {

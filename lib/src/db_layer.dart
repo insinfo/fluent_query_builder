@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-//import 'package:mysql1/mysql1.dart';
-import 'package:galileo_sqljocky5/sqljocky.dart';
-
 import 'connection_info.dart';
 import 'exceptions/illegal_argument_exception.dart';
 import 'exceptions/not_implemented_exception.dart';
@@ -315,6 +312,7 @@ class DbLayer {
     return executor.reconnectIfNecessary();
   }
 
+  /// execute command on database
   Future<int> execute(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     return executor.execute(query, substitutionValues: substitutionValues);

@@ -73,6 +73,7 @@ void main() async {
       print('error: $e');
       var p = await db
           .select()
+          .fieldRaw('nome')
           .from('pessoas')
           .whereSafe('id', '=', 1)
           .firstAsMap();

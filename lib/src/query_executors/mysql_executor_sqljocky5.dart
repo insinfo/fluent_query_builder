@@ -67,6 +67,7 @@ class MySqlExecutor extends QueryExecutor<Querier> {
     }
   }
 
+  @override
   Future<int> execute(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     await connection!.execute(query);
@@ -389,6 +390,7 @@ class MySqlExecutorPool extends QueryExecutor<MySqlExecutor> {
     });
   }
 
+  @override
   Future<int> execute(String query,
       {Map<String, dynamic>? substitutionValues}) {
     return _pool.withResource(() async {

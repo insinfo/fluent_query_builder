@@ -84,7 +84,7 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
       await query('select true', {});
       return true;
     } catch (e) {
-      print('reconnectIfNecessary error: $e');
+      print('call reconnectIfNecessary error: $e');
       //when the database restarts there is a loss of connection
       if ('$e'.contains('Cannot write to socket, it is closed') ||
           '$e'.contains('database connection closing')) {
@@ -129,12 +129,12 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
       results = await connection!
           .query(query, substitutionValues: substitutionValues);
     } catch (e) {
+      print('PostgreSqlExecutor@query reconnect in Error: $e');
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
       if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
               '$e'.contains('connection is not open') ||
           '$e'.contains('database connection closing')) {
-        // print('PostgreSqlExecutor@query reconnect in Error');
         await reconnect();
         results = await connection!
             .query(query, substitutionValues: substitutionValues);

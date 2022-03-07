@@ -19,6 +19,7 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   PostgreSqlExecutor(this.connectionInfo, {this.logger, this.connection});
 
   Future<void> reconnect() async {
+    print('PostgreSqlExecutor@reconnect');
     await open();
   }
 
@@ -27,7 +28,21 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
 
   @override
   Future<void> open() async {
-    if (connection is PostgreSQLConnection) {
+    connection = PostgreSQLConnection(
+      connectionInfo!.host,
+      connectionInfo!.port!,
+      connectionInfo!.database,
+      username: connectionInfo!.username,
+      password: connectionInfo!.password,
+    );
+    var com = connection as PostgreSQLConnection;
+    await com.open();
+    //isso executa uma query para definir os esquemas
+    if (connectionInfo?.enablePsqlAutoSetSearchPath == true &&
+        connectionInfo?.schemes?.isNotEmpty == true) {
+      await query('set search_path to $schemesString;', {});
+    }
+    /* } else if (connection is PostgreSQLConnection) {
       var com = connection as PostgreSQLConnection;
       if (com.isClosed) {
         connection = PostgreSQLConnection(
@@ -45,24 +60,9 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
           await query('set search_path to $schemesString;', {});
         }
       }
-    } else if (connection == null) {
-      connection = PostgreSQLConnection(
-        connectionInfo!.host,
-        connectionInfo!.port!,
-        connectionInfo!.database,
-        username: connectionInfo!.username,
-        password: connectionInfo!.password,
-      );
-      var com = connection as PostgreSQLConnection;
-      await com.open();
-      //isso executa uma query para definir os esquemas
-      if (connectionInfo?.enablePsqlAutoSetSearchPath == true &&
-          connectionInfo?.schemes?.isNotEmpty == true) {
-        await query('set search_path to $schemesString;', {});
-      }
     } else {
       await Future.value();
-    }
+    }*/
     //print('PostgreSqlExecutor@open connection ${connection}');
   }
 
@@ -80,7 +80,7 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   Future<bool> reconnectIfNecessary() async {
     try {
       print('call reconnectIfNecessary');
-      await query('select true', {});
+      await connection!.query('select true');
       return true;
     } catch (e) {
       print('call reconnectIfNecessary error: $e');
@@ -98,7 +98,7 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   Future<bool> isConnect() async {
     try {
       print('call isConnect');
-      await query('select true', {});
+      await connection!.query('select true');
       return true;
     } catch (e) {
       print('call isConnect error $e');

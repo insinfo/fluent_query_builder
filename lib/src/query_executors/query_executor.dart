@@ -53,6 +53,14 @@ abstract class QueryExecutor<U> {
 
   Future close();
 
+  Future<void> open() async {
+    throw UnimplementedError('open not implemented');
+  }
+
+  Future<bool> isConnect() async {
+    throw UnimplementedError('isConnect not implemented');
+  }
+
   final List<U> connections = [];
   U? connection;
 }

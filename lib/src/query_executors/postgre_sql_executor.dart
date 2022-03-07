@@ -25,6 +25,7 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   String get schemesString =>
       connectionInfo!.schemes!.map((i) => '"$i"').toList().join(', ');
 
+  @override
   Future<void> open() async {
     if (connection is PostgreSQLConnection) {
       var com = connection as PostgreSQLConnection;
@@ -77,18 +78,32 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   }
 
   @override
-  Future<dynamic> reconnectIfNecessary() async {
+  Future<bool> reconnectIfNecessary() async {
     try {
+      print('call reconnectIfNecessary');
       await query('select true', {});
-      return this;
+      return true;
     } catch (e) {
-//when the database restarts there is a loss of connection
+      print('reconnectIfNecessary error: $e');
+      //when the database restarts there is a loss of connection
       if ('$e'.contains('Cannot write to socket, it is closed') ||
           '$e'.contains('database connection closing')) {
         await reconnect();
-        return this;
+        return true;
       }
       rethrow;
+    }
+  }
+
+  @override
+  Future<bool> isConnect() async {
+    try {
+      print('call isConnect');
+      await query('select true', {});
+      return true;
+    } catch (e) {
+      print('call isConnect error $e');
+      return false;
     }
   }
 

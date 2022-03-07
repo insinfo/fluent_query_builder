@@ -19,6 +19,7 @@ class MySqlExecutor extends QueryExecutor<Querier> {
 
   MySqlExecutor({this.logger, this.connectionInfo, this.connection});
 
+  @override
   Future<void> open() async {
     connection = await MySqlConnection.connect(
       ConnectionSettings(

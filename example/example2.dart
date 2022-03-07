@@ -65,6 +65,7 @@ void main() async {
             .insert()
             .into('pessoas')
             .setAll({'nome': 'Joao das coves teste', 'tipo': 'Fisica'}).exec();
+
         await ctx.insert().into('pessoas').setAll(
             {'nome': 'Joao das coves teste 2', 'tipo2': 'Fisica'}).exec();
       });

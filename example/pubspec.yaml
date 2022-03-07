@@ -11,7 +11,7 @@ environment:
 
 dependencies:  
   #galileo_postgres: ^3.0.0
-  #postgres: ^2.4.3
+  postgres: ^2.4.3 
   convert: ^3.0.1
   #postgres:
   #  git:

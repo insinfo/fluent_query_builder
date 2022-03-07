@@ -276,9 +276,9 @@ class DbLayer {
   }
 
   Future<T?> transaction<T>(FutureOr<T> Function(DbLayer) f) {
-    return executor.transaction<T>((queryEcecutor) {
+    return executor.transaction<T>((queryExecutor) {
       var db = DbLayer(factories: factories);
-      db.executor = queryEcecutor;
+      db.executor = queryExecutor;
       return f(db);
     });
   }

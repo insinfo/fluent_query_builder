@@ -46,14 +46,12 @@ INSERT INTO "legalPerson" ("idPerson","socialSecurityNumber") VALUES ('1', '856-
 ''').exec();
 
   var repository = NaturalPersonRepository();
-
+  var person = NaturalPerson(name: 'John Doe 2', email: 'johndoe2@gmail.com');
   Timer.periodic(Duration(seconds: 3), (t) async {
     var idPerson;
     try {
       await db.transaction((ctx) async {
-        idPerson = await repository.insert(
-            NaturalPerson(name: 'John Doe 2', email: 'johndoe2@gmail.com'),
-            ctx);
+        idPerson = await repository.insert(person, ctx);
 
         await ctx.raw(
             '''INSERT INTO "legalPerson" ("idPerson","socialSecurityNumber") VALUES ('$idPerson', '956-45-6789');''').exec();
@@ -103,14 +101,13 @@ class LegalPerson extends NaturalPerson {
 
 class NaturalPersonRepository {
   Future<int> insert(NaturalPerson person, DbLayer ctx) async {
-    /*var result = await ctx.raw(
-        '''INSERT INTO "naturalPerson" (name,email) VALUES ('${person.name}', '${person.email}') RETURNING id;''').exec();*/
-
     var result = await ctx
         .insertGetId()
         .into('naturalPerson')
         .setAll(person.toMap())
         .exec();
+
+    // ...othes inserts
 
     var idPerson = result!.first!.first;
     return idPerson;

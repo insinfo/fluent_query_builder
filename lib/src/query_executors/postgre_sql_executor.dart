@@ -63,7 +63,6 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
     } else {
       await Future.value();
     }
-
     //print('PostgreSqlExecutor@open connection ${connection}');
   }
 

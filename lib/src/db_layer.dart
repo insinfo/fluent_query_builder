@@ -311,7 +311,7 @@ class DbLayer {
     return executor.reconnectIfNecessary();
   }
 
-  Future<bool> isConnect() async {
+  Future<bool> isConnect() {
     return executor.isConnect();
   }
 

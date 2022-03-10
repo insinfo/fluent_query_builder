@@ -25,6 +25,7 @@ class DBConnectionInfo {
   List<String>? schemes = ['public'];
   int numberOfProcessors = 1;
   bool setNumberOfProcessorsFromPlatform = false;
+  bool usePool = false;
   QueryBuilderOptions? options;
 
   DBConnectionInfo({

@@ -19,7 +19,7 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   PostgreSqlExecutor(this.connectionInfo, {this.logger, this.connection});
 
   Future<void> reconnect() async {
-    print('PostgreSqlExecutor@reconnect');
+    //  print('PostgreSqlExecutor@reconnect');
     await open();
   }
 
@@ -79,11 +79,9 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   @override
   Future<bool> reconnectIfNecessary() async {
     try {
-      print('call reconnectIfNecessary');
       await connection!.query('select true');
       return true;
     } catch (e) {
-      print('call reconnectIfNecessary error: $e');
       //when the database restarts there is a loss of connection
       if ('$e'.contains('Cannot write to socket, it is closed') ||
           '$e'.contains('database connection closing')) {
@@ -97,11 +95,9 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   @override
   Future<bool> isConnect() async {
     try {
-      print('call isConnect');
       await connection!.query('select true');
       return true;
     } catch (e) {
-      print('call isConnect error $e');
       return false;
     }
   }
@@ -119,16 +115,13 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
 
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
-    //print('Query: $query');
-    //print('Values: $substitutionValues');
-    //print('Fields: $returningFields');
+
     List<List> results;
 
     try {
       results = await connection!
           .query(query, substitutionValues: substitutionValues);
     } catch (e) {
-      print('PostgreSqlExecutor@query reconnect in Error: $e');
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
       if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
@@ -177,7 +170,6 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
       if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
               '$e'.contains('connection is not open') ||
           '$e'.contains('database connection closing')) {
-        //print('PostgreSqlExecutor@execute reconnect in Error');
         await reconnect();
         results = await connection!
             .execute(query, substitutionValues: substitutionValues);
@@ -201,13 +193,11 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
       results = await connection!
           .mappedResultsQuery(query, substitutionValues: substitutionValues);
     } catch (e) {
-      // print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error  $e');
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
       if (connectionInfo?.reconnectIfConnectionIsNotOpen == true &&
               '$e'.contains('connection is not open') ||
           '$e'.contains('database connection closing')) {
-        //print('PostgreSqlExecutor@getAsMapWithMeta reconnect in Error');
         await reconnect();
         results = await connection!
             .mappedResultsQuery(query, substitutionValues: substitutionValues);
@@ -275,25 +265,25 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   @override
   Future<T?> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
     if (connection is! PostgreSQLConnection) return f(this);
-    print('PostgreSqlExecutor transaction');
+    //print('PostgreSqlExecutor transaction');
     var conn = connection as PostgreSQLConnection;
     T? returnValue;
 
     var txResult = await conn.transaction((ctx) async {
-      print('PostgreSqlExecutor entering transaction');
+      //print('PostgreSqlExecutor entering transaction');
       try {
         logger?.fine('Entering transaction');
         var tx =
             PostgreSqlExecutor(connectionInfo, logger: logger, connection: ctx);
         returnValue = await f(tx);
-        print('PostgreSqlExecutor end transaction');
+        //  print('PostgreSqlExecutor end transaction');
       } catch (e) {
-        print('PostgreSqlExecutor catch transaction');
+        // print('PostgreSqlExecutor catch transaction');
         ctx.cancelTransaction(reason: e.toString());
         rethrow;
       } finally {
         logger?.fine('Exiting transaction');
-        print('PostgreSqlExecutor Exiting transactionn');
+        // print('PostgreSqlExecutor Exiting transactionn');
       }
     });
 

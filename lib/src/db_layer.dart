@@ -37,16 +37,24 @@ class DbLayer {
   Future<DbLayer> connect(DBConnectionInfo connInfo) async {
     options = connInfo.getQueryOptions();
     connectionInfo = connInfo.getSettings();
-    /* var nOfProces = connectionInfo!.setNumberOfProcessorsFromPlatform
+    var nOfProces = connectionInfo!.setNumberOfProcessorsFromPlatform
         ? Platform.numberOfProcessors
-        : connectionInfo!.numberOfProcessors;*/
+        : connectionInfo!.numberOfProcessors;
 
     if (connectionInfo!.driver == ConnectionDriver.pgsql) {
-      executor = PostgreSqlExecutor(connectionInfo);
-      await executor.open();
+      if (connectionInfo!.numberOfProcessors > 1 && connectionInfo!.usePool) {
+        executor = PostgreSqlExecutorPool(nOfProces, connectionInfo);
+      } else {
+        executor = PostgreSqlExecutor(connectionInfo);
+        await executor.open();
+      }
     } else {
-      executor = MySqlExecutor(connectionInfo: connectionInfo);
-      await executor.open();
+      if (connectionInfo!.numberOfProcessors > 1 && connectionInfo!.usePool) {
+        executor = MySqlExecutorPool(nOfProces, connectionInfo: connectionInfo);
+      } else {
+        executor = MySqlExecutor(connectionInfo: connectionInfo);
+        await executor.open();
+      }
     }
 
     return this;

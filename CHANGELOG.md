@@ -77,3 +77,7 @@
 # 3.1.1
 
 - fix bug on count query
+
+# 3.2.1
+
+- fix bugs on transaction

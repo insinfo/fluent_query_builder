@@ -42,3 +42,5 @@ export 'src/models/update.dart';
 //export 'src/models/util.dart';
 //export 'src/models/validator.dart;
 export 'src/models/where_block.dart';
+
+export 'src/models/raw_block.dart';

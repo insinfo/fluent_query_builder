@@ -6,9 +6,11 @@ import 'query_builder_options.dart';
 class Raw extends QueryBuilder {
   Raw(
     String rawQueryString, {
+    Map<String, dynamic>? substitutionValues,
     QueryBuilderOptions? options,
     Future<List<List?>?> Function()? execFunc,
-    Future<Map<String, Map<String?, dynamic>>?> Function()? firstAsMapFuncWithMeta,
+    Future<Map<String, Map<String?, dynamic>>?> Function()?
+        firstAsMapFuncWithMeta,
     Future<List<Map<String, Map<String?, dynamic>>>> Function()?
         getAsMapFuncWithMeta,
     Future<List?> Function()? firstFunc,
@@ -18,7 +20,8 @@ class Raw extends QueryBuilder {
   }) : super(
           options,
           [
-            StringBlock(options, rawQueryString),
+            RawBlock(options, rawQueryString,
+                substitutionValues: substitutionValues),
           ],
           execFunc: execFunc,
           firstAsMapFuncWithMeta: firstAsMapFuncWithMeta,

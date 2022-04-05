@@ -157,9 +157,11 @@ class DbLayer {
   }
 
   ///function to execute query from raw SQL String
-  QueryBuilder raw(String rawQueryString) {
+  QueryBuilder raw(String rawQueryString,
+      {Map<String, dynamic>? substitutionValues}) {
     return currentQuery = Raw(
       rawQueryString,
+      substitutionValues: substitutionValues,
       options: options,
       execFunc: exec,
       firstFunc: first,

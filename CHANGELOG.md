@@ -81,3 +81,7 @@
 # 3.2.1
 
 - fix bugs on transaction
+
+# 3.3.1
+
+- add substitutionValues to raw method ``` await db.raw('INSERT INTO products (name,price) VALUES (@name, @price)',  substitutionValues: {'name': 'iPhone 6S', 'price': 2.50}).exec(); ```

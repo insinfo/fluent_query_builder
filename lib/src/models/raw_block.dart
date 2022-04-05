@@ -4,14 +4,16 @@ import 'query_builder.dart';
 import 'util.dart';
 
 /// A String which always gets output
-class StringBlock extends Block {
-  StringBlock(QueryBuilderOptions? options, String str, {this.returningFields})
+class RawBlock extends Block {
+  RawBlock(QueryBuilderOptions? options, String rawQueryString,
+      {this.returningFields, this.substitutionValues})
       : super(options) {
-    mText = str;
+    mText = rawQueryString;
   }
 
   String? mText;
   List<String?>? returningFields;
+  Map<String, dynamic>? substitutionValues;
 
   @override
   String? buildStr(QueryBuilder queryBuilder) {
@@ -26,6 +28,6 @@ class StringBlock extends Block {
 
   @override
   Map<String, dynamic> buildSubstitutionValues() {
-    return {};
+    return substitutionValues != null ? substitutionValues! : {};
   }
 }

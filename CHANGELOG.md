@@ -85,3 +85,7 @@
 # 3.3.1
 
 - add substitutionValues to raw method ``` await db.raw('INSERT INTO products (name,price) VALUES (@name, @price)',  substitutionValues: {'name': 'iPhone 6S', 'price': 2.50}).exec(); ```
+
+# 3.4.1
+
+- add useSSL option to connect when SSL is required

@@ -34,6 +34,8 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
       connectionInfo!.database,
       username: connectionInfo!.username,
       password: connectionInfo!.password,
+      useSSL: connectionInfo!.useSSL,
+      timeoutInSeconds: connectionInfo!.timeoutInSeconds,
     );
     var com = connection as PostgreSQLConnection;
     await com.open();

@@ -14,7 +14,7 @@ class DBConnectionInfo {
   bool reconnectIfConnectionIsNotOpen = true;
 
   String? prefix = '';
-  String? sslmode = 'prefer';
+  bool useSSL;
   ConnectionDriver driver;
   String host;
   int? port;
@@ -27,6 +27,7 @@ class DBConnectionInfo {
   bool setNumberOfProcessorsFromPlatform = false;
   bool usePool = false;
   QueryBuilderOptions? options;
+  int timeoutInSeconds = 30;
 
   DBConnectionInfo({
     this.driver = ConnectionDriver.pgsql,
@@ -38,11 +39,12 @@ class DBConnectionInfo {
     this.charset,
     this.schemes,
     this.prefix,
-    this.sslmode,
+    this.useSSL = false,
     this.numberOfProcessors = 1,
     this.setNumberOfProcessorsFromPlatform = false,
     this.reconnectIfConnectionIsNotOpen = true,
     this.enablePsqlAutoSetSearchPath = true,
+    this.timeoutInSeconds = 30,
   });
 
   DBConnectionInfo clone() {
@@ -56,11 +58,12 @@ class DBConnectionInfo {
       charset: charset,
       schemes: schemes,
       prefix: prefix,
-      sslmode: sslmode,
+      useSSL: useSSL,
       numberOfProcessors: numberOfProcessors,
       setNumberOfProcessorsFromPlatform: setNumberOfProcessorsFromPlatform,
       reconnectIfConnectionIsNotOpen: reconnectIfConnectionIsNotOpen,
       enablePsqlAutoSetSearchPath: enablePsqlAutoSetSearchPath,
+      timeoutInSeconds: timeoutInSeconds,
     );
   }
 

@@ -23,12 +23,15 @@ class MySqlExecutor extends QueryExecutor<Querier> {
   Future<void> open() async {
     connection = await MySqlConnection.connect(
       ConnectionSettings(
-        host: connectionInfo!.host,
-        port: connectionInfo!.port,
-        db: connectionInfo!.database,
-        user: connectionInfo!.username,
-        password: connectionInfo!.password,
-      ),
+          host: connectionInfo!.host,
+          port: connectionInfo!.port,
+          db: connectionInfo!.database,
+          user: connectionInfo!.username,
+          password: connectionInfo!.password,
+          useSSL: connectionInfo!.useSSL,
+          timeout: Duration(
+            seconds: connectionInfo!.timeoutInSeconds,
+          )),
     );
   }
 
@@ -48,15 +51,7 @@ class MySqlExecutor extends QueryExecutor<Querier> {
   }
 
   Future<void> reconnect() async {
-    connection = await MySqlConnection.connect(
-      ConnectionSettings(
-        host: connectionInfo!.host,
-        port: connectionInfo!.port,
-        db: connectionInfo!.database,
-        user: connectionInfo!.username,
-        password: connectionInfo!.password,
-      ),
-    );
+    await open();
   }
 
   @override

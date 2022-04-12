@@ -322,8 +322,8 @@ void main() {
     host: '192.168.133.13',
     database: 'sistemas',
     port: 5432,
-    username: 'sisadmin',
-    password: 's1sadm1n',
+    username: 'user',
+    password: 'pass',
     charset: 'utf8',
     schemes: ['riodasostrasapp'],
   );

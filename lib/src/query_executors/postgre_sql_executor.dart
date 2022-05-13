@@ -37,6 +37,8 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
       useSSL: connectionInfo!.useSSL,
       timeoutInSeconds: connectionInfo!.timeoutInSeconds,
     );
+    print(
+        'PostgreSqlExecutor@open timeoutInSeconds: ${connectionInfo!.timeoutInSeconds}');
     var com = connection as PostgreSQLConnection;
     await com.open();
     //isso executa uma query para definir os esquemas
@@ -121,8 +123,9 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
     List<List> results;
 
     try {
-      results = await connection!
-          .query(query, substitutionValues: substitutionValues);
+      results = await connection!.query(query,
+          substitutionValues: substitutionValues,
+          timeoutInSeconds: connectionInfo!.timeoutInSeconds);
     } catch (e) {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
@@ -164,8 +167,9 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
 
     var results;
     try {
-      results = await connection!
-          .execute(query, substitutionValues: substitutionValues);
+      results = await connection!.execute(query,
+          substitutionValues: substitutionValues,
+          timeoutInSeconds: connectionInfo!.timeoutInSeconds);
     } catch (e) {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
@@ -173,8 +177,9 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
               '$e'.contains('connection is not open') ||
           '$e'.contains('database connection closing')) {
         await reconnect();
-        results = await connection!
-            .execute(query, substitutionValues: substitutionValues);
+        results = await connection!.execute(query,
+            substitutionValues: substitutionValues,
+            timeoutInSeconds: connectionInfo!.timeoutInSeconds);
       } else {
         rethrow;
       }
@@ -192,8 +197,9 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
 
     var results = <Map<String, Map<String, dynamic>>>[];
     try {
-      results = await connection!
-          .mappedResultsQuery(query, substitutionValues: substitutionValues);
+      results = await connection!.mappedResultsQuery(query,
+          substitutionValues: substitutionValues,
+          timeoutInSeconds: connectionInfo!.timeoutInSeconds);
     } catch (e) {
       //reconnect in Error
       //PostgreSQLSeverity.error : Attempting to execute query, but connection is not open.
@@ -201,8 +207,9 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
               '$e'.contains('connection is not open') ||
           '$e'.contains('database connection closing')) {
         await reconnect();
-        results = await connection!
-            .mappedResultsQuery(query, substitutionValues: substitutionValues);
+        results = await connection!.mappedResultsQuery(query,
+            substitutionValues: substitutionValues,
+            timeoutInSeconds: connectionInfo!.timeoutInSeconds);
       } else {
         rethrow;
       }
@@ -256,7 +263,8 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
 
   @override
   Future<void> commit() async {
-    await connection!.execute('commit');
+    await connection!
+        .execute('commit', timeoutInSeconds: connectionInfo!.timeoutInSeconds);
   }
 
   @override

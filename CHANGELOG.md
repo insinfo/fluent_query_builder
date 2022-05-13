@@ -93,3 +93,7 @@
 # 3.4.2
 
 - change default timeoutInSeconds to 120
+
+# 3.4.3
+
+- fix bug on query timeout

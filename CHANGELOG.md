@@ -89,3 +89,7 @@
 # 3.4.1
 
 - add useSSL option to connect when SSL is required
+
+# 3.4.2
+
+- change default timeoutInSeconds to 120

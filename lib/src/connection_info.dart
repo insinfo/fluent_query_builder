@@ -27,7 +27,7 @@ class DBConnectionInfo {
   bool setNumberOfProcessorsFromPlatform = false;
   bool usePool = false;
   QueryBuilderOptions? options;
-  int timeoutInSeconds = 30;
+  int timeoutInSeconds = 120;
 
   DBConnectionInfo({
     this.driver = ConnectionDriver.pgsql,
@@ -44,7 +44,7 @@ class DBConnectionInfo {
     this.setNumberOfProcessorsFromPlatform = false,
     this.reconnectIfConnectionIsNotOpen = true,
     this.enablePsqlAutoSetSearchPath = true,
-    this.timeoutInSeconds = 30,
+    this.timeoutInSeconds = 120,
   });
 
   DBConnectionInfo clone() {

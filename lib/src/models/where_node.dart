@@ -1,7 +1,11 @@
-enum WhereType { group, raw, safe, simple }
+enum WhereType { openGroup, closeGroup, raw, safe, simple }
 
 class WhereNode {
-  WhereNode(this.text, {this.param = '', this.operator = '', this.andOr = 'AND', this.type = WhereType.simple});
+  WhereNode(this.text,
+      {this.param = '',
+      this.operator = '',
+      this.andOr = 'AND',
+      this.type = WhereType.simple});
   final String text;
   Object param = '';
   String operator = '';

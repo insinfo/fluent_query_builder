@@ -37,8 +37,7 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
       useSSL: connectionInfo!.useSSL,
       timeoutInSeconds: connectionInfo!.timeoutInSeconds,
     );
-    print(
-        'PostgreSqlExecutor@open timeoutInSeconds: ${connectionInfo!.timeoutInSeconds}');
+    //print( 'PostgreSqlExecutor@open timeoutInSeconds: ${connectionInfo!.timeoutInSeconds}');
     var com = connection as PostgreSQLConnection;
     await com.open();
     //isso executa uma query para definir os esquemas

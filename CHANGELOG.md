@@ -97,3 +97,7 @@
 # 3.4.3
 
 - fix bug on query timeout
+
+# 3.5.3
+
+- bug fix when using a combination of whereGroup, whereRaw, orWhereSafe and where

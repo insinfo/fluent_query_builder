@@ -13,12 +13,12 @@ class WhereBlock extends Block {
 
   void setStartGroup(String andOr) {
     //mWheres.add(WhereNode(null, null, groupDivider: '('));
-    mWheres.add(WhereNode('(', type: WhereType.group, andOr: andOr));
+    mWheres.add(WhereNode('', type: WhereType.openGroup, andOr: andOr));
   }
 
   void setEndGroup() {
     //mWheres.add(WhereNode(null, null, groupDivider: ')'));
-    mWheres.add(WhereNode(')', type: WhereType.group));
+    mWheres.add(WhereNode('', type: WhereType.closeGroup));
   }
 
   /// Add a WHERE condition.
@@ -28,7 +28,8 @@ class WhereBlock extends Block {
   void setWhere(String condition, param, [String andOr = 'AND']) {
     //assert(condition != null);
     //doSetWhere(condition, param, andOr);
-    mWheres.add(WhereNode(condition, param: param, andOr: andOr, type: WhereType.simple));
+    mWheres.add(WhereNode(condition,
+        param: param, andOr: andOr, type: WhereType.simple));
   }
 
   void setWhereRaw(String whereRawSql, [String andOr = 'AND']) {
@@ -42,7 +43,8 @@ class WhereBlock extends Block {
     //assert(operator != null);
     //assert(value != null);
     // mWheres.add(WhereNode(field, value, operator: operator, andOr: 'AND'));
-    mWheres.add(WhereNode(field, param: value, operator: operator, andOr: 'AND', type: WhereType.safe));
+    mWheres.add(WhereNode(field,
+        param: value, operator: operator, andOr: 'AND', type: WhereType.safe));
   }
 
   void setOrWhereSafe(String field, String operator, value) {
@@ -50,13 +52,16 @@ class WhereBlock extends Block {
     //assert(operator != null);
     //assert(value != null);
     //mWheres.add(WhereNode(field, value, operator: operator, andOr: 'OR'));
-    mWheres.add(WhereNode(field, param: value, operator: operator, andOr: 'OR', type: WhereType.safe));
+    mWheres.add(WhereNode(field,
+        param: value, operator: operator, andOr: 'OR', type: WhereType.safe));
   }
 
-  void setWhereWithExpression(Expression condition, param, [String andOr = 'AND']) {
+  void setWhereWithExpression(Expression condition, param,
+      [String andOr = 'AND']) {
     //assert(condition != null);
     //doSetWhere(condition.toString(), param, andOr);
-    mWheres.add(WhereNode(condition.toString(), param: param, andOr: andOr, type: WhereType.simple));
+    mWheres.add(WhereNode(condition.toString(),
+        param: param, andOr: andOr, type: WhereType.simple));
   }
 
   @override
@@ -76,10 +81,11 @@ class WhereBlock extends Block {
         case WhereType.simple:
           var left = ' ${whereNode.text} ';
           if (left.contains('?')) {
-            left = left.replaceAll('?', Validator.formatValue(whereNode.param, mOptions)!);
+            left = left.replaceAll(
+                '?', Validator.formatValue(whereNode.param, mOptions)!);
           }
           str += left;
-          str += ' ${whereNode.operator} ';
+          //str += ' ${whereNode.operator} ';
           break;
         case WhereType.safe:
           str += ' ${whereNode.text} ';
@@ -87,31 +93,57 @@ class WhereBlock extends Block {
           var substitutionValue = _getSubstitutionValue(whereNode.text);
           str += ' @$substitutionValue ';
           break;
-        case WhereType.group:
-          str += ' ${whereNode.text} ';
-          if (whereNode.text.contains(')')) {}
+        case WhereType.openGroup:
+          str += ' ( ';
+          break;
+        case WhereType.closeGroup:
+          str += ' ) ';
           break;
         case WhereType.raw:
           str += ' ${whereNode.text}';
           break;
       }
-      if (i + 1 < length) {
-        if (mWheres[i + 1].type == WhereType.group && mWheres[i + 1].text.contains('(')) {
-          str += ' ${mWheres[i + 1].andOr} ';
+      /* if (i + 1 < length) {
+        if (mWheres[i + 1].type == WhereType.group &&
+            mWheres[i + 1].text.contains('(')) {
+          // str += ' ${mWheres[i + 1].andOr} ';
           //print('o proximo é grupo abre');
-        } else if (mWheres[i + 1].type == WhereType.group && mWheres[i + 1].text.contains(')')) {
+        } else if (mWheres[i + 1].type == WhereType.group &&
+            mWheres[i + 1].text.contains(')')) {
           //print('o proximo é grupo fecha');
         } else if (mWheres[i].type != WhereType.group) {
           if (!mWheres[i + 1].text.contains(')')) {
-            str += ' ${whereNode.andOr} ';
+            // str += ' ${whereNode.andOr} ';
             // print('o item atual não é grupo ${mWheres[i].text} ${mWheres[i + 1].text}');
           }
         } else if (mWheres[i].type == WhereType.group &&
             mWheres[i].text.contains(')') &&
             mWheres[i + 1].type != WhereType.group) {
-          str += ' ${whereNode.andOr} ';
+          //str += ' ${whereNode.andOr} ';
+        }
+      }*/
+
+      if (i + 1 < length) {
+        //se o proximo for abre grupo
+        if (mWheres[i + 1].type == WhereType.openGroup) {
+          str += ' ${mWheres[i + 1].andOr}   ';
+        } else if (mWheres[i].type == WhereType.closeGroup) {
+          str += ' ${mWheres[i + 1].andOr}   ';
+        } else if (mWheres[i].type == WhereType.openGroup) {
+          str += ' ';
+        } else if (mWheres[i + 1].type == WhereType.closeGroup) {
+          str += ' ';
+        } else {
+          str += ' ${mWheres[i + 1].andOr}  ';
         }
       }
+
+      /*if (i + 1 < length &&
+          whereNode.type != WhereType.group &&
+          mWheres[i + 1].type != WhereType.group) {
+        str += ' ${whereNode.andOr}  ';
+        //print('mWheres[i].type == WhereType.raw): ${whereNode.andOr} ');
+      }*/
 
       sb.write(str);
     }
@@ -126,9 +158,13 @@ class WhereBlock extends Block {
       var parts = text!.split('.');
       substitutionValue = parts[1];
     }
-    if (text?.startsWith('"') == true && text?.endsWith('"') == true) {
-      substitutionValue = substitutionValue!.substring(1, substitutionValue.length - 1);
+    substitutionValue = substitutionValue?.trim();
+    if (substitutionValue?.startsWith('"') == true &&
+        substitutionValue?.endsWith('"') == true) {
+      substitutionValue =
+          substitutionValue!.substring(1, substitutionValue.length - 1);
     }
+
     return substitutionValue;
   }
 

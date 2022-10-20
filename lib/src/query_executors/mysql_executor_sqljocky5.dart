@@ -4,7 +4,7 @@ import 'package:pool/pool.dart';
 
 import 'package:galileo_sqljocky5/sqljocky.dart';
 import '../../fluent_query_builder.dart';
-import '../models/exceptions.dart';
+
 import 'query_executor.dart';
 import 'package:logging/logging.dart';
 
@@ -72,7 +72,7 @@ class MySqlExecutor extends QueryExecutor<Querier> {
 
   ///this method run query on MySQL or MariaDB DataBase
   @override
-  Future<List<List?>?> query(
+  Future<List<List>> query(
       String query, Map<String, dynamic> substitutionValues,
       [List<String?>? returningFields]) async {
     // Change @id -> ?
@@ -112,7 +112,7 @@ class MySqlExecutor extends QueryExecutor<Querier> {
           rethrow;
         }
       }
-      var list = <List?>[];
+      var list = <List>[];
       await for (var item in results) {
         list.add(item);
       }
@@ -132,7 +132,7 @@ class MySqlExecutor extends QueryExecutor<Querier> {
           var indexOfEnd = query.indexOf('(');
           tableName = query.substring(indexOfInsert + 4, indexOfEnd);
 
-          var writeResults;
+          StreamedResults writeResults;
           try {
             writeResults = await tx.prepared(
                 query, Utils.substitutionMapToList(substitutionValues));
@@ -152,9 +152,11 @@ class MySqlExecutor extends QueryExecutor<Querier> {
 
           var fieldSet = returningFields!.map((s) => '`$s`').join(',');
           var fetchSql = 'select $fieldSet from $tableName where id = ?;';
+          //print('fetchSql $fetchSql');
+          //print('writeResults.insertId ${writeResults.insertId}');
 
           logger?.fine(fetchSql);
-          var readResults;
+          StreamedResults readResults;
 
           try {
             readResults = await tx.prepared(fetchSql, [writeResults.insertId]);
@@ -171,8 +173,9 @@ class MySqlExecutor extends QueryExecutor<Querier> {
               rethrow;
             }
           }
-          // print('fetchSql $fetchSql');
-          var mapped = readResults.map((r) => r.toList()).toList();
+
+          var mapped = await readResults.map((r) => r.toList()).toList();
+          //print('mapped $mapped');
           await tx.commit();
           return mapped;
         } catch (_) {
@@ -192,11 +195,11 @@ class MySqlExecutor extends QueryExecutor<Querier> {
   }
 
   @override
-  Future<List<Map<String?, dynamic>>> getAsMap(String query,
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     //print('MySqlExecutor@getAsMap query $query');
     //print('MySqlExecutor@getAsMap substitutionValues $substitutionValues');
-    var results = <Map<String?, dynamic>>[];
+    var results = <Map<String, dynamic>>[];
 
     for (var name in substitutionValues!.keys) {
       query = query.replaceAll('@$name', '?');
@@ -223,7 +226,7 @@ class MySqlExecutor extends QueryExecutor<Querier> {
 
     var fields = rows.fields;
     await rows.forEach((Row row) {
-      var map = <String?, dynamic>{};
+      var map = <String, dynamic>{};
       //print('key: ${fields[0].name}, value: ${row[0]}');
       for (var i = 0; i < row.length; i++) {
         map.addAll({fields[i].name: row[i]});
@@ -378,7 +381,7 @@ class MySqlExecutorPool extends QueryExecutor<MySqlExecutor> {
   }
 
   @override
-  Future<List<Map<String?, dynamic>>> getAsMap(String query,
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     return _pool.withResource(() async {
       final executor = await _next();
@@ -396,7 +399,7 @@ class MySqlExecutorPool extends QueryExecutor<MySqlExecutor> {
   }
 
   @override
-  Future<List<List?>?> query(
+  Future<List<List>> query(
       String query, Map<String, dynamic> substitutionValues,
       [List<String?>? returningFields]) {
     return _pool.withResource(() async {

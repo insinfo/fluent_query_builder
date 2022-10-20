@@ -28,7 +28,12 @@ void main() {
     });
 
     test('Select With whereSafe', () async {
-      var result = await db.select().from('pessoas').whereSafe('nome', 'ilike', '%isaque%').limit(1).get();
+      var result = await db
+          .select()
+          .from('pessoas')
+          .whereSafe('nome', 'ilike', '%isaque%')
+          .limit(1)
+          .get();
 
       var expectedValue = [
         [1, 'Isaque', '99701-5305', '54654']
@@ -38,7 +43,12 @@ void main() {
     });
 
     test('Select With one where', () async {
-      var result = await db.select().from('pessoas').where('nome ilike ?', "'%isaque%'").limit(1).get();
+      var result = await db
+          .select()
+          .from('pessoas')
+          .where('nome ilike ?', "'%isaque%'")
+          .limit(1)
+          .get();
       expect(result, [
         [1, 'Isaque', '99701-5305', '54654']
       ]);
@@ -114,7 +124,8 @@ void main() {
       ]);
     });
 
-    test('Complex selection With whereGroup, whereSafe, where whereRaw', () async {
+    test('Complex selection With whereGroup, whereSafe, where whereRaw',
+        () async {
       await db.raw('DROP TABLE IF EXISTS notificacoes').exec();
       await db.raw('''CREATE TABLE notificacoes (
   "id" serial NOT NULL ,
@@ -144,7 +155,8 @@ void main() {
       }).exec();
 
       final query = db.select().fromRaw('notificacoes');
-      query.where('"dataCriado"::TIMESTAMP  > \'?\'::TIMESTAMP ', '2021-05-04 17:53:55');
+      query.where('"dataCriado"::TIMESTAMP  > \'?\'::TIMESTAMP ',
+          '2021-05-04 17:53:55');
 
       query.whereGroup((q) {
         q.where('"idPessoa"=?', 2, 'or');
@@ -208,43 +220,73 @@ void main() {
     });
 
     test('Select With whereRaw', () async {
-      var result = await db.select().from('pessoas').whereRaw("nome ilike '%isaque%'").limit(1).get();
+      var result = await db
+          .select()
+          .from('pessoas')
+          .whereRaw("nome ilike '%isaque%'")
+          .limit(1)
+          .get();
       expect(result, [
         [1, 'Isaque', '99701-5305', '54654']
       ]);
     });
 
     test('Select getAsMap With whereRaw', () async {
-      var result = await db.select().from('pessoas').whereRaw("nome ilike '%isaque%'").limit(1).getAsMap();
-      expect(result[0] is Map, true);
+      var result = await db
+          .select()
+          .from('pessoas')
+          .whereRaw("nome ilike '%isaque%'")
+          .limit(1)
+          .getAsMap();
+      expect(result[0], true);
     });
 
     test('Select firstAsMap With whereRaw', () async {
-      var result = await db.select().from('pessoas').whereRaw("nome ilike '%isaque%'").limit(1).firstAsMap();
+      var result = await db
+          .select()
+          .from('pessoas')
+          .whereRaw("nome ilike '%isaque%'")
+          .limit(1)
+          .firstAsMap();
       expect(result is Map, true);
     });
   });
 
   group('Insert Queries', () {
     test('Insert set', () async {
-      var result = await db.insert().into('pessoas').set('nome', 'Darth Vader').exec();
+      var result =
+          await db.insert().into('pessoas').set('nome', 'Darth Vader').exec();
       expect(result, []);
     });
     test('Insert setAll', () async {
-      var data = <String, dynamic>{'nome': 'Darth Vader', 'telefone': '123123123', 'cep': '123'};
+      var data = <String, dynamic>{
+        'nome': 'Darth Vader',
+        'telefone': '123123123',
+        'cep': '123'
+      };
       var result = await db.insert().into('pessoas').setAll(data).exec();
       expect(result, []);
     });
 
     test('Insert Get Id', () async {
-      var data = <String, dynamic>{'nome': 'Darth Vader', 'telefone': '123123123'};
+      var data = <String, dynamic>{
+        'nome': 'Darth Vader',
+        'telefone': '123123123'
+      };
       var result = await db.insertGetId().into('pessoas').setAll(data).exec();
-      expect(result![0]![0] is int, true);
+      expect(result[0][0] is int, true);
     });
 
     test('Insert Get All', () async {
-      var data = <String, dynamic>{'nome': 'Darth Vader', 'telefone': '123123123'};
-      var response = await db.insertGetAll(returningFields: ['nome', 'telefone']).into('pessoas').setAll(data).exec();
+      var data = <String, dynamic>{
+        'nome': 'Darth Vader',
+        'telefone': '123123123'
+      };
+      var response = await db
+          .insertGetAll(returningFields: ['nome', 'telefone'])
+          .into('pessoas')
+          .setAll(data)
+          .exec();
       var expectedValue = [
         ['Darth Vader', '123123123']
       ];
@@ -255,8 +297,16 @@ void main() {
       var data = <String, dynamic>{'nome': 'transaction', 'telefone': 'test'};
       var response;
       await db.transaction((ctx) async {
-        response = await ctx.insertGetAll(returningFields: ['nome', 'telefone']).into('pessoas').setAll(data).exec();
-        response = await ctx.insertGetAll(returningFields: ['nome', 'telefone']).into('pessoas').setAll(data).exec();
+        response = await ctx
+            .insertGetAll(returningFields: ['nome', 'telefone'])
+            .into('pessoas')
+            .setAll(data)
+            .exec();
+        response = await ctx
+            .insertGetAll(returningFields: ['nome', 'telefone'])
+            .into('pessoas')
+            .setAll(data)
+            .exec();
       });
 
       var expectedValue = [

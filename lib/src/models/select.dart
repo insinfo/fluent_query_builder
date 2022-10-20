@@ -1,35 +1,22 @@
 import '../../fluent_query_builder.dart';
-import 'distinct_block.dart';
-import 'from_table_block.dart';
-import 'get_field_block.dart';
-import 'group_by_block.dart';
-import 'join_block.dart';
-import 'limit_block.dart';
-import 'sort_order.dart';
-import 'union_block.dart';
-import 'union_type.dart';
-import 'where_block.dart';
-import 'offset_block.dart';
-import 'order_by_block.dart';
-import 'string_block.dart';
-import 'query_builder.dart';
-import 'query_builder_options.dart';
-import 'join_type.dart';
-import 'expression.dart';
 
 /// SELECT query builder.
 class Select extends QueryBuilder {
   Select(
     QueryBuilderOptions? options, {
-    Future<List<List?>?> Function()? execFunc,
-    Future<Map<String, Map<String?, dynamic>>?> Function()? firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String?, dynamic>>>> Function()? getAsMapFuncWithMeta,
+    Future<List<List>> Function()? execFunc,
+    Future<Map<String, Map<String?, dynamic>>?> Function()?
+        firstAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String?, dynamic>>>> Function()?
+        getAsMapFuncWithMeta,
     Future<List?> Function()? firstFunc,
-    Future<Map<String?, dynamic>?> Function()? firstAsMapFunc,
-    Future<List<Map<String?, dynamic>>> Function()? getAsMapFunc,
-    Future<List<T>> Function<T>([T Function(Map<String, dynamic>)?])? fetchAllFunc,
-    Future<T?> Function<T>([T Function(Map<String?, dynamic>)?])? fetchSingleFunc,
-    Future<int?> Function()? countFunc,
+    Future<Map<String, dynamic>?> Function()? firstAsMapFunc,
+    Future<List<Map<String, dynamic>>> Function()? getAsMapFunc,
+    Future<List<T>> Function<T>([T Function(Map<String, dynamic>)?])?
+        fetchAllFunc,
+    Future<T?> Function<T>([T Function(Map<String?, dynamic>)?])?
+        fetchSingleFunc,
+    Future<int> Function()? countFunc,
   }) : super(
           options,
           [
@@ -152,21 +139,24 @@ class Select extends QueryBuilder {
   // JOIN
   //
   @override
-  QueryBuilder join(String joinTableName, String condition, {String? alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder join(String joinTableName, String condition,
+      {String? alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks![4] as JoinBlock;
     block.setJoin(joinTableName, alias, condition, type);
     return this;
   }
 
   @override
-  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition, {String? alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithSubQuery(QueryBuilder table, String condition,
+      {String? alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks![4] as JoinBlock;
     block.setJoinWithSubQuery(table, alias, condition, type);
     return this;
   }
 
   @override
-  QueryBuilder joinWithExpression(String table, Expression condition, {String? alias, JoinType type = JoinType.INNER}) {
+  QueryBuilder joinWithExpression(String table, Expression condition,
+      {String? alias, JoinType type = JoinType.INNER}) {
     final block = mBlocks![4] as JoinBlock;
     block.setJoinWithExpression(table, alias, condition, type);
     return this;
@@ -192,7 +182,8 @@ class Select extends QueryBuilder {
   }
 
   @override
-  QueryBuilder whereExpr(Expression condition, [Object? param, String andOr = 'AND']) {
+  QueryBuilder whereExpr(Expression condition,
+      [Object? param, String andOr = 'AND']) {
     final block = mBlocks![5] as WhereBlock;
     block.setWhereWithExpression(condition, param);
     return this;

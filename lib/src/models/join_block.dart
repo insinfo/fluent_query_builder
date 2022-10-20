@@ -2,7 +2,7 @@ import 'block.dart';
 import 'query_builder_options.dart';
 import 'query_builder.dart';
 import 'join_type.dart';
-import 'validator.dart';
+
 import 'expression.dart';
 import 'util.dart';
 
@@ -25,24 +25,27 @@ class JoinBlock extends Block {
   /// @param condition Optional condition (containing an SQL expression) for the JOIN.
   /// @param type Join Type.
   void setJoin(String table, String? alias, String condition, JoinType type) {
-    final tbl = Validator.sanitizeTable(table, mOptions!);
-    final als = Validator.sanitizeTableAlias(alias, mOptions);
+    final tbl = table; //Validator.sanitizeTable(table, mOptions!);
+    final als = alias; //Validator.sanitizeTableAlias(alias, mOptions);
     doJoin(tbl, als, condition, type);
   }
 
-  void setJoinWithExpression(String table, String? alias, Expression condition, JoinType type) {
-    final tbl = Validator.sanitizeTable(table, mOptions!);
-    final als = Validator.sanitizeTableAlias(alias, mOptions);
+  void setJoinWithExpression(
+      String table, String? alias, Expression condition, JoinType type) {
+    final tbl = table; //Validator.sanitizeTable(table, mOptions!);
+    final als = alias; //Validator.sanitizeTableAlias(alias, mOptions);
     doJoin(tbl, als, condition, type);
   }
 
-  void setJoinWithSubQuery(QueryBuilder table, String? alias, String condition, JoinType type) {
-    final als = Validator.sanitizeTableAlias(alias, mOptions);
+  void setJoinWithSubQuery(
+      QueryBuilder table, String? alias, String condition, JoinType type) {
+    final als = alias; // Validator.sanitizeTableAlias(alias, mOptions);
     doJoin(table, als, condition, type);
   }
 
-  void setJoinWithQueryWithExpr(QueryBuilder table, String? alias, Expression condition, JoinType type) {
-    final als = Validator.sanitizeTableAlias(alias, mOptions);
+  void setJoinWithQueryWithExpr(
+      QueryBuilder table, String? alias, Expression condition, JoinType type) {
+    final als = alias; //Validator.sanitizeTableAlias(alias, mOptions);
     doJoin(table, als, condition, type);
   }
 
@@ -70,7 +73,7 @@ class JoinBlock extends Block {
       }
 
       if (!Util.isEmpty(j.alias)) {
-        sb.write(' ');
+        sb.write(' AS ');
         sb.write(j.alias);
       }
 

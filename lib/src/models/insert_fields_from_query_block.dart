@@ -1,7 +1,6 @@
 import 'block.dart';
 import 'query_builder_options.dart';
 import 'query_builder.dart';
-import 'validator.dart';
 
 import 'util.dart';
 
@@ -14,7 +13,8 @@ class InsertFieldsFromQueryBlock extends Block {
   void setFromQuery(Iterable<String> fields, QueryBuilder query) {
     mFields = [];
     for (var field in fields) {
-      mFields!.add(Validator.sanitizeField(field, mOptions!));
+      //Validator.sanitizeField(field, mOptions!)
+      mFields!.add(field);
     }
 
     mQuery = query;

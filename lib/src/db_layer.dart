@@ -174,7 +174,7 @@ class DbLayer {
   }
 
   ///this method to execute current query and get results as List
-  Future<List<List?>?> exec() async {
+  Future<List<List>> exec() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
@@ -188,11 +188,11 @@ class DbLayer {
   }
 
   //alias for exec o execute current query and get results as List
-  Future<List<List?>?> get() async {
+  Future<List<List>> get() async {
     return exec();
   }
 
-  Future<List<Map<String, Map<String?, dynamic>>>> getAsMapWithMeta() async {
+  Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@getAsMapWithMeta Is nessesary query');
     }
@@ -208,18 +208,14 @@ class DbLayer {
     final rows = await executor.query(currentQuery.toSql(isFirst: true),
         currentQuery.buildSubstitutionValues());
 
-    if (rows != null) {
-      if (rows.isNotEmpty) {
-        return rows[0];
-      } else {
-        return null;
-      }
+    if (rows.isNotEmpty) {
+      return rows[0];
     } else {
       return null;
     }
   }
 
-  Future<int?> _count() async {
+  Future<int> _count() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Is nessesary query');
     }
@@ -227,16 +223,15 @@ class DbLayer {
     final rows = await executor.query(currentQuery.toSql(isCount: true),
         currentQuery.buildSubstitutionValues());
     //total_records
-    if (rows != null) {
-      if (rows.isNotEmpty) {
-        return rows[0]![0];
-      }
+
+    if (rows.isNotEmpty) {
+      return rows[0][0];
     }
 
     return 0;
   }
 
-  Future<Map<String, Map<String?, dynamic>>?> firstAsMapWithMeta() async {
+  Future<Map<String, Map<String, dynamic>>?> firstAsMapWithMeta() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@firstAsMapWithMeta Is nessesary query');
     }
@@ -252,7 +247,7 @@ class DbLayer {
     }*/
   }
 
-  Future<List<Map<String?, dynamic>>> getAsMap() async {
+  Future<List<Map<String, dynamic>>> getAsMap() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@getAsMap Is nessesary query');
     }
@@ -262,7 +257,7 @@ class DbLayer {
     return rows;
   }
 
-  Future<Map<String?, dynamic>?> firstAsMap() async {
+  Future<Map<String, dynamic>?> firstAsMap() async {
     if (!currentQuery.isQuery()) {
       throw Exception('Dblayer@firstAsMap Is nessesary query');
     }
@@ -448,7 +443,7 @@ class DbLayer {
       var query = insertGetId(defaultIdColName: ormDefinitions.primaryKey)
           .setAll(mainInsertData)
           .into(ormDefinitions.tableName);
-      id = (await query.exec())![0]![0];
+      id = (await query.exec())[0][0];
     }
 
     return id;
@@ -602,8 +597,8 @@ class DbLayer {
   /// @param bool isSingle
   ///
   ///
-  Future<List<Map<String?, dynamic>>> getRelationFromMaps(
-    List<Map<String?, dynamic>> data,
+  Future<List<Map<String, dynamic>>> getRelationFromMaps(
+    List<Map<String, dynamic>> data,
     String tableName,
     String localKey,
     String foreignKey, {
@@ -614,14 +609,16 @@ class DbLayer {
     isSingle = false,
   }) async {
     //1º obtem os ids
-    var itens_id = <int>[];
-    for (var item2 in data) {
-      var itemId = item2.containsKey(foreignKey) ? item2[foreignKey] : null;
+    var itens_id = <dynamic>[];
+    for (var map in data) {
+      var itemId = map.containsKey(foreignKey) ? map[foreignKey] : null;
+
       //não adiciona se for nulo ou vazio ou diferente de int
       if (itemId != null) {
         itens_id.add(itemId);
       }
     }
+
     //instancia o objeto query builder
     var query = select().from(tableName);
     //checa se foi passado callback_query para mudar a query
@@ -633,7 +630,8 @@ class DbLayer {
     //se ouver itens a serem pegos no banco
     if (itens_id.isNotEmpty) {
       //prepara a query where in e executa
-      query.whereRaw('"$tableName"."$localKey" in (${itens_id.join(",")})');
+      query.whereRaw(
+          '"$tableName"."$localKey" in (${itens_id.map((e) => "'$e'").join(",")})');
       queryResult = await query.getAsMap();
     } else {
       queryResult = null;

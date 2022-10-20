@@ -1,5 +1,5 @@
 import 'query_builder_options.dart';
-import 'validator.dart';
+
 import 'util.dart';
 
 enum ExpressionType { AND, OR }
@@ -127,8 +127,7 @@ class Expression {
     String nodeStr;
     for (var child in node.nodes) {
       if (child.expr != null) {
-        nodeStr = child.expr!
-            .replaceAll('?', Validator.formatValue(child.param, mOptions)!);
+        nodeStr = child.expr!.replaceAll('?', '${child.param}');
       } else {
         nodeStr = doString(child);
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:fluent_query_builder/fluent_query_builder.dart';
-import 'package:postgres/postgres.dart';
+//import 'package:postgres/postgres.dart';
 
 void main() async {
   final pgsqlComInfo = DBConnectionInfo(
@@ -109,7 +109,7 @@ class NaturalPersonRepository {
 
     // ...othes inserts
 
-    var idPerson = result!.first!.first;
+    var idPerson = result.first.first;
     return idPerson;
   }
 }

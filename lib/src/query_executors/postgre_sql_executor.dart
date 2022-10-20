@@ -384,8 +384,7 @@ class PostgreSqlExecutorPool extends QueryExecutor<PostgreSqlExecutor> {
   }
 
   @override
-  Future<List<Map<String, Map<String?, dynamic>>>> getAsMapWithMeta(
-      String query,
+  Future<List<Map<String, Map<String, dynamic>>>> getAsMapWithMeta(String query,
       {Map<String, dynamic>? substitutionValues,
       List<String>? returningFields}) {
     return _pool.withResource(() async {
@@ -396,7 +395,7 @@ class PostgreSqlExecutorPool extends QueryExecutor<PostgreSqlExecutor> {
   }
 
   @override
-  Future<List<Map<String?, dynamic>>> getAsMap(String query,
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
       {Map<String, dynamic>? substitutionValues, returningFields}) async {
     return _pool.withResource(() async {
       final executor = await _next();

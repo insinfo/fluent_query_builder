@@ -1,6 +1,5 @@
 import 'query_builder_options.dart';
 import 'query_builder.dart';
-import 'validator.dart';
 
 import 'set_field_block_base.dart';
 import 'util.dart';
@@ -32,7 +31,7 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
     }
 
     for (var item in mFields!) {
-      var v = Validator.formatValue(item.value, mOptions);
+      var v = item.value; //Validator.formatValue(item.value, mOptions);
       result.addAll({'${item.field}': v});
     }
 
@@ -50,7 +49,8 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
   List<String> buildFieldNames(List<SetNode> nodes) {
     final names = <String>[];
     for (var item in nodes) {
-      var field = Validator.sanitizeField(item.field, mOptions!);
+      var field = item.field;
+      //Validator.sanitizeField(item.field, mOptions!);
 
       names.add(field);
     }
@@ -61,7 +61,7 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
   List<String?> buildFieldValues(List<SetNode> nodes) {
     final values = <String?>[];
     for (var n in nodes) {
-      values.add(Validator.formatValue(n.value, mOptions));
+      values.add('${n.value}'); //Validator.formatValue(n.value, mOptions));
     }
     return values;
   }

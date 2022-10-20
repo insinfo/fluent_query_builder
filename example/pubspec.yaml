@@ -2,8 +2,8 @@ name: example
 description: 
 version: 1.0.0
 homepage: 
-authors: 
-  - Isaque Neves <insinfo2008@gmail.com> 
+#authors: 
+#  - Isaque Neves <insinfo2008@gmail.com> 
 publish_to: none
 
 environment:

@@ -14,14 +14,14 @@ abstract class QueryBuilder {
   QueryBuilder(
     QueryBuilderOptions? options,
     List<Block> blocks, {
-    Future<List<List?>?> Function()? execFunc,
+    Future<List<List>> Function()? execFunc,
     Future<Map<String, Map<String?, dynamic>>?> Function()?
         firstAsMapFuncWithMeta,
     Future<List<Map<String, Map<String?, dynamic>>>> Function()?
         getAsMapFuncWithMeta,
     Future<List?> Function()? firstFunc,
-    Future<Map<String?, dynamic>?> Function()? firstAsMapFunc,
-    Future<List<Map<String?, dynamic>>> Function()? getAsMapFunc,
+    Future<Map<String, dynamic>?> Function()? firstAsMapFunc,
+    Future<List<Map<String, dynamic>>> Function()? getAsMapFunc,
     Future<List<T>> Function<T>([T Function(Map<String, dynamic>)? factory])?
         fetchAllFunc,
     Future<T?> Function<T>([T Function(Map<String?, dynamic>)? factory])?
@@ -30,7 +30,7 @@ abstract class QueryBuilder {
     Future Function<T>(T entity, [QueryBuilder queryBuilder])? updateSingleFunc,
     Future Function<T>(T entity, [QueryBuilder? queryBuilder])?
         deleteSingleFunc,
-    Future<int?> Function()? countFunc,
+    Future<int> Function()? countFunc,
   }) {
     mOptions = options ?? QueryBuilderOptions();
     //mOptions = options != null ? options : QueryBuilderOptions();
@@ -53,15 +53,15 @@ abstract class QueryBuilder {
   late QueryBuilderOptions mOptions;
   List<Block>? mBlocks;
 
-  Future<List<List?>?> Function()? _execFunc;
-  Future<int?> Function()? _countFunc;
+  Future<List<List>> Function()? _execFunc;
+  Future<int> Function()? _countFunc;
 
   Future<Map<String, Map<String?, dynamic>>?> Function()?
       _firstAsMapFuncWithMeta;
   Future<List<Map<String, Map<String?, dynamic>>>> Function()?
       _getAsMapFuncWithMeta;
-  Future<Map<String?, dynamic>?> Function()? _firstAsMapFunc;
-  Future<List<Map<String?, dynamic>>> Function()? _getAsMapFunc;
+  Future<Map<String, dynamic>?> Function()? _firstAsMapFunc;
+  Future<List<Map<String, dynamic>>> Function()? _getAsMapFunc;
   Future<List?> Function()? _firstFunc;
   Future<List<T>> Function<T>([T Function(Map<String, dynamic>)? factory])?
       _fetchAllFunc;
@@ -162,14 +162,14 @@ abstract class QueryBuilder {
   //
   // EXECUTE QUERY AND GET DATA FROM DATABASE
   //
-  Future<List<List?>?> exec() async {
+  Future<List<List>> exec() async {
     if (_execFunc == null) {
       throw Exception('QueryBuilder@exec execFunc not defined');
     }
     return _execFunc!();
   }
 
-  Future<int?> count() async {
+  Future<int> count() async {
     if (_countFunc == null) {
       throw Exception('QueryBuilder@count _countFunc not defined');
     }
@@ -208,14 +208,14 @@ abstract class QueryBuilder {
     return _firstAsMapFuncWithMeta!();
   }
 
-  Future<List<Map<String?, dynamic>>> getAsMap() async {
+  Future<List<Map<String, dynamic>>> getAsMap() async {
     if (_getAsMapFunc == null) {
       throw Exception('QueryBuilder@getAsMap getAsMapFunc not defined');
     }
     return _getAsMapFunc!();
   }
 
-  Future<Map<String?, dynamic>?> firstAsMap() async {
+  Future<Map<String, dynamic>?> firstAsMap() async {
     if (_firstAsMapFunc == null) {
       throw Exception('QueryBuilder@firstAsMap firstAsMapFunc not defined');
     }

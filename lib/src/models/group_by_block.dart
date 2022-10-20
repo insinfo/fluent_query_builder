@@ -2,7 +2,7 @@ import 'block.dart';
 
 import 'query_builder_options.dart';
 import 'query_builder.dart';
-import 'validator.dart';
+
 import 'util.dart';
 
 /// GROUP BY
@@ -19,16 +19,16 @@ class GroupByBlock extends Block {
 
   void setGroup(String field) {
     mGroups ??= [];
-    var fieldValue = Validator.sanitizeField(field, mOptions!);
-    if (mOptions!.quoteStringWithFieldsTablesSeparator) {
-      if (fieldValue.contains(mOptions!.fieldsTablesSeparator)) {
-        fieldValue = fieldValue
-            .split(mOptions!.fieldsTablesSeparator)
-            .map((f) => f)
-            .join(
-                '${mOptions!.fieldAliasQuoteCharacter}${mOptions!.fieldsTablesSeparator}${mOptions!.fieldAliasQuoteCharacter}');
-      }
-    }
+    var fieldValue = field; //Validator.sanitizeField(field, mOptions!);
+    // if (mOptions!.quoteStringWithFieldsTablesSeparator) {
+    //   if (fieldValue.contains(mOptions!.fieldsTablesSeparator)) {
+    //     fieldValue = fieldValue
+    //         .split(mOptions!.fieldsTablesSeparator)
+    //         .map((f) => f)
+    //         .join(
+    //             '${mOptions!.fieldAliasQuoteCharacter}${mOptions!.fieldsTablesSeparator}${mOptions!.fieldAliasQuoteCharacter}');
+    //   }
+    // }
 
     mGroups!.add(fieldValue);
   }

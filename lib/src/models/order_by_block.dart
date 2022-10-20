@@ -2,7 +2,6 @@ import 'block.dart';
 import 'query_builder.dart';
 import 'query_builder_options.dart';
 import 'sort_order.dart';
-import 'validator.dart';
 
 class OrderNode {
   OrderNode(this.field, this.dir);
@@ -21,7 +20,7 @@ class OrderByBlock extends Block {
   void setOrder(String field, SortOrder dir) {
     mOrders ??= [];
 
-    final fld = Validator.sanitizeField(field, mOptions!);
+    final fld = field; //Validator.sanitizeField(field, mOptions!);
     mOrders!.add(OrderNode(fld, dir));
   }
 

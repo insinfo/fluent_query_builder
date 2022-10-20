@@ -10,12 +10,14 @@ class Insert extends QueryBuilder {
   Insert(
     QueryBuilderOptions? options, {
     List<String?>? returningFields,
-    Future<List<List?>?> Function()? execFunc,
-    Future<Map<String, Map<String?, dynamic>>?> Function()? firstAsMapFuncWithMeta,
-    Future<List<Map<String, Map<String?, dynamic>>>> Function()? getAsMapFuncWithMeta,
+    Future<List<List>> Function()? execFunc,
+    Future<Map<String, Map<String?, dynamic>>?> Function()?
+        firstAsMapFuncWithMeta,
+    Future<List<Map<String, Map<String?, dynamic>>>> Function()?
+        getAsMapFuncWithMeta,
     Future<List?> Function()? firstFunc,
-    Future<Map<String?, dynamic>?> Function()? firstAsMapFunc,
-    Future<List<Map<String?, dynamic>>> Function()? getAsMapFunc,
+    Future<Map<String, dynamic>?> Function()? firstAsMapFunc,
+    Future<List<Map<String, dynamic>>> Function()? getAsMapFunc,
     Future Function<T>(T entity)? putSingleFunc,
   }) : super(
           options,

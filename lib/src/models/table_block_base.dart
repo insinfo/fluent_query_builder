@@ -1,7 +1,6 @@
 import 'block.dart';
 import 'query_builder_options.dart';
 import 'query_builder.dart';
-import 'validator.dart';
 
 class TableNode {
   TableNode(this.table, this.alias, {this.fromRawSql});
@@ -17,13 +16,14 @@ abstract class TableBlockBase extends Block {
   List<TableNode>? mTables;
 
   void setTable(String? table, String? alias) {
-    final tbl = Validator.sanitizeTable(table, mOptions!);
-    final als = Validator.sanitizeTableAlias(alias, mOptions);
+    final tbl = table; //Validator.sanitizeTable(table, mOptions!);
+    final als = alias; //Validator.sanitizeTableAlias(alias, mOptions);
     doSetTable(tbl, als);
   }
 
   void setTableFromQueryBuilder(QueryBuilder table, String? alias) {
-    final als = Validator.sanitizeTableAlias(alias, mOptions);
+    final als = alias;
+    //Validator.sanitizeTableAlias(alias, mOptions);
     doSetTable(table, als);
   }
 
@@ -53,7 +53,7 @@ abstract class TableBlockBase extends Block {
         }
 
         if (tab.alias != null) {
-          sb.write(' ');
+          sb.write(' AS ');
           sb.write(tab.alias);
         }
       } else {

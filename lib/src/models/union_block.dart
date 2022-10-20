@@ -1,7 +1,7 @@
 import 'block.dart';
 import 'query_builder_options.dart';
 import 'query_builder.dart';
-import 'validator.dart';
+
 import 'union_type.dart';
 
 class UnionNode {
@@ -24,7 +24,7 @@ class UnionBlock extends Block {
   /// @param table Name of the table or query to union with.
   /// @param unionType Type of the union.
   void setUnion(String table, UnionType unionType) {
-    final tbl = Validator.sanitizeTable(table, mOptions!);
+    final tbl = table; //Validator.sanitizeTable(table, mOptions!);
     ensureUnionsList();
     mUnions!.add(UnionNode(tbl, unionType));
   }

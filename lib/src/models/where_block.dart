@@ -1,7 +1,7 @@
 import 'block.dart';
 import 'query_builder_options.dart';
 import 'query_builder.dart';
-import 'validator.dart';
+
 import 'expression.dart';
 import 'where_node.dart';
 
@@ -81,8 +81,8 @@ class WhereBlock extends Block {
         case WhereType.simple:
           var left = ' ${whereNode.text} ';
           if (left.contains('?')) {
-            left = left.replaceAll(
-                '?', Validator.formatValue(whereNode.param, mOptions)!);
+            left = left.replaceAll('?', '${whereNode.param}');
+            //Validator.formatValue(whereNode.param, mOptions)
           }
           str += left;
           //str += ' ${whereNode.operator} ';
@@ -177,7 +177,7 @@ class WhereBlock extends Block {
 
     for (var item in mWheres) {
       if (item.type == WhereType.safe) {
-        var v = Validator.formatValue(item.param, mOptions);
+        var v = item.param; //Validator.formatValue(item.param, mOptions);
 
         /* var substitutionValue = item.text;
         if (item?.text?.startsWith('"') == true) {
@@ -185,7 +185,7 @@ class WhereBlock extends Block {
         }*/
         var substitutionValue = _getSubstitutionValue(item.text);
 
-        result.addAll({'$substitutionValue': v});
+        result.addAll({'$substitutionValue': '$v'});
       }
     }
 

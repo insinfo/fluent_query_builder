@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:io';
+//import 'dart:io';
 
 import 'package:fluent_query_builder/fluent_query_builder.dart';
-import 'package:postgres/postgres.dart';
+//import 'package:postgres/postgres.dart';
 
 void main() async {
   final comInfo = DBConnectionInfo(
@@ -58,7 +58,7 @@ void main() async {
 
 // ignore: unused_local_variable
   Timer.periodic(Duration(seconds: 3), (timer) async {
-    var re;
+    //var re;
     try {
       await db.transaction((ctx) async {
         await ctx

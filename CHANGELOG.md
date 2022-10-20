@@ -101,3 +101,7 @@
 # 3.5.3
 
 - bug fix when using a combination of whereGroup, whereRaw, orWhereSafe and where
+
+# 4.0.0
+
+- Null security improvements and bug fixes. Attention breack Change: removal of Sanitizer and Validator in all SQL statements and clauses supported in this lib to avoid bugs, now it's up to the lib user to escape invalid fields and table names.

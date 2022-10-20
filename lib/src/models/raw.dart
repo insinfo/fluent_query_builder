@@ -1,6 +1,4 @@
 import '../../fluent_query_builder.dart';
-import 'query_builder.dart';
-import 'query_builder_options.dart';
 
 /// Raw query builder.
 class Raw extends QueryBuilder {
@@ -8,15 +6,15 @@ class Raw extends QueryBuilder {
     String rawQueryString, {
     Map<String, dynamic>? substitutionValues,
     QueryBuilderOptions? options,
-    Future<List<List?>?> Function()? execFunc,
+    Future<List<List>> Function()? execFunc,
     Future<Map<String, Map<String?, dynamic>>?> Function()?
         firstAsMapFuncWithMeta,
     Future<List<Map<String, Map<String?, dynamic>>>> Function()?
         getAsMapFuncWithMeta,
     Future<List?> Function()? firstFunc,
-    Future<Map<String?, dynamic>?> Function()? firstAsMapFunc,
-    Future<List<Map<String?, dynamic>>> Function()? getAsMapFunc,
-    Future<int?> Function()? countFunc,
+    Future<Map<String, dynamic>?> Function()? firstAsMapFunc,
+    Future<List<Map<String, dynamic>>> Function()? getAsMapFunc,
+    Future<int> Function()? countFunc,
   }) : super(
           options,
           [

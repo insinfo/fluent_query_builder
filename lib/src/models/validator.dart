@@ -9,7 +9,9 @@ class Validator {
 
   static String sanitizeFieldAlias(String value, QueryBuilderOptions options) {
     var result = options.autoQuoteAliasNames
-        ? options.fieldAliasQuoteCharacter + value + options.fieldAliasQuoteCharacter
+        ? options.fieldAliasQuoteCharacter +
+            value +
+            options.fieldAliasQuoteCharacter
         : value;
 
     return result;
@@ -46,13 +48,18 @@ class Validator {
   }
 
   static String? sanitizeTable(String? name, QueryBuilderOptions options) {
-    return options.autoQuoteTableNames ? options.nameQuoteCharacter + name! + options.nameQuoteCharacter : name;
+    return options.autoQuoteTableNames
+        ? options.nameQuoteCharacter + name! + options.nameQuoteCharacter
+        : name;
   }
 
-  static String? sanitizeTableAlias(String? value, QueryBuilderOptions? options) {
+  static String? sanitizeTableAlias(
+      String? value, QueryBuilderOptions? options) {
     return value != null
         ? (options!.autoQuoteAliasNames
-            ? options.tableAliasQuoteCharacter + value + options.tableAliasQuoteCharacter
+            ? options.tableAliasQuoteCharacter +
+                value +
+                options.tableAliasQuoteCharacter
             : value)
         : null;
   }
@@ -87,13 +94,19 @@ class Validator {
     if (options.dontQuote) {
       if (value.startsWith("'") && value.endsWith("'")) {
         var v = value.substring(1, value.length - 1);
-        result = options.replaceSingleQuotes ? v.replaceAll("'", options.singleQuoteReplacement) : value;
+        result = options.replaceSingleQuotes
+            ? v.replaceAll("'", options.singleQuoteReplacement)
+            : value;
         result = "'$result'";
       } else {
-        result = options.replaceSingleQuotes ? value.replaceAll("'", options.singleQuoteReplacement) : value;
+        result = options.replaceSingleQuotes
+            ? value.replaceAll("'", options.singleQuoteReplacement)
+            : value;
       }
     } else {
-      result = options.replaceSingleQuotes ? value.replaceAll("'", options.singleQuoteReplacement) : value;
+      result = options.replaceSingleQuotes
+          ? value.replaceAll("'", options.singleQuoteReplacement)
+          : value;
     }
     return result;
   }

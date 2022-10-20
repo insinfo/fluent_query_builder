@@ -19,6 +19,7 @@ class MySqlExecutor extends QueryExecutor {
 
   @override
   Future<void> close() {
+    // ignore: unnecessary_type_check
     if (connection is MySqlConnection) {
       return connection.close();
     } else {
@@ -73,6 +74,7 @@ class MySqlExecutor extends QueryExecutor {
   Future<dynamic> simpleTransaction(
       Future<dynamic> Function(QueryExecutor) f) async {
     logger?.fine('Entering simpleTransaction');
+    // ignore: unnecessary_type_check
     if (connection is! MySqlConnection) {
       return await f(this);
     }
@@ -107,6 +109,7 @@ class MySqlExecutor extends QueryExecutor {
 
   @override
   Future<T?> transaction<T>(FutureOr<T> Function(QueryExecutor) f) async {
+    // ignore: unnecessary_type_check
     if (connection is! MySqlConnection) return await f(this);
 
     var conn = connection;
@@ -150,7 +153,7 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<List<Map<String?, dynamic>>> getAsMap(String query,
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     print('MySqlExecutor@getAsMap query $query');
     print('MySqlExecutor@getAsMap substitutionValues $substitutionValues');
@@ -159,7 +162,7 @@ class MySqlExecutor extends QueryExecutor {
         query, Utils.substitutionMapToList(substitutionValues));
     print(rows);
 
-    final result = <Map<String?, dynamic>>[];
+    final result = <Map<String, dynamic>>[];
     /*if (rows != null || rows.isNotEmpty) {
       for (var row in rows) {
         var map = <String, dynamic>{};
@@ -271,7 +274,7 @@ class MySqlExecutorExecutorPool extends QueryExecutor {
   }
 
   @override
-  Future<List<Map<String?, dynamic>>> getAsMap(String query,
+  Future<List<Map<String, dynamic>>> getAsMap(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     return _pool.withResource(() async {
       final executor = await _next();

@@ -1,12 +1,13 @@
+import 'expression.dart';
 import 'query_builder_options.dart';
 import 'query_builder.dart';
 
 import 'set_field_block_base.dart';
-import 'util.dart';
 
 /// (INSERT INTO) ... setField ... value
 class InsertFieldValueBlock extends SetFieldBlockBase {
-  InsertFieldValueBlock(QueryBuilderOptions? options) : super(options);
+  //
+  InsertFieldValueBlock(QueryBuilderOptions options) : super(options);
 
   @override
   String buildStr(QueryBuilder queryBuilder) {
@@ -14,10 +15,8 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
       return '';
     }
 
-    final fields = Util.join(', ', buildFieldNames(mFields!));
-
-    final values = Util.join(', ', buildFieldValuesForSubstitution(mFields!));
-
+    final fields = buildFieldNames(mFields!).join(', ');
+    final values = buildFieldValuesForSubstitution(mFields!).join(', ');
     var sql = '($fields) VALUES ($values)';
 
     return sql;
@@ -40,8 +39,11 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
 
   List<String> buildFieldValuesForSubstitution(List<SetNode> nodes) {
     final values = <String>[];
+
     for (var item in nodes) {
-      values.add('@${item.field}');
+      var field = item.field;
+
+      values.add('@$field');
     }
     return values;
   }
@@ -50,6 +52,7 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
     final names = <String>[];
     for (var item in nodes) {
       var field = item.field;
+
       //Validator.sanitizeField(item.field, mOptions!);
 
       names.add(field);
@@ -64,5 +67,26 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
       values.add('${n.value}'); //Validator.formatValue(n.value, mOptions));
     }
     return values;
+  }
+
+  Object? formatValue(Object? value) {
+    if (value == null) {
+      return null;
+    } else if (value is num) {
+      return value.toString();
+    } else if (value is String) {
+      return value;
+    } else if (value is QueryBuilder) {
+      return '(${value.toSql()})';
+    } else if (value is Expression) {
+      return '(${value.toSql()})';
+    } else if (value is List) {
+      final results = [];
+      for (var value in value) {
+        results.add(formatValue(value));
+      }
+      return "(${results.join(', ')})";
+    }
+    return null;
   }
 }

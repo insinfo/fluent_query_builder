@@ -27,29 +27,31 @@ class DbLayer {
   final List<Map<Type, Function>>? factories; // = <Type, Function>{};
   //ex: DiskCache<Agenda>(factories: {Agenda: (x) => Agenda.fromJson(x)});
   //{this.factory}
-  DbLayer({this.factories}) {
+  DbLayer(this.connectionInfo, {this.factories}) {
     //currentQuery = Select(QueryBuilderOptions());
   }
-  QueryBuilderOptions? options;
-  DBConnectionInfo? connectionInfo;
+  //late QueryBuilderOptions options;
+  DBConnectionInfo connectionInfo;
   static const dynamic DEFAULT_NULL = [];
 
-  Future<DbLayer> connect(DBConnectionInfo connInfo) async {
-    options = connInfo.getQueryOptions();
-    connectionInfo = connInfo.getSettings();
-    var nOfProces = connectionInfo!.setNumberOfProcessorsFromPlatform
-        ? Platform.numberOfProcessors
-        : connectionInfo!.numberOfProcessors;
+  Future<DbLayer> connect([DBConnectionInfo? connInfo]) async {
+    if (connInfo != null) {
+      connectionInfo = connInfo.getSettings();
+    }
 
-    if (connectionInfo!.driver == ConnectionDriver.pgsql) {
-      if (connectionInfo!.numberOfProcessors > 1 && connectionInfo!.usePool) {
+    var nOfProces = connectionInfo.setNumberOfProcessorsFromPlatform
+        ? Platform.numberOfProcessors
+        : connectionInfo.numberOfProcessors;
+
+    if (connectionInfo.driver == ConnectionDriver.pgsql) {
+      if (connectionInfo.numberOfProcessors > 1 && connectionInfo.usePool) {
         executor = PostgreSqlExecutorPool(nOfProces, connectionInfo);
       } else {
         executor = PostgreSqlExecutor(connectionInfo);
         await executor.open();
       }
     } else {
-      if (connectionInfo!.numberOfProcessors > 1 && connectionInfo!.usePool) {
+      if (connectionInfo.numberOfProcessors > 1 && connectionInfo.usePool) {
         executor = MySqlExecutorPool(nOfProces, connectionInfo: connectionInfo);
       } else {
         executor = MySqlExecutor(connectionInfo: connectionInfo);
@@ -59,6 +61,8 @@ class DbLayer {
 
     return this;
   }
+
+  QueryBuilderOptions get options => connectionInfo.getQueryOptions();
 
   /// Starts a new expression with the provided options.
   /// @param options Options to use for expression generation.
@@ -161,8 +165,8 @@ class DbLayer {
       {Map<String, dynamic>? substitutionValues}) {
     return currentQuery = Raw(
       rawQueryString,
+      options,
       substitutionValues: substitutionValues,
-      options: options,
       execFunc: exec,
       firstFunc: first,
       firstAsMapFuncWithMeta: firstAsMapWithMeta,
@@ -282,7 +286,7 @@ class DbLayer {
 
   Future<T?> transaction<T>(FutureOr<T> Function(DbLayer) f) {
     return executor.transaction<T>((queryExecutor) {
-      var db = DbLayer(factories: factories);
+      var db = DbLayer(connectionInfo, factories: factories);
       db.executor = queryExecutor;
       return f(db);
     });
@@ -291,7 +295,7 @@ class DbLayer {
   Future<dynamic> transaction2(Future<dynamic> Function(DbLayer) queryBlock,
       {int? commitTimeoutInSeconds}) {
     return executor.transaction2((queryExecutor) async {
-      var db = DbLayer(factories: factories);
+      var db = DbLayer(connectionInfo, factories: factories);
       db.executor = queryExecutor;
       await queryBlock(db);
     }, commitTimeoutInSeconds: commitTimeoutInSeconds);
@@ -425,12 +429,12 @@ class DbLayer {
       for (var i = 0; i < len; i++) {
         var relation = ormDefinitions.relations![i];
 
-        if (relation.data != null) {
+        if (relation.data.isNotEmpty) {
           query = insertGetId(defaultIdColName: relation.localKey)
               .setAll(relation.data)
               .into(relation.tableRelation);
           id = (await query.exec())[0][0];
-          mainInsertData![relation.foreignKey] = id;
+          mainInsertData[relation.foreignKey] = id;
         }
       }
 

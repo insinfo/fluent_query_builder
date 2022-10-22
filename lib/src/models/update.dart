@@ -3,7 +3,7 @@ import '../../fluent_query_builder.dart';
 /// UPDATE query builder.
 class Update extends QueryBuilder {
   Update(
-    QueryBuilderOptions? options, {
+    QueryBuilderOptions options, {
     Future<List<List>> Function()? execFunc,
     Future<Map<String, Map<String?, dynamic>>?> Function()?
         firstAsMapFuncWithMeta,
@@ -47,17 +47,23 @@ class Update extends QueryBuilder {
   }
 
   @override
-  QueryBuilder set(String field, value) {
+  QueryBuilder set(String fieldP, value) {
     final block = mBlocks![2] as SetFieldBlock;
+    //TODO: test this
+    var field =
+        mOptions.nameQuoteCharacter + fieldP + mOptions.nameQuoteCharacter;
     block.setFieldValue(field, value);
     return this;
   }
 
   @override
-  QueryBuilder setAll(Map<String, dynamic>? fieldsAndValues) {
+  QueryBuilder setAll(Map<String, dynamic> fieldsAndValues) {
     final block = mBlocks![2] as SetFieldBlock;
 
-    fieldsAndValues?.forEach((field, value) {
+    fieldsAndValues.forEach((fieldP, value) {
+      //TODO: test this
+      var field =
+          mOptions.nameQuoteCharacter + fieldP + mOptions.nameQuoteCharacter;
       block.setFieldValue(field, value);
     });
 

@@ -22,7 +22,7 @@ void main() async {
   var db;
   try {
     print('try connect');
-    db = await DbLayer().connect(pgsqlComInfo);
+    db = await DbLayer(pgsqlComInfo).connect();
   } catch (e, s) {
     print('catch connect $e $s');
   }

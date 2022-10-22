@@ -18,9 +18,9 @@ var connectionInfo = DBConnectionInfo(
 
 void initializeTest() {
   setUp(() async {
-    _db = DbLayer();
+    _db = DbLayer(connectionInfo);
 
-    await _db.connect(connectionInfo);
+    await _db.connect();
     //create DATABASE IF NOT EXISTS
     try {
       //CREATE DATABASE ${connectionInfo.database} WITH OWNER "${connectionInfo.username}" TEMPLATE=template0  ENCODING 'UTF8' LC_COLLATE = 'pt_BR.UTF-8' LC_CTYPE = 'pt_BR.UTF-8';
@@ -33,8 +33,12 @@ void initializeTest() {
     }
     await _db.raw('DROP TABLE IF EXISTS pessoas').exec();
     //CREATE TABLE IF NOT EXISTS
-    await _db.raw('CREATE TABLE pessoas (id serial, nome VARCHAR(200),telefone VARCHAR(200),cep VARCHAR(200));').exec();
-    await _db.insert().into('pessoas').setAll({'nome': 'Isaque', 'telefone': '99701-5305', 'cep': '54654'}).exec();
+    await _db
+        .raw(
+            'CREATE TABLE pessoas (id serial, nome VARCHAR(200),telefone VARCHAR(200),cep VARCHAR(200));')
+        .exec();
+    await _db.insert().into('pessoas').setAll(
+        {'nome': 'Isaque', 'telefone': '99701-5305', 'cep': '54654'}).exec();
   });
 
   tearDown(() async {

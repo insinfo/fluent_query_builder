@@ -2,12 +2,12 @@ import 'query_builder.dart';
 import 'query_builder_options.dart';
 
 abstract class Block {
-  Block(QueryBuilderOptions? options) {
-    mOptions = options ?? QueryBuilderOptions();
+  Block(QueryBuilderOptions options) {
+    mOptions = options;
     //mOptions = options != null ? options :  QueryBuilderOptions();
   }
 
-  QueryBuilderOptions? mOptions;
+  late QueryBuilderOptions mOptions;
   String? buildStr(QueryBuilder queryBuilder);
 
   Map<String, dynamic> buildSubstitutionValues() {

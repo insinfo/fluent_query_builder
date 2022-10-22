@@ -5,7 +5,7 @@ import 'util.dart';
 
 /// A String which always gets output
 class StringBlock extends Block {
-  StringBlock(QueryBuilderOptions? options, String str, {this.returningFields})
+  StringBlock(QueryBuilderOptions options, String str, {this.returningFields})
       : super(options) {
     mText = str;
   }

@@ -7,7 +7,7 @@ import 'util.dart';
 
 /// GROUP BY
 class GroupByBlock extends Block {
-  GroupByBlock(QueryBuilderOptions? options) : super(options);
+  GroupByBlock(QueryBuilderOptions options) : super(options);
   List<String>? mGroups;
   String? groupRawSql;
 

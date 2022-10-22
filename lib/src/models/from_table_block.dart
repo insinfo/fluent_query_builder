@@ -4,7 +4,7 @@ import 'query_builder.dart';
 
 /// FROM table
 class FromTableBlock extends TableBlockBase {
-  FromTableBlock(QueryBuilderOptions? options) : super(options);
+  FromTableBlock(QueryBuilderOptions options) : super(options);
 
   void setFrom(String? table, String? alias) {
     super.setTable(table, alias);

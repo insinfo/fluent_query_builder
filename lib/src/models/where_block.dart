@@ -7,17 +7,15 @@ import 'where_node.dart';
 
 /// WHERE
 class WhereBlock extends Block {
-  WhereBlock(QueryBuilderOptions? options) : super(options);
+  WhereBlock(QueryBuilderOptions options) : super(options);
   List<WhereNode> mWheres = <WhereNode>[];
-  //List<WhereRawNode> wheresRawSql = <WhereRawNode>[];
+  //coloca um arouba @ a mais no subistitution values para o Mysql
 
   void setStartGroup(String andOr) {
-    //mWheres.add(WhereNode(null, null, groupDivider: '('));
     mWheres.add(WhereNode('', type: WhereType.openGroup, andOr: andOr));
   }
 
   void setEndGroup() {
-    //mWheres.add(WhereNode(null, null, groupDivider: ')'));
     mWheres.add(WhereNode('', type: WhereType.closeGroup));
   }
 
@@ -33,33 +31,21 @@ class WhereBlock extends Block {
   }
 
   void setWhereRaw(String whereRawSql, [String andOr = 'AND']) {
-    //assert(whereRawSql != null);
-    //wheresRawSql.add(WhereRawNode(whereRawSql, andOr));
     mWheres.add(WhereNode(whereRawSql, andOr: andOr, type: WhereType.raw));
   }
 
   void setWhereSafe(String field, String operator, value) {
-    //assert(field != null);
-    //assert(operator != null);
-    //assert(value != null);
-    // mWheres.add(WhereNode(field, value, operator: operator, andOr: 'AND'));
     mWheres.add(WhereNode(field,
         param: value, operator: operator, andOr: 'AND', type: WhereType.safe));
   }
 
   void setOrWhereSafe(String field, String operator, value) {
-    //assert(field != null);
-    //assert(operator != null);
-    //assert(value != null);
-    //mWheres.add(WhereNode(field, value, operator: operator, andOr: 'OR'));
     mWheres.add(WhereNode(field,
         param: value, operator: operator, andOr: 'OR', type: WhereType.safe));
   }
 
   void setWhereWithExpression(Expression condition, param,
       [String andOr = 'AND']) {
-    //assert(condition != null);
-    //doSetWhere(condition.toString(), param, andOr);
     mWheres.add(WhereNode(condition.toString(),
         param: param, andOr: andOr, type: WhereType.simple));
   }

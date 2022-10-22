@@ -5,7 +5,7 @@ import 'util.dart';
 
 /// A String which always gets output
 class RawBlock extends Block {
-  RawBlock(QueryBuilderOptions? options, String rawQueryString,
+  RawBlock(QueryBuilderOptions options, String rawQueryString,
       {this.returningFields, this.substitutionValues})
       : super(options) {
     mText = rawQueryString;

@@ -132,11 +132,11 @@ class Validator {
   }
 
   static String formatQueryBuilder(QueryBuilder value) {
-    return '(${value.toString()})';
+    return '(${value.toSql()})';
   }
 
   static String formatExpression(Expression value) {
-    return '(${value.toString()})';
+    return '(${value.toSql()})';
   }
 
   static String formatIterable(List values, QueryBuilderOptions? options) {

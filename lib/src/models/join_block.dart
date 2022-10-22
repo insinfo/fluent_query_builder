@@ -16,7 +16,7 @@ class JoinNode {
 
 /// JOIN
 class JoinBlock extends Block {
-  JoinBlock(QueryBuilderOptions? options) : super(options);
+  JoinBlock(QueryBuilderOptions options) : super(options);
   List<JoinNode> mJoins = <JoinNode>[];
 
   /// Add a JOIN with the given table.

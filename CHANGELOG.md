@@ -105,3 +105,9 @@
 # 4.0.0
 
 - Null security improvements and bug fixes. Attention breack Change: removal of Sanitizer and Validator in all SQL statements and clauses supported in this lib to avoid bugs, now it's up to the lib user to escape invalid fields and table names.
+
+# 5.0.0
+
+- general refactoring, to put double quotes " for Postgresql and ` for MySQL in the table field names for Insert and Update and.
+- BREAK CHANGE: now you have to pass the DBConnectionInfo class instance to the DbLayer class constructor, optionally you can override DBConnectionInfo in connect() method.
+- bug fix in automated tests

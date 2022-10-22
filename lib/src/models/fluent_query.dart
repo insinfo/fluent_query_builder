@@ -1,4 +1,4 @@
-import 'expression.dart';
+/*import 'expression.dart';
 import 'query_builder.dart';
 import 'query_builder_options.dart';
 import 'select.dart';
@@ -45,3 +45,4 @@ class FluentQuery {
     return Delete(options);
   }
 }
+*/

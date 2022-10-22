@@ -16,7 +16,7 @@ class UnionNode {
 
 /// UNION
 class UnionBlock extends Block {
-  UnionBlock(QueryBuilderOptions? options) : super(options);
+  UnionBlock(QueryBuilderOptions options) : super(options);
 
   List<UnionNode>? mUnions;
 

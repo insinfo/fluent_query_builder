@@ -3,9 +3,9 @@ import '../../fluent_query_builder.dart';
 /// Raw query builder.
 class Raw extends QueryBuilder {
   Raw(
-    String rawQueryString, {
+    String rawQueryString,
+    QueryBuilderOptions options, {
     Map<String, dynamic>? substitutionValues,
-    QueryBuilderOptions? options,
     Future<List<List>> Function()? execFunc,
     Future<Map<String, Map<String?, dynamic>>?> Function()?
         firstAsMapFuncWithMeta,

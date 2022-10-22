@@ -11,7 +11,7 @@ class OrderNode {
 
 /// ORDER BY
 class OrderByBlock extends Block {
-  OrderByBlock(QueryBuilderOptions? options) : super(options);
+  OrderByBlock(QueryBuilderOptions options) : super(options);
   List<OrderNode>? mOrders;
 
   /// Add an ORDER BY transformation for the given setField in the given order.

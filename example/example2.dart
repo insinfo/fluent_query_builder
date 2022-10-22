@@ -35,7 +35,7 @@ void main() async {
     await ctx.query(
         "INSERT INTO pmro_padrao.pessoas (nome,tipo5) VALUES ('Joao das coves teste','Fisica')");
   });*/
-  final db = await DbLayer().connect(comInfo);
+  final db = await DbLayer(comInfo).connect();
   /*await db.startTransaction();
   var re;
   try {

@@ -46,7 +46,7 @@ class OrmDefinitions {
   /// supports several different types of relationships
   List<OrmRelation>? relations;
 
-  Map<String, dynamic>? data;
+  Map<String, dynamic> data = {};
   dynamic primaryKeyVal;
 
   /// the data of model to insert or update on database
@@ -103,7 +103,8 @@ enum OrmRelationType { oneToOne, belongsTo, oneToMany, manyToMany }
 /// @param localKey => local Key example: id
 /// @param relationType => different types of relationships one To One | one To Many | many To Many
 class OrmRelation {
-  OrmRelation(this.tableRelation, this.foreignKey, this.localKey, this.relationType, this.relationName);
+  OrmRelation(this.tableRelation, this.foreignKey, this.localKey,
+      this.relationType, this.relationName);
 
   /// model name example: phone
   final String tableRelation;
@@ -119,7 +120,7 @@ class OrmRelation {
   /// different types of relationships one To One | one To Many | many To Many
   final OrmRelationType relationType;
 
-  Map<String, dynamic>? data = <String, dynamic>{};
+  Map<String, dynamic> data = <String, dynamic>{};
 
   /*Map<String, dynamic> get data => _data;
   set data(Map<String, dynamic> d) => _data = d;*/

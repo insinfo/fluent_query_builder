@@ -11,7 +11,7 @@ class TableNode {
 
 /// Table base class
 abstract class TableBlockBase extends Block {
-  TableBlockBase(QueryBuilderOptions? options) : super(options);
+  TableBlockBase(QueryBuilderOptions options) : super(options);
 
   List<TableNode>? mTables;
 

@@ -17,7 +17,7 @@ class DBConnectionInfo {
   bool useSSL;
   ConnectionDriver driver;
   String host;
-  int? port;
+  int port;
   String database;
   String username;
   String password;
@@ -26,16 +26,16 @@ class DBConnectionInfo {
   int numberOfProcessors = 1;
   bool setNumberOfProcessorsFromPlatform = false;
   bool usePool = false;
-  QueryBuilderOptions? options;
+  QueryBuilderOptions options = QbOptionBuilder.postgres().build();
   int timeoutInSeconds = 120;
 
   DBConnectionInfo({
     this.driver = ConnectionDriver.pgsql,
     this.host = 'loalhost',
-    this.port,
+    this.port = 5432,
     this.database = 'postgres',
-    this.username = '',
-    this.password = '',
+    required this.username,
+    required this.password,
     this.charset,
     this.schemes,
     this.prefix,
@@ -48,7 +48,7 @@ class DBConnectionInfo {
   });
 
   DBConnectionInfo clone() {
-    return DBConnectionInfo(
+    var opt = DBConnectionInfo(
       driver: driver,
       host: host,
       port: port,
@@ -65,47 +65,24 @@ class DBConnectionInfo {
       enablePsqlAutoSetSearchPath: enablePsqlAutoSetSearchPath,
       timeoutInSeconds: timeoutInSeconds,
     );
+
+    return opt;
   }
 
   DBConnectionInfo getSettings() {
     var settings = clone();
-    switch (driver) {
-      case ConnectionDriver.pgsql:
-        {
-          settings.port ??= 5432;
-          return settings;
-        }
-      case ConnectionDriver.mysql:
-        {
-          settings.port ??= 3306;
-          return settings;
-        }
-      default:
-        {
-          throw NullPointerException('Database Drive not selected');
-        }
-    }
+    return settings;
   }
 
-  QueryBuilderOptions? getQueryOptions() {
-    if (options == null) {
-      switch (driver) {
-        case ConnectionDriver.pgsql:
-          {
-            options = QbOptionBuilder.postgres().build();
-          }
-          break;
-        case ConnectionDriver.mysql:
-          {
-            options = QbOptionBuilder.mysql().build();
-          }
-          break;
-        default:
-          {
-            throw NullPointerException('Database drive not selected');
-          }
-      }
+  QueryBuilderOptions getQueryOptions() {
+    if (driver == ConnectionDriver.pgsql) {
+      options = QbOptionBuilder.postgres().build();
+      return options;
+    } else if (driver == ConnectionDriver.mysql) {
+      options = QbOptionBuilder.mysql().build();
+      return options;
     }
-    return options;
+
+    throw NullPointerException('options | driver not selected');
   }
 }

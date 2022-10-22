@@ -13,7 +13,7 @@ class FieldNode {
 
 /// (SELECT) field
 class GetFieldBlock extends Block {
-  GetFieldBlock(QueryBuilderOptions? options) : super(options);
+  GetFieldBlock(QueryBuilderOptions options) : super(options);
   List<FieldNode>? mFields;
   HashMap<String, String?>? mFieldAliases;
   String? fieldRawSql;

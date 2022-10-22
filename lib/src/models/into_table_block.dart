@@ -6,7 +6,7 @@ import 'util.dart';
 
 /// INTO table
 class IntoTableBlock extends Block {
-  IntoTableBlock(QueryBuilderOptions? options) : super(options);
+  IntoTableBlock(QueryBuilderOptions options) : super(options);
 
   String? mTable;
 

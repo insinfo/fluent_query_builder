@@ -9,7 +9,7 @@ class SetNode {
 
 /// Base class for setting fields to values (used for INSERT and UPDATE queries)
 abstract class SetFieldBlockBase extends Block {
-  SetFieldBlockBase(QueryBuilderOptions? options) : super(options);
+  SetFieldBlockBase(QueryBuilderOptions options) : super(options);
   List<SetNode>? mFields;
 
   /// Update the given field with the given value.

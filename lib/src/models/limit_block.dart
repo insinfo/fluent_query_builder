@@ -4,7 +4,7 @@ import 'query_builder.dart';
 
 /// LIMIT
 class LimitBlock extends Block {
-  LimitBlock(QueryBuilderOptions? options) : super(options);
+  LimitBlock(QueryBuilderOptions options) : super(options);
   int? mLimit;
 
   void setLimit(int value) {

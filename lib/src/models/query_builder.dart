@@ -446,7 +446,7 @@ abstract class QueryBuilder {
     throw UnsupportedOperationException('`set` not implemented');
   }
 
-  QueryBuilder setAll(Map<String, dynamic>? fieldsAndValues) {
+  QueryBuilder setAll(Map<String, dynamic> fieldsAndValues) {
     throw UnsupportedOperationException('`setAll` not implemented');
   }
 

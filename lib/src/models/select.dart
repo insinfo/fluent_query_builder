@@ -3,7 +3,7 @@ import '../../fluent_query_builder.dart';
 /// SELECT query builder.
 class Select extends QueryBuilder {
   Select(
-    QueryBuilderOptions? options, {
+    QueryBuilderOptions options, {
     Future<List<List>> Function()? execFunc,
     Future<Map<String, Map<String?, dynamic>>?> Function()?
         firstAsMapFuncWithMeta,

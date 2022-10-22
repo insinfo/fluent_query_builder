@@ -1,4 +1,8 @@
+import '../connection_info.dart';
+
 class QueryBuilderOptions {
+  ConnectionDriver driver = ConnectionDriver.pgsql;
+
   ///Indicates whether table names are rendered inside quotes. Default: TRUE.
   /// The quote character used is configurable via the `nameQuoteCharacter` option
   bool autoQuoteTableNames = true;
@@ -21,8 +25,9 @@ class QueryBuilderOptions {
   /// Indicates whether don't quote string values while formatting. Default: FALSE.
   bool ignorePeriodsForFieldNameQuotes = false;
 
-  /// Specifies the quote character used for when quoting `table` and `field` names.
   bool dontQuote = true;
+
+  /// Specifies the quote character used for when quoting `table` and `field` names.
   String nameQuoteCharacter = '"';
 
   /// Specifies the quote character used for when quoting `table alias` names.
@@ -51,7 +56,11 @@ class QueryBuilderOptions {
   ///  SELECT "tablename"."fieldname" as "f" FROM tablename
   bool allowAliasInFields = true;
 
-  Map<String, dynamic> toMap() {
+  QueryBuilderOptions clone() {
+    return QueryBuilderOptions();
+  }
+
+  /*Map<String, dynamic> toMap() {
     return {
       'autoQuoteTableNames': autoQuoteTableNames,
       'autoQuoteFieldNames': autoQuoteFieldNames,
@@ -72,5 +81,5 @@ class QueryBuilderOptions {
       'allowAliasInFields': allowAliasInFields,
       'valueQuoteCharacter': valueQuoteCharacter
     };
-  }
+  }*/
 }

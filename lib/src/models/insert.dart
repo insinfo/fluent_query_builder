@@ -8,7 +8,7 @@ import 'insert_fields_from_query_block.dart';
 /// An INSERT query builder.
 class Insert extends QueryBuilder {
   Insert(
-    QueryBuilderOptions? options, {
+    QueryBuilderOptions options, {
     List<String?>? returningFields,
     Future<List<List>> Function()? execFunc,
     Future<Map<String, Map<String?, dynamic>>?> Function()?
@@ -46,8 +46,11 @@ class Insert extends QueryBuilder {
   }
 
   @override
-  QueryBuilder set(String field, value) {
+  QueryBuilder set(String fieldP, value) {
     final block = mBlocks![2] as InsertFieldValueBlock;
+    //TODO: test this
+    var field =
+        mOptions.nameQuoteCharacter + fieldP + mOptions.nameQuoteCharacter;
     block.setFieldValue(field, value);
     return this;
   }
@@ -55,7 +58,10 @@ class Insert extends QueryBuilder {
   @override
   QueryBuilder setAll(Map<String, dynamic>? fieldsAndValues) {
     final block = mBlocks![2] as InsertFieldValueBlock;
-    fieldsAndValues?.forEach((field, value) {
+    fieldsAndValues?.forEach((fieldP, value) {
+      //TODO: test this
+      var field =
+          mOptions.nameQuoteCharacter + fieldP + mOptions.nameQuoteCharacter;
       block.setFieldValue(field, value);
     });
     return this;

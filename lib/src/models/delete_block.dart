@@ -5,7 +5,7 @@ import 'util.dart';
 
 /// A Delete Block
 class DeleteBlock extends Block {
-  DeleteBlock(QueryBuilderOptions? options) : super(options);
+  DeleteBlock(QueryBuilderOptions options) : super(options);
 
   String mText = 'DELETE';
 

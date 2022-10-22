@@ -18,7 +18,7 @@ void main() async {
     setNumberOfProcessorsFromPlatform: false,
     numberOfProcessors: 1,
   );
-  var db = await DbLayer().connect(pgsqlComInfo);
+  var db = await DbLayer(pgsqlComInfo).connect();
   await db.execute('DROP TABLE IF EXISTS "public"."naturalPerson" CASCADE');
   await db.execute('DROP TABLE IF EXISTS "public"."legalPerson" CASCADE');
   //create tables

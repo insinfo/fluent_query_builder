@@ -79,7 +79,8 @@ class MySqlExecutor extends QueryExecutor<Querier> {
     for (var name in substitutionValues.keys) {
       query = query.replaceAll('@$name', '?');
     }
-
+    //print('MySqlExecutor@query Query: $query');
+    //print('MySqlExecutor@query Values: $substitutionValues');
     logger?.fine('MySqlExecutor@query Query: $query');
     logger?.fine('MySqlExecutor@query Values: $substitutionValues');
     // print('MySqlExecutor@query Query: $query');

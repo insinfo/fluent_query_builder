@@ -168,14 +168,13 @@ void main() {
       });
       query.orWhereGroup((q) {
         q.whereSafe('"toAll"', '=', 'true');
-        query.orWhereGroup((q) {
-          q.whereSafe('"toAll"', '=', 'true');
-          return q;
-        });
         return q;
       });
 
-      query.order('dataCriado', dir: SortOrder.DESC);
+      query.order('"dataCriado"', dir: SortOrder.DESC);
+
+      print(
+          'Complex selection With whereGroup, whereSafe, where whereRaw \r\n ${query.toSql()}');
       final listMap = await query.limit(1).getAsMap();
 
       expect(listMap, [
@@ -238,7 +237,8 @@ void main() {
           .whereRaw("nome ilike '%isaque%'")
           .limit(1)
           .getAsMap();
-      expect(result[0], true);
+
+      expect(result.length, 1);
     });
 
     test('Select firstAsMap With whereRaw', () async {

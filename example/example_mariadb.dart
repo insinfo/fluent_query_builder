@@ -16,12 +16,12 @@ void main() async {
     numberOfProcessors: 1,
   );
 
-  final db = DbLayer();
+  final db = DbLayer(mariadbInfo);
   try {
     QueryBuilder query;
     dynamic result;
     print('try connect to mariadb');
-    await db.connect(mariadbInfo);
+    await db.connect();
     // delete table
     await db.execute('DROP TABLE IF EXISTS `table_01`');
     // create table
@@ -30,6 +30,7 @@ CREATE TABLE `table_01` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `test` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 ''');
@@ -53,6 +54,7 @@ CREATE TABLE `table_02` (
     // INSERT query
     query =
         db.insertGetId().into('table_01').setAll({'id': 11, 'name': 'Isaque'});
+    print('insert query sql: ${query.toSql()}');
     result = await query.exec();
     print('result insert: $result');
 
@@ -61,7 +63,7 @@ CREATE TABLE `table_02` (
         .update()
         .whereSafe('id', '=', 11)
         .table('table_01')
-        .setAll({'test': 'test', 'name': 'Isaque Neves'});
+        .setAll({'test': null, 'name': 'Isaque Neves', 'date': DateTime.now()});
 
     print('update query sql: ${query.toSql()}');
     result = await query.exec();
@@ -71,20 +73,28 @@ CREATE TABLE `table_02` (
     query = db
         .insertGetId()
         .into('table_02')
-        .setAll({'id': 22, '`idtb1`': 12, 'info': 'infomation in table 02'});
-
+        .setAll({'id': 22, 'idtb1': 11, 'info': 'infomation in table 04'});
+    print('insert query sql: ${query.toSql()}');
     result = await query.exec();
     print('result insert: $result');
+
+    query = db
+        .update()
+        .whereSafe('id', '=', 22)
+        .table('table_02')
+        .setAll({'idtb1': 11, 'info': 'infomation in table 02'});
+    result = await query.exec();
+    print('result update: $result');
 
     // select query
     query = db
         .select()
         .fields(['name', 'b.info', 'b.id'])
         .from('table_01', alias: 'a')
-        .leftJoin('table_02', 'a.id', '=', 'b.`idtb1`', alias: 'b')
+        .leftJoin('table_02', 'a.id', '=', 'b.idtb1', alias: 'b')
         .offset(0)
         .limit(100)
-        .group('b.info')
+        //  .group('b.info')
         .order('b.info');
 
     print('select query sql: ${query.toSql()}');

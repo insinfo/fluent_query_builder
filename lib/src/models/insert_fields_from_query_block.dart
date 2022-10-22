@@ -6,7 +6,7 @@ import 'util.dart';
 
 /// (INSERT INTO) ... setField ... (SELECT ... FROM ...)
 class InsertFieldsFromQueryBlock extends Block {
-  InsertFieldsFromQueryBlock(QueryBuilderOptions? options) : super(options);
+  InsertFieldsFromQueryBlock(QueryBuilderOptions options) : super(options);
   List<String>? mFields;
   QueryBuilder? mQuery;
 
@@ -25,6 +25,6 @@ class InsertFieldsFromQueryBlock extends Block {
     if (mFields == null || mFields!.isEmpty || mQuery == null) {
       return '';
     }
-    return "(${Util.join(', ', mFields!)}) (${mQuery.toString()})";
+    return "(${Util.join(', ', mFields!)}) (${mQuery!.toSql()})";
   }
 }

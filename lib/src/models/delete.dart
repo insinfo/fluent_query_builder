@@ -14,7 +14,7 @@ import 'limit_block.dart';
 /// DELETE query builder.
 class Delete extends QueryBuilder {
   Delete(
-    QueryBuilderOptions? options, {
+    QueryBuilderOptions options, {
     Future<List<List>> Function()? execFunc,
     Future<Map<String, Map<String, dynamic>>?> Function()?
         firstAsMapFuncWithMeta,

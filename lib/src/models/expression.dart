@@ -119,6 +119,12 @@ class Expression {
     return this;
   }
 
+  String toSql() {
+    assert(mCurrent != null &&
+        mCurrent!.parent == null); // "end() needs to be called"
+    return doString(mTree);
+  }
+
   /// Get a string representation of the given expression tree node.
   /// @param node Node to
   /// @return String

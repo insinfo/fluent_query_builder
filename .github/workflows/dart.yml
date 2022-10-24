@@ -31,6 +31,10 @@ jobs:
           sudo systemctl start postgresql.service
           pg_isready
 
+      - name: Create additional user
+        run: |
+          sudo -u postgres psql --command="CREATE USER sisadmin PASSWORD 's1sadm1n'" --command="\du"
+
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1.3
         with:

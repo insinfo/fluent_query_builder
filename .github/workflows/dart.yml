@@ -9,13 +9,19 @@ on:
   pull_request:
     branches: [ master ]
 
+env:  
+  # Not sure these are actually being passed down to rails, set them as the default in database.yml
+  DB_HOST: localhost
+  DB_USERNAME: sisadmin
+  DB_PASSWORD: s1sadm1n    
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:11
         env:
           POSTGRES_DB: banco_teste
           POSTGRES_PASSWORD: sisadmin
@@ -30,6 +36,7 @@ jobs:
           --health-retries 5
 
     steps:
+      - name: Check out Git Repository
       - uses: actions/checkout@v2
 
       # Note: This workflow uses the latest stable version of the Dart SDK.
@@ -37,9 +44,13 @@ jobs:
       # https://github.com/dart-lang/setup-dart/blob/main/README.md
       # - uses: dart-lang/setup-dart@v1
       #- uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603   
+      - name: Set up dart
       - uses: dart-lang/setup-dart@v1.3
         with:
           sdk: 2.12.4
+
+      - name: Check dart
+        run: dart --version    
 
       - name: Install dependencies
         run: dart pub get

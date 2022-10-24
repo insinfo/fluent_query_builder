@@ -35,6 +35,11 @@ jobs:
         run: |
           sudo -u postgres psql --command="CREATE ROLE sisadmin WITH LOGIN SUPERUSER PASSWORD 's1sadm1n'" --command="\du"
 
+      - name: Create additional database
+        run: |
+          sudo -u postgres createdb banco_teste --owner=sisadmin 
+          PGPASSWORD=s1sadm1n     
+
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1.3
         with:

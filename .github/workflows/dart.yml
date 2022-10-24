@@ -23,21 +23,7 @@ jobs:
         os: [ubuntu-latest]
         sdk: [2.12.4]
 
-    services:
-      postgres:
-        image: postgres:11
-        env:
-          POSTGRES_DB: banco_teste
-          POSTGRES_PASSWORD: sisadmin
-          POSTGRES_USER: s1sadm1n
-        ports:
-          - 5432:5432
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    
 
     steps:
       - name: Start PostgreSQL on Ubuntu

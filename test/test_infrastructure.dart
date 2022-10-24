@@ -29,7 +29,7 @@ void initializeTest() {
               'CREATE DATABASE ${connectionInfo.database} WITH OWNER "${connectionInfo.username}" TEMPLATE=template0  ENCODING \'UTF8\' LC_COLLATE = \'pt_BR.UTF-8\' LC_CTYPE = \'pt_BR.UTF-8\';')
           .exec();
     } catch (e) {
-      //
+      print('CREATE DATABASE $e');
     }
     await _db.raw('DROP TABLE IF EXISTS pessoas').exec();
     //CREATE TABLE IF NOT EXISTS

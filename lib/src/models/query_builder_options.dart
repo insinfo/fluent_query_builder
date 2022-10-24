@@ -1,4 +1,4 @@
-import '../connection_info.dart';
+import 'connection_info.dart';
 
 class QueryBuilderOptions {
   ConnectionDriver driver = ConnectionDriver.pgsql;
@@ -17,15 +17,15 @@ class QueryBuilderOptions {
 
   /// Indicates whether to replaces all single quotes within strings. Default: FALSE.
   /// The replacement string used is configurable via the `singleQuoteReplacement` option.
-  bool replaceSingleQuotes = false;
+  bool replaceSingleQuotes = true;
 
   /// Indicates whether to ignore period (.) when automatically quoting the `field` name. Default: FALSE.
-  bool replaceDoubleQuotes = false;
+  bool replaceDoubleQuotes = true;
 
   /// Indicates whether don't quote string values while formatting. Default: FALSE.
   bool ignorePeriodsForFieldNameQuotes = false;
 
-  bool dontQuote = true;
+  bool dontQuote = false;
 
   /// Specifies the quote character used for when quoting `table` and `field` names.
   String nameQuoteCharacter = '"';

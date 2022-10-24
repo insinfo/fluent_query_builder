@@ -1,8 +1,4 @@
-import 'expression.dart';
-import 'query_builder_options.dart';
-import 'query_builder.dart';
-
-import 'set_field_block_base.dart';
+import 'package:fluent_query_builder/fluent_query_builder.dart';
 
 /// (INSERT INTO) ... setField ... value
 class InsertFieldValueBlock extends SetFieldBlockBase {
@@ -15,10 +11,25 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
       return '';
     }
 
-    final fields = buildFieldNames(mFields!).join(', ');
-    final values = buildFieldValuesForSubstitution(mFields!).join(', ');
-    var sql = '($fields) VALUES ($values)';
+    var fieldsName = StringBuffer();
+    var fieldValuesForSubstitution = StringBuffer();
 
+    for (var item in mFields!) {
+      if (fieldsName.length > 0) {
+        fieldsName.write(', ');
+        fieldValuesForSubstitution.write(', ');
+      }
+      final field = item.field;
+      //Validator.sanitizeField(item.field, mOptions!);
+      if (mOptions.driver == ConnectionDriver.pgsql) {
+        fieldValuesForSubstitution.write('@$field');
+        fieldsName.write('"$field"');
+      } else {
+        fieldsName.write('`$field`');
+        fieldValuesForSubstitution.write('?');
+      }
+    }
+    final sql = '($fieldsName) VALUES ($fieldValuesForSubstitution)';
     return sql;
   }
 
@@ -37,56 +48,43 @@ class InsertFieldValueBlock extends SetFieldBlockBase {
     return result;
   }
 
-  List<String> buildFieldValuesForSubstitution(List<SetNode> nodes) {
-    final values = <String>[];
+  // List<String> buildFieldValuesForSubstitution(List<SetNode> nodes) {
+  //   final values = <String>[];
 
-    for (var item in nodes) {
-      var field = item.field;
+  //   for (var item in nodes) {
+  //     var field = item.field;
 
-      values.add('@$field');
-    }
-    return values;
-  }
+  //     values.add('@$field');
+  //   }
+  //   return values;
+  // }
 
-  List<String> buildFieldNames(List<SetNode> nodes) {
-    final names = <String>[];
-    for (var item in nodes) {
-      var field = item.field;
+  // List<String?> buildFieldValues(List<SetNode> nodes) {
+  //   final values = <String?>[];
+  //   for (var n in nodes) {
+  //     values.add('${n.value}'); //Validator.formatValue(n.value, mOptions));
+  //   }
+  //   return values;
+  // }
 
-      //Validator.sanitizeField(item.field, mOptions!);
-
-      names.add(field);
-    }
-
-    return names;
-  }
-
-  List<String?> buildFieldValues(List<SetNode> nodes) {
-    final values = <String?>[];
-    for (var n in nodes) {
-      values.add('${n.value}'); //Validator.formatValue(n.value, mOptions));
-    }
-    return values;
-  }
-
-  Object? formatValue(Object? value) {
-    if (value == null) {
-      return null;
-    } else if (value is num) {
-      return value.toString();
-    } else if (value is String) {
-      return value;
-    } else if (value is QueryBuilder) {
-      return '(${value.toSql()})';
-    } else if (value is Expression) {
-      return '(${value.toSql()})';
-    } else if (value is List) {
-      final results = [];
-      for (var value in value) {
-        results.add(formatValue(value));
-      }
-      return "(${results.join(', ')})";
-    }
-    return null;
-  }
+  // Object? formatValue(Object? value) {
+  //   if (value == null) {
+  //     return null;
+  //   } else if (value is num) {
+  //     return value.toString();
+  //   } else if (value is String) {
+  //     return value;
+  //   } else if (value is QueryBuilder) {
+  //     return '(${value.toSql()})';
+  //   } else if (value is Expression) {
+  //     return '(${value.toSql()})';
+  //   } else if (value is List) {
+  //     final results = [];
+  //     for (var value in value) {
+  //       results.add(formatValue(value));
+  //     }
+  //     return "(${results.join(', ')})";
+  //   }
+  //   return null;
+  // }
 }

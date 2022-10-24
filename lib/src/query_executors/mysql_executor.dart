@@ -28,13 +28,15 @@ class MySqlExecutor extends QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String?>? returningFields]) {
+  Future<List<List>> query(String query,
+      {Map<String, dynamic>? substitutionValues,
+      List<String?>? returningFields}) {
     // Change @id -> ?
-    for (var name in substitutionValues.keys) {
-      query = query.replaceAll('@$name', '?');
-    }
+    /*if (substitutionValues != null) {
+      for (var name in substitutionValues.keys) {
+        query = query.replaceAll('@$name', '?');
+      }
+    }*/
 
     logger?.fine('Query: $query');
     logger?.fine('Values: $substitutionValues');
@@ -292,12 +294,16 @@ class MySqlExecutorExecutorPool extends QueryExecutor {
   }
 
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String?>? returningFields]) {
+  Future<List<List>> query(String query,
+      {Map<String, dynamic>? substitutionValues,
+      List<String?>? returningFields}) {
     return _pool.withResource(() async {
       final executor = await _next();
-      return executor.query(query, substitutionValues, returningFields);
+      return executor.query(
+        query,
+        substitutionValues: substitutionValues,
+        returningFields: returningFields,
+      );
     });
   }
 

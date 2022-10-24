@@ -1,7 +1,4 @@
-import 'expression.dart';
-import 'query_builder_options.dart';
-import 'query_builder.dart';
-import 'set_field_block_base.dart';
+import 'package:fluent_query_builder/fluent_query_builder.dart';
 
 /// (UPDATE) SET setField=value
 class SetFieldBlock extends SetFieldBlockBase {
@@ -17,14 +14,17 @@ class SetFieldBlock extends SetFieldBlockBase {
       if (sb.length > 0) {
         sb.write(', ');
       }
-
-      var field = item.field;
-
+      final field = item.field;
       ////Validator.sanitizeField(item.field, mOptions!);
-
-      sb.write(field);
-      sb.write(' = ');
-      sb.write('@${item.field}');
+      if (mOptions.driver == ConnectionDriver.pgsql) {
+        sb.write('"$field"');
+        sb.write(' = ');
+        sb.write('@${item.field}');
+      } else {
+        sb.write('`$field`');
+        sb.write(' = ');
+        sb.write('?');
+      }
     }
 
     return 'SET $sb';
@@ -46,24 +46,24 @@ class SetFieldBlock extends SetFieldBlockBase {
     return result;
   }
 
-  Object? formatValue(Object? value) {
-    if (value == null) {
-      return null;
-    } else if (value is num) {
-      return value.toString();
-    } else if (value is String) {
-      return value;
-    } else if (value is QueryBuilder) {
-      return '(${value.toSql()})';
-    } else if (value is Expression) {
-      return '(${value.toSql()})';
-    } else if (value is List) {
-      final results = [];
-      for (var value in value) {
-        results.add(formatValue(value));
-      }
-      return "(${results.join(', ')})";
-    }
-    return null;
-  }
+  // Object? formatValue(Object? value) {
+  //   if (value == null) {
+  //     return null;
+  //   } else if (value is num) {
+  //     return value.toString();
+  //   } else if (value is String) {
+  //     return value;
+  //   } else if (value is QueryBuilder) {
+  //     return '(${value.toSql()})';
+  //   } else if (value is Expression) {
+  //     return '(${value.toSql()})';
+  //   } else if (value is List) {
+  //     final results = [];
+  //     for (var value in value) {
+  //       results.add(formatValue(value));
+  //     }
+  //     return "(${results.join(', ')})";
+  //   }
+  //   return null;
+  // }
 }

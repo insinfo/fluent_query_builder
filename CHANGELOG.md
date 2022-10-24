@@ -111,3 +111,10 @@
 - general refactoring, to put double quotes " for Postgresql and ` for MySQL in the table field names for Insert and Update and.
 - BREAK CHANGE: now you have to pass the DBConnectionInfo class instance to the DbLayer class constructor, optionally you can override DBConnectionInfo in connect() method.
 - bug fix in automated tests
+
+# 5.5.0
+- fix bugs
+- BREAK CHANGE: the "where" method now puts the quotes envolving the parameter value automatically
+    OLD: where('nome ilike ?', "'%isaque%'") NEW: where('nome ilike ?', '%isaque%')
+    change optional parameters to named parameters of whereRaw
+    whereRaw('b.info ilike @info', andOr: 'AND', substitutionValues: {'info': "%Sant'Ana%"})

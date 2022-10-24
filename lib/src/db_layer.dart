@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'connection_info.dart';
+import 'package:fluent_query_builder/src/models/validator.dart';
+
+import 'models/connection_info.dart';
 import 'exceptions/illegal_argument_exception.dart';
 import 'exceptions/not_implemented_exception.dart';
 import 'models/raw.dart';
@@ -185,8 +187,8 @@ class DbLayer {
 
     final rows = await executor.query(
       currentQuery.toSql(),
-      currentQuery.buildSubstitutionValues(),
-      currentQuery.buildReturningFields(),
+      substitutionValues: currentQuery.buildSubstitutionValues(),
+      returningFields: currentQuery.buildReturningFields(),
     );
     return rows;
   }
@@ -210,7 +212,7 @@ class DbLayer {
       throw Exception('Dblayer@first Is nessesary query');
     }
     final rows = await executor.query(currentQuery.toSql(isFirst: true),
-        currentQuery.buildSubstitutionValues());
+        substitutionValues: currentQuery.buildSubstitutionValues());
 
     if (rows.isNotEmpty) {
       return rows[0];
@@ -225,7 +227,7 @@ class DbLayer {
     }
 
     final rows = await executor.query(currentQuery.toSql(isCount: true),
-        currentQuery.buildSubstitutionValues());
+        substitutionValues: currentQuery.buildSubstitutionValues());
     //total_records
 
     if (rows.isNotEmpty) {
@@ -328,6 +330,42 @@ class DbLayer {
   Future<int> execute(String query,
       {Map<String, dynamic>? substitutionValues}) async {
     return executor.execute(query, substitutionValues: substitutionValues);
+  }
+
+  /// add " for pgsql or ` for mysql
+  String putInQuotes(String value) {
+    if (options.driver == ConnectionDriver.pgsql) {
+      var field = '"$value"';
+      if (value.contains('.')) {
+        field = value.split('.').map((e) => '"$e"').join('.');
+      }
+      return field;
+    } else {
+      var field = '`$value`';
+      if (value.contains('.')) {
+        field = value.split('.').map((e) => '`$e`').join('.');
+      }
+      return field;
+    }
+  }
+
+  /// for input table.field return @field for pgsql and ? for mysql
+  String formatSubititutioValue(String value) {
+    var field = value;
+    if (value.contains('.')) {
+      field = value.split('.').last;
+    }
+    if (options.driver == ConnectionDriver.pgsql) {
+      return '@$field';
+    } else {
+      return '?';
+    }
+  }
+
+  /// format value for no SQL Injection,
+  /// is not garatid securyty
+  String formatValue(Object? value) {
+    return Validator.formatValue(value, options);
   }
 
   Future<List<T>> _fetchAll<T>(
@@ -497,17 +535,8 @@ class DbLayer {
 
     // ignore: unnecessary_cast
     var model = entity as FluentModelBase;
-    var tableName = model.ormDefinitions.tableName;
-
-    if (tableName == null || tableName == '') {
-      throw IllegalArgumentException('table name cannot be null');
-    }
 
     var primaryKey = model.ormDefinitions.primaryKey;
-
-    if (primaryKey == null || primaryKey == '') {
-      throw IllegalArgumentException('primaryKey not defined');
-    }
 
     var data = model.toMap();
 

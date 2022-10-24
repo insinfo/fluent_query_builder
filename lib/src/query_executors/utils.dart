@@ -11,4 +11,21 @@ class Utils {
     }
     return values;
   }
+
+  /// get field name example : input = "schema"."table"."fieldname" return fieldname
+  static String getFieldName(String text) {
+    var substitutionValue = text;
+    if (text.contains('.') == true) {
+      var parts = text.split('.');
+      substitutionValue = parts.last;
+    }
+    substitutionValue = substitutionValue.trim();
+    if (substitutionValue.startsWith('"') == true &&
+        substitutionValue.endsWith('"') == true) {
+      substitutionValue =
+          substitutionValue.substring(1, substitutionValue.length - 1);
+    }
+
+    return substitutionValue;
+  }
 }

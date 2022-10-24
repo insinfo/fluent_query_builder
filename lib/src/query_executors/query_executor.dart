@@ -5,9 +5,9 @@ import 'dart:async';
 /// This class should be implemented.
 abstract class QueryExecutor<U> {
   /// Executes a single query.
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String?>? returningFields]);
+  Future<List<List>> query(String query,
+      {Map<String, dynamic>? substitutionValues,
+      List<String?>? returningFields});
 
   /// Enters a database transaction, performing the actions within,
   /// and returning the results of [f].

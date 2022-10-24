@@ -24,7 +24,6 @@ void main() async {
     await db.connect();
 
     await db.execute('DROP TABLE IF EXISTS "table_01"');
-
     await db.execute('''
       CREATE TABLE "public"."table_01" (
       "id" serial4 NOT NULL ,
@@ -35,9 +34,7 @@ void main() async {
       CONSTRAINT "table_01_pkey" PRIMARY KEY ("id")
       );
     ''');
-
     await db.execute('DROP TABLE IF EXISTS "table_02"');
-
     await db.execute('''
       CREATE TABLE "public"."table_02" (
       "id" serial4 NOT NULL ,
@@ -62,26 +59,28 @@ void main() async {
     print('result insert: $result');
 
     // update query
-    query = db.update().whereSafe('id', '=', 11).table('table_01').setAll(
-        {'test': 'sda', 'name': 'Isaque Neves', 'date': DateTime.now()});
+    query = db
+        .update()
+        .whereSafe('id', '=', 11)
+        .table('table_01')
+        .setAll({'test': null, 'name': 'Isaque Neves', 'date': DateTime.now()});
 
     print('update query sql: ${query.toSql()}');
     result = await query.exec();
     print('result update: $result');
 
     //INSERT INTO table_02(id, idtb1, info) VALUES ('22','11','infomation in table 02');
-    query = db.insertGetId().into('table_02').setAll({
-      'id': 22,
-      'idtb1': 11,
-      'info': 'infomation in table 04',
-      'idPessoa': 21
-    });
+    query = db.insertGetId().into('table_02').setAll(
+        {'id': 22, 'idtb1': 11, 'info': 'infomation in table', 'idPessoa': 21});
     print('insert query sql: ${query.toSql()}');
     result = await query.exec();
     print('result insert: $result');
 
-    query = db.update().whereSafe('id', '=', 22).table('table_02').setAll(
-        {'idtb1': 11, 'info': 'infomation in table 02', 'idPessoa': 22});
+    query = db.update().whereSafe('id', '=', 22).table('table_02').setAll({
+      'idtb1': 11,
+      'info': "infomation in table 02 Sant'Ana",
+      'idPessoa': 22
+    });
     result = await query.exec();
     print('result update: $result');
 
@@ -91,6 +90,10 @@ void main() async {
         .fields(['name', 'b.info', 'b.id', 'b."idPessoa"'])
         .from('table_01', alias: 'a')
         .leftJoin('table_02', 'a.id', '=', 'b.idtb1', alias: 'b')
+        .whereSafe('b.info', 'ilike', "%Sant'Ana%")
+        .whereRaw('b.info ilike @info',
+            andOr: 'AND', substitutionValues: {'info': "%Sant'Ana%"})
+        .where('a.test is null', "%Sant'Ana%")
         .offset(0)
         .limit(100)
         //.group('a.id')

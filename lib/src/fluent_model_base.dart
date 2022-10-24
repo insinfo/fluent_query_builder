@@ -18,28 +18,28 @@ abstract class FluentModelBase<T> {
 /// @param primaryKeyVal => The value of primaryKey
 class OrmDefinitions {
   OrmDefinitions({
-    this.tableName,
-    this.primaryKey,
+    required this.tableName,
+    required this.primaryKey,
     this.idIncrementing = true,
     this.keyType = 'integer',
     this.attributes,
     this.fillable,
     this.guarded,
     this.relations,
+    required this.data,
   });
 
   OrmDefinitions clone() {
-    var definitions = OrmDefinitions();
-    definitions.tableName = tableName;
-    definitions.primaryKey = primaryKey;
-    definitions.idIncrementing = idIncrementing;
-    definitions.keyType = keyType;
-    definitions.attributes = attributes;
-    definitions.fillable = fillable;
-    definitions.guarded = guarded;
-    definitions.relations = relations;
-    definitions.data = data;
-    definitions.primaryKeyVal = primaryKeyVal;
+    var definitions = OrmDefinitions(
+        tableName: tableName,
+        primaryKey: primaryKey,
+        idIncrementing: idIncrementing,
+        keyType: keyType,
+        attributes: attributes,
+        fillable: fillable,
+        guarded: guarded,
+        relations: relations,
+        data: data);
     return definitions;
   }
 
@@ -53,10 +53,10 @@ class OrmDefinitions {
   //Map<String, dynamic> data;
 
   /// the table name of model
-  String? tableName;
+  String tableName;
 
   /// The primary key associated with the table.
-  String? primaryKey;
+  String primaryKey;
 
   /// Indicates if the IDs are auto-incrementing.
   bool idIncrementing = true;

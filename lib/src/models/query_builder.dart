@@ -365,9 +365,9 @@ abstract class QueryBuilder {
     throw UnsupportedOperationException('`joinWithQueryExpr` not implemented');
   }
 
-  //
-  // WHERE
-  //
+  /// WHERE
+  /// Not secure, this one is subject to SQL injection
+  /// Example: where('nome ilike ?', '%isaque%')
   QueryBuilder where(String condition, [Object? param, String andOr = 'AND']) {
     throw UnsupportedOperationException('`where` not implemented');
   }
@@ -377,21 +377,35 @@ abstract class QueryBuilder {
     throw UnsupportedOperationException('`whereExpr` not implemented');
   }
 
-  QueryBuilder whereRaw(String whereRawSql, [String andOr = 'AND']) {
+  /// Example PostgreSQL:  whereRaw('b.info ilike @info', andOr: 'AND', substitutionValues: {'info': "%Sant'Ana%"})
+  /// Example MySQL:  whereRaw('b.info ilike ?', andOr: 'AND', substitutionValues: {'info': "%Sant'Ana%"})
+  /// Example:
+  ///  whereRaw(
+  ///     'LOWER(${db.putInQuotes(sField.field)}::text) like ${db.formatSubititutioValue(sField.field)}',
+  ///      andOr: 'OR',
+  ///      substitutionValues: {
+  ///       'nome': '%${filtros.searchString}%',
+  ///  });
+  ///
+  ///
+  QueryBuilder whereRaw(String whereRawSql,
+      {String andOr = 'AND', Map<String, dynamic>? substitutionValues}) {
     throw UnsupportedOperationException('`whereRaw` not implemented');
   }
 
-  ///add a andWhere safe way against SQL injection
+  /// AND Where safe way against SQL injection
+  /// Example: whereSafe('"toAll"', '=', 'true');
   QueryBuilder whereSafe(String field, String operator, value) {
     throw UnsupportedOperationException('`whereSafe` not implemented');
   }
 
-  ///add a orWhere safe way against SQL injection
+  /// OR Where safe way against SQL injection
+  /// Example: orWhereSafe('"toAll"', '=', 'true');
   QueryBuilder orWhereSafe(String field, String operator, value) {
     throw UnsupportedOperationException('`orWhereSafe` not implemented');
   }
 
-  //Future<List<T>> Function<T>([T Function(Map<String, dynamic>) factory])
+  ///
   QueryBuilder whereGroup(QueryBuilder Function(QueryBuilder) function) {
     throw UnsupportedOperationException('`whereGroup` not implemented');
   }
@@ -435,7 +449,7 @@ abstract class QueryBuilder {
   //
   // TABLE
   //
-  QueryBuilder table(String? table, {String? alias}) {
+  QueryBuilder table(String table, {String? alias}) {
     throw UnsupportedOperationException('`table` not implemented');
   }
 
@@ -453,7 +467,7 @@ abstract class QueryBuilder {
   //
   // INTO
   //
-  QueryBuilder into(String? table) {
+  QueryBuilder into(String table) {
     throw UnsupportedOperationException('`into` not implemented');
   }
 

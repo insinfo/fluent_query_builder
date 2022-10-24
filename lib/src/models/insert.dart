@@ -39,7 +39,7 @@ class Insert extends QueryBuilder {
   }
 
   @override
-  QueryBuilder into(String? table) {
+  QueryBuilder into(String table) {
     final block = mBlocks![1] as IntoTableBlock;
     block.setInto(table);
     return this;
@@ -48,10 +48,8 @@ class Insert extends QueryBuilder {
   @override
   QueryBuilder set(String fieldP, value) {
     final block = mBlocks![2] as InsertFieldValueBlock;
-    //TODO: test this
-    var field =
-        mOptions.nameQuoteCharacter + fieldP + mOptions.nameQuoteCharacter;
-    block.setFieldValue(field, value);
+
+    block.setFieldValue(fieldP, value);
     return this;
   }
 
@@ -59,10 +57,7 @@ class Insert extends QueryBuilder {
   QueryBuilder setAll(Map<String, dynamic>? fieldsAndValues) {
     final block = mBlocks![2] as InsertFieldValueBlock;
     fieldsAndValues?.forEach((fieldP, value) {
-      //TODO: test this
-      var field =
-          mOptions.nameQuoteCharacter + fieldP + mOptions.nameQuoteCharacter;
-      block.setFieldValue(field, value);
+      block.setFieldValue(fieldP, value);
     });
     return this;
   }

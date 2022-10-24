@@ -43,7 +43,7 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
     //isso executa uma query para definir os esquemas
     if (connectionInfo.enablePsqlAutoSetSearchPath == true &&
         connectionInfo.schemes?.isNotEmpty == true) {
-      await query('set search_path to $schemesString;', {});
+      await query('set search_path to $schemesString;');
     }
     /* } else if (connection is PostgreSQLConnection) {
       var com = connection as PostgreSQLConnection;
@@ -106,9 +106,9 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
   }
 
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValuesInput,
-      [List<String?>? returningFields]) async {
+  Future<List<List>> query(String query,
+      {Map<String, dynamic>? substitutionValues,
+      List<String?>? returningFields}) async {
     if (returningFields?.isNotEmpty == true) {
       //if (returningFields != null) {
       var fields = returningFields!.join(', ');
@@ -117,24 +117,24 @@ class PostgreSqlExecutor extends QueryExecutor<PostgreSQLExecutionContext> {
     }
 
     logger?.fine('Query: $query');
-    logger?.fine('Values: $substitutionValuesInput');
+    logger?.fine('Values: $substitutionValues');
 
-    var substitutionValues = <String, dynamic>{};
-    if (substitutionValuesInput.entries.isNotEmpty) {
-      substitutionValuesInput.entries.forEach((item) {
-        var key = item.key;
-        var val = item.value;
-        if (key.startsWith('"') && key.endsWith('"')) {
-          key = key.substring(1, key.length - 1);
-          query = query.replaceAll('@${item.key}', '@$key');
-        }
+    // var substitutionValues = <String, dynamic>{};
+    // if (substitutionValuesInput.entries.isNotEmpty) {
+    //   substitutionValuesInput.entries.forEach((item) {
+    //     var key = item.key;
+    //     var val = item.value;
+    //     if (key.startsWith('"') && key.endsWith('"')) {
+    //       key = key.substring(1, key.length - 1);
+    //       query = query.replaceAll('@${item.key}', '@$key');
+    //     }
 
-        substitutionValues.addAll({key: val});
-      });
-    }
+    //     substitutionValues.addAll({key: val});
+    //   });
+    // }
 
-    //print('substitutionValues: $substitutionValues');
-    //print('query: $query');
+    // print('substitutionValues: $substitutionValues');
+    // print('query: $query');
 
     List<List> results;
 
@@ -430,12 +430,14 @@ class PostgreSqlExecutorPool extends QueryExecutor<PostgreSqlExecutor> {
   }
 
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String?>? returningFields]) {
+  Future<List<List>> query(String query,
+      {Map<String, dynamic>? substitutionValues,
+      List<String?>? returningFields}) {
     return _pool.withResource(() async {
       final executor = await _next();
-      return executor.query(query, substitutionValues, returningFields);
+      return executor.query(query,
+          substitutionValues: substitutionValues,
+          returningFields: returningFields);
     });
   }
 

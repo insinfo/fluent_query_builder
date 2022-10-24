@@ -46,7 +46,7 @@ void main() {
       var result = await db
           .select()
           .from('pessoas')
-          .where('nome ilike ?', "'%isaque%'")
+          .where('nome ilike ?', '%isaque%')
           .limit(1)
           .get();
       expect(result, [
@@ -58,8 +58,8 @@ void main() {
       var result = await db
           .select()
           .from('pessoas')
-          .where('nome ilike ?', "'%isaque%'")
-          .where('telefone ilike ?', "'%99701-5305%'")
+          .where('nome ilike ?', '%isaque%')
+          .where('telefone ilike ?', '%99701-5305%')
           .limit(1)
           .get();
 
@@ -72,8 +72,8 @@ void main() {
       var result = await db
           .select()
           .from('pessoas')
-          .where('nome ilike ?', "'%isaque%'")
-          .where('telefone ilike ?', "'%99701-5305%'", 'OR')
+          .where('nome ilike ?', '%isaque%')
+          .where('telefone ilike ?', '%99701-5305%', 'OR')
           .limit(1)
           .get();
 
@@ -115,7 +115,7 @@ void main() {
           .select()
           .from('pessoas')
           .whereSafe('telefone', 'ilike', '%99701-5305%')
-          .where('nome ilike ?', "'%isaque%'")
+          .where('nome ilike ?', '%isaque%')
           .limit(1)
           .get();
 
@@ -155,13 +155,13 @@ void main() {
       }).exec();
 
       final query = db.select().fromRaw('notificacoes');
-      query.where('"dataCriado"::TIMESTAMP  > \'?\'::TIMESTAMP ',
-          '2021-05-04 17:53:55');
+      query.where(
+          '"dataCriado"::TIMESTAMP  > ?::TIMESTAMP ', '2021-05-04 17:53:55');
 
       query.whereGroup((q) {
         q.where('"idPessoa"=?', 2, 'or');
         q.where('"idOrganograma"=?', 19, 'or');
-        q.where('"toAll"=?', "'t'", 'or');
+        q.where('"toAll"=?', 't', 'or');
         q.whereSafe('"toAll"', '=', 'true');
         q.whereRaw('"toAll"= true');
         return q;
@@ -173,8 +173,7 @@ void main() {
 
       query.order('"dataCriado"', dir: SortOrder.DESC);
 
-      print(
-          'Complex selection With whereGroup, whereSafe, where whereRaw \r\n ${query.toSql()}');
+      //print( 'Complex selection With whereGroup, whereSafe, where whereRaw \r\n ${query.toSql()}');
       final listMap = await query.limit(1).getAsMap();
 
       expect(listMap, [
@@ -194,21 +193,64 @@ void main() {
       ]);
     });
 
-    /* test('Select With whereExpr', () async {
-      var result =
-          await db.select().from('pessoas').whereExpr(DbLayer().expression().and('nome ilike ?'), "'%isaque%'").get();
+    test(
+        'Select with fields, leftJoin, whereSafe, where, whereRaw, offset, limit, order and getAsMap',
+        () async {
+      await db.execute('DROP TABLE IF EXISTS "table_01"');
+      await db.execute('''
+      CREATE TABLE "public"."table_01" (
+      "id" serial4 NOT NULL ,
+      "name" varchar(255) ,
+      "test" varchar(255) ,
+      "date" timestamp ,
+      "buleano" bool,
+      CONSTRAINT "table_01_pkey" PRIMARY KEY ("id")
+      );
+    ''');
+      await db.execute('DROP TABLE IF EXISTS "table_02"');
+      await db.execute('''
+      CREATE TABLE "public"."table_02" (
+      "id" serial4 NOT NULL ,
+      "idtb1" int4 ,
+      "info" varchar(255) ,
+      "idPessoa" int4 ,
+      CONSTRAINT "table_02_pkey" PRIMARY KEY ("id")
+      );
+    ''');
+      await db
+          .insertGetId()
+          .into('table_01')
+          .setAll({'id': 11, 'name': 'Isaque', 'buleano': true}).exec();
+
+      await db.insertGetId().into('table_02').setAll(
+          {'id': 22, 'idtb1': 11, 'info': "Sant'Ana", 'idPessoa': 21}).exec();
+
+      var result = await db
+          .select()
+          .fields(['name', 'b.info', 'b.id', 'b."idPessoa"'])
+          .from('table_01', alias: 'a')
+          .leftJoin('table_02', 'a.id', '=', 'b.idtb1', alias: 'b')
+          .whereSafe('b.info', 'ilike', "%Sant'Ana%")
+          .whereRaw('b.info ilike @info',
+              andOr: 'AND', substitutionValues: {'info': "%Sant'Ana%"})
+          .where('a.test is null')
+          .offset(0)
+          .limit(100)
+          //.group('a.id')
+          .order('b.info')
+          .getAsMap();
 
       expect(result, [
-        [1, 'Isaque', '99701-5305', '54654']
+        {'name': 'Isaque', 'info': 'Sant\'Ana', 'id': 22, 'idPessoa': 21}
       ]);
-    });*/
+    });
 
     test('Select With WhereGroup', () async {
       var result = await db
           .select()
           .from('pessoas')
           .whereGroup((QueryBuilder qb) {
-            return qb.where('nome ilike ?', "'%isaque%'");
+            return qb.where('nome ilike ?', '%isaque%');
           })
           .limit(1)
           .get();
@@ -316,5 +358,66 @@ void main() {
     });
   });
 
-  group('Update Queries', () {});
+  group('Update Queries', () {
+    test('simple update with whereSafe', () async {
+      await db.execute('DROP TABLE IF EXISTS "table_01"');
+      await db.execute('''
+      CREATE TABLE "public"."table_01" (
+      "id" serial4 NOT NULL ,
+      "name" varchar(255) ,
+      "test" varchar(255) ,
+      "date" timestamp ,
+      "buleano" bool,
+      "idPessoa" int4 ,
+      CONSTRAINT "table_01_pkey" PRIMARY KEY ("id")
+      );
+    ''');
+
+      await db.insertGetId().into('table_01').setAll(
+          {'id': 11, 'name': "Isaque Sant'Ana", 'buleano': true}).exec();
+
+      var response;
+
+      response = await db
+          .update()
+          .whereSafe('id', '=', 11)
+          .table('table_01')
+          .setAll({
+        'test': null,
+        'name': "Isaque Neves Sant'Ana",
+        'date': DateTime.now()
+      }).exec();
+
+      var expectedValue = [];
+      expect(response, expectedValue);
+    });
+  });
+
+  group('Delete Queries', () {
+    test('Simple Delete with whereSafe', () async {
+      await db.execute('DROP TABLE IF EXISTS "table_01"');
+      await db.execute('''
+      CREATE TABLE "public"."table_01" (
+      "id" serial4 NOT NULL ,
+      "name" varchar(255) ,
+      "test" varchar(255) ,
+      "date" timestamp ,
+      "buleano" bool,
+      "idPessoa" int4 ,
+      CONSTRAINT "table_01_pkey" PRIMARY KEY ("id")
+      );
+    ''');
+
+      await db.insertGetId().into('table_01').setAll(
+          {'id': 11, 'name': "Isaque Sant'Ana", 'buleano': true}).exec();
+
+      var response;
+
+      response =
+          await db.delete().from('table_01').whereSafe('id', '=', 11).exec();
+
+      var expectedValue = [];
+      expect(response, expectedValue);
+    });
+  });
 }

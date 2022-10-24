@@ -1,8 +1,7 @@
-import 'block.dart';
-import 'query_builder_options.dart';
-import 'query_builder.dart';
+import 'package:fluent_query_builder/fluent_query_builder.dart';
+import 'package:fluent_query_builder/src/models/validator.dart';
+import 'package:fluent_query_builder/src/query_executors/utils.dart';
 
-import 'expression.dart';
 import 'where_node.dart';
 
 /// WHERE
@@ -30,8 +29,12 @@ class WhereBlock extends Block {
         param: param, andOr: andOr, type: WhereType.simple));
   }
 
-  void setWhereRaw(String whereRawSql, [String andOr = 'AND']) {
-    mWheres.add(WhereNode(whereRawSql, andOr: andOr, type: WhereType.raw));
+  void setWhereRaw(String whereRawSql,
+      {String andOr = 'AND', Map<String, dynamic>? substitutionValues}) {
+    mWheres.add(WhereNode(whereRawSql,
+        andOr: andOr,
+        type: WhereType.raw,
+        substitutionValues: substitutionValues));
   }
 
   void setWhereSafe(String field, String operator, value) {
@@ -65,19 +68,24 @@ class WhereBlock extends Block {
 
       switch (whereNode.type) {
         case WhereType.simple:
-          var left = ' ${whereNode.text} ';
+          var left = ' ${whereNode.field} ';
           if (left.contains('?')) {
-            left = left.replaceAll('?', '${whereNode.param}');
-            //Validator.formatValue(whereNode.param, mOptions)
+            var value = Validator.formatValue(whereNode.param, mOptions);
+            left = left.replaceAll('?', value);
           }
           str += left;
-          //str += ' ${whereNode.operator} ';
           break;
         case WhereType.safe:
-          str += ' ${whereNode.text} ';
+          str += ' ${whereNode.field} ';
           str += ' ${whereNode.operator} ';
-          var substitutionValue = _getSubstitutionValue(whereNode.text);
-          str += ' @$substitutionValue ';
+
+          if (mOptions.driver == ConnectionDriver.pgsql) {
+            var substitutionValue = Utils.getFieldName(whereNode.field);
+            str += ' @$substitutionValue ';
+          } else {
+            str += ' ? ';
+          }
+
           break;
         case WhereType.openGroup:
           str += ' ( ';
@@ -86,28 +94,9 @@ class WhereBlock extends Block {
           str += ' ) ';
           break;
         case WhereType.raw:
-          str += ' ${whereNode.text}';
+          str += ' ${whereNode.field}';
           break;
       }
-      /* if (i + 1 < length) {
-        if (mWheres[i + 1].type == WhereType.group &&
-            mWheres[i + 1].text.contains('(')) {
-          // str += ' ${mWheres[i + 1].andOr} ';
-          //print('o proximo é grupo abre');
-        } else if (mWheres[i + 1].type == WhereType.group &&
-            mWheres[i + 1].text.contains(')')) {
-          //print('o proximo é grupo fecha');
-        } else if (mWheres[i].type != WhereType.group) {
-          if (!mWheres[i + 1].text.contains(')')) {
-            // str += ' ${whereNode.andOr} ';
-            // print('o item atual não é grupo ${mWheres[i].text} ${mWheres[i + 1].text}');
-          }
-        } else if (mWheres[i].type == WhereType.group &&
-            mWheres[i].text.contains(')') &&
-            mWheres[i + 1].type != WhereType.group) {
-          //str += ' ${whereNode.andOr} ';
-        }
-      }*/
 
       if (i + 1 < length) {
         //se o proximo for abre grupo
@@ -124,34 +113,11 @@ class WhereBlock extends Block {
         }
       }
 
-      /*if (i + 1 < length &&
-          whereNode.type != WhereType.group &&
-          mWheres[i + 1].type != WhereType.group) {
-        str += ' ${whereNode.andOr}  ';
-        //print('mWheres[i].type == WhereType.raw): ${whereNode.andOr} ');
-      }*/
-
       sb.write(str);
     }
     var result = 'WHERE $sb';
     //print('WhereBlock result: $result');
     return result;
-  }
-
-  String? _getSubstitutionValue(String? text) {
-    var substitutionValue = text;
-    if (text?.contains('.') == true) {
-      var parts = text!.split('.');
-      substitutionValue = parts[1];
-    }
-    substitutionValue = substitutionValue?.trim();
-    if (substitutionValue?.startsWith('"') == true &&
-        substitutionValue?.endsWith('"') == true) {
-      substitutionValue =
-          substitutionValue!.substring(1, substitutionValue.length - 1);
-    }
-
-    return substitutionValue;
   }
 
   @override
@@ -164,14 +130,14 @@ class WhereBlock extends Block {
     for (var item in mWheres) {
       if (item.type == WhereType.safe) {
         var v = item.param; //Validator.formatValue(item.param, mOptions);
-
-        /* var substitutionValue = item.text;
-        if (item?.text?.startsWith('"') == true) {
-          substitutionValue = substitutionValue.substring(1).substring(0, substitutionValue.length - 2);
-        }*/
-        var substitutionValue = _getSubstitutionValue(item.text);
-
-        result.addAll({'$substitutionValue': '$v'});
+        var substitutionValue = Utils.getFieldName(item.field);
+        result.addAll({'$substitutionValue': v});
+      } else if (item.type == WhereType.raw &&
+          item.substitutionValues != null) {
+        result.addAll(item.substitutionValues!);
+      } else if (item.type == WhereType.simple &&
+          item.substitutionValues != null) {
+        result.addAll(item.substitutionValues!);
       }
     }
 

@@ -17,7 +17,7 @@ class QbOptionBuilder {
     _options.autoQuoteFieldNames = true;
     _options.autoQuoteAliasNames = true;
     _options.replaceSingleQuotes = true;
-    _options.dontQuote = true;
+    _options.dontQuote = false;
     _options.nameQuoteCharacter = '"';
     _options.tableAliasQuoteCharacter = '"';
     _options.singleQuoteReplacement = "''";

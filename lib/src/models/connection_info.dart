@@ -1,7 +1,7 @@
 import 'package:fluent_query_builder/src/builders/QBOptionBuilder.dart';
 import 'package:fluent_query_builder/src/exceptions/null_pointer_exception.dart';
 
-import 'models/query_builder_options.dart';
+import 'query_builder_options.dart';
 
 enum ConnectionDriver { mysql, pgsql }
 

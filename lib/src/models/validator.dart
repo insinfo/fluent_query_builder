@@ -64,14 +64,14 @@ class Validator {
         : null;
   }
 
-  static String? formatValue(Object? value, QueryBuilderOptions? options) {
+  static String formatValue(Object? value, QueryBuilderOptions options) {
     if (value == null) {
       return formatNull();
     } else {
       if (value is num) {
         return formatNumber(value);
       } else if (value is String) {
-        return formatString(value, options!);
+        return formatString(value, options);
       } else if (value is bool) {
         return formatBoolean(value);
       } else if (value is QueryBuilder) {
@@ -111,8 +111,8 @@ class Validator {
     return result;
   }
 
-  static String? formatNull() {
-    return null;
+  static String formatNull() {
+    return null.toString();
   }
 
   static String formatBoolean(bool value) {
@@ -139,7 +139,7 @@ class Validator {
     return '(${value.toSql()})';
   }
 
-  static String formatIterable(List values, QueryBuilderOptions? options) {
+  static String formatIterable(List values, QueryBuilderOptions options) {
     final results = [];
     for (var value in values as Iterable<Object>) {
       results.add(formatValue(value, options));
@@ -147,7 +147,7 @@ class Validator {
     return "(${Util.join(', ', results as List<String?>)})";
   }
 
-  static String formatArray(List<Object> values, QueryBuilderOptions? options) {
+  static String formatArray(List<Object> values, QueryBuilderOptions options) {
     return formatIterable(values, options);
   }
 }

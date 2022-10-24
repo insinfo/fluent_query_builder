@@ -49,10 +49,8 @@ class Update extends QueryBuilder {
   @override
   QueryBuilder set(String fieldP, value) {
     final block = mBlocks![2] as SetFieldBlock;
-    //TODO: test this
-    var field =
-        mOptions.nameQuoteCharacter + fieldP + mOptions.nameQuoteCharacter;
-    block.setFieldValue(field, value);
+
+    block.setFieldValue(fieldP, value);
     return this;
   }
 
@@ -61,10 +59,7 @@ class Update extends QueryBuilder {
     final block = mBlocks![2] as SetFieldBlock;
 
     fieldsAndValues.forEach((fieldP, value) {
-      //TODO: test this
-      var field =
-          mOptions.nameQuoteCharacter + fieldP + mOptions.nameQuoteCharacter;
-      block.setFieldValue(field, value);
+      block.setFieldValue(fieldP, value);
     });
 
     return this;
@@ -86,9 +81,11 @@ class Update extends QueryBuilder {
   }
 
   @override
-  QueryBuilder whereRaw(String whereRawSql, [String andOr = 'AND']) {
+  QueryBuilder whereRaw(String whereRawSql,
+      {String andOr = 'AND', Map<String, dynamic>? substitutionValues}) {
     final block = mBlocks![3] as WhereBlock;
-    block.setWhereRaw(whereRawSql, andOr);
+    block.setWhereRaw(whereRawSql,
+        andOr: andOr, substitutionValues: substitutionValues);
     return this;
   }
 
@@ -108,10 +105,6 @@ class Update extends QueryBuilder {
 
   @override
   QueryBuilder whereGroup(QueryBuilder Function(QueryBuilder) function) {
-    /*if (function == null) {
-      throw Exception('function cannot be null');
-    }*/
-
     final block = mBlocks![5] as WhereBlock;
     block.setStartGroup('AND');
     var r = function(this);
@@ -121,10 +114,6 @@ class Update extends QueryBuilder {
 
   @override
   QueryBuilder orWhereGroup(QueryBuilder Function(QueryBuilder) function) {
-    /* if (function == null) {
-      throw Exception('function cannot be null');
-    }*/
-
     final block = mBlocks![5] as WhereBlock;
     block.setStartGroup('OR');
     var r = function(this);

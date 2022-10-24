@@ -38,7 +38,7 @@ class MySqlExecutor extends QueryExecutor<Querier> {
   @override
   Future<dynamic> reconnectIfNecessary() async {
     try {
-      await query('select true', {});
+      await query('select true');
       return this;
     } catch (e) {
 //when the database restarts there is a loss of connection
@@ -72,13 +72,13 @@ class MySqlExecutor extends QueryExecutor<Querier> {
 
   ///this method run query on MySQL or MariaDB DataBase
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String?>? returningFields]) async {
+  Future<List<List>> query(String query,
+      {Map<String, dynamic>? substitutionValues,
+      List<String?>? returningFields}) async {
     // Change @id -> ?
-    for (var name in substitutionValues.keys) {
-      query = query.replaceAll('@$name', '?');
-    }
+    // for (var name in substitutionValues.keys) {
+    //   query = query.replaceAll('@$name', '?');
+    // }
     //print('MySqlExecutor@query Query: $query');
     //print('MySqlExecutor@query Values: $substitutionValues');
     logger?.fine('MySqlExecutor@query Query: $query');
@@ -400,12 +400,14 @@ class MySqlExecutorPool extends QueryExecutor<MySqlExecutor> {
   }
 
   @override
-  Future<List<List>> query(
-      String query, Map<String, dynamic> substitutionValues,
-      [List<String?>? returningFields]) {
+  Future<List<List>> query(String query,
+      {Map<String, dynamic>? substitutionValues,
+      List<String?>? returningFields}) {
     return _pool.withResource(() async {
       final executor = await _next();
-      return executor.query(query, substitutionValues, returningFields);
+      return executor.query(query,
+          substitutionValues: substitutionValues,
+          returningFields: returningFields);
     });
   }
 

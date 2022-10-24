@@ -40,6 +40,11 @@ jobs:
           --health-retries 5
 
     steps:
+      - name: Start PostgreSQL on Ubuntu
+        run: |
+          sudo systemctl start postgresql.service
+          pg_isready
+
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1.3
         with:

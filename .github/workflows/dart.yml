@@ -9,11 +9,10 @@ on:
   pull_request:
     branches: [ master ]
 
-env:  
-  # Not sure these are actually being passed down to rails, set them as the default in database.yml
-  DB_HOST: localhost
-  DB_USERNAME: sisadmin
-  DB_PASSWORD: s1sadm1n    
+#env: 
+  #DB_HOST: localhost
+  #DB_USERNAME: sisadmin
+  #DB_PASSWORD: s1sadm1n    
 
 jobs:
   build:
